@@ -43,8 +43,8 @@ php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\Eloquen
 
 ### Clone and install the project
 
-This project has a simple docker setup for local development. TO start local development, download the project 
-and start the docker container. You need to have Docker installed on your lo
+This project has a simple docker setup for local development. To start local development, download the project 
+and start the docker container. You need to have Docker installed on your local machine for this.
 
 First, clone the project.
 
