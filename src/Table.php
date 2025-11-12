@@ -63,6 +63,10 @@ abstract class Table implements LoggerAwareInterface, \Stringable
 
     public function render(): View
     {
+        if (!$this->authorize($this->request)) {
+            $this->unauthorized();
+        }
+
         return $this->viewFactory->make('eloquent-tables::table', [
             'theme' => Theme::from($this->config->get('eloquent-tables.theme')),
         ]);
