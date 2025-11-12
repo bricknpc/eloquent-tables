@@ -1,0 +1,41 @@
+{
+  "$schema": "https://getcomposer.org/schema.json",
+  "name": "bricknpc/eloquent-tables",
+  "type": "library",
+  "description": "Eloquent tables for Laravel.",
+  "keywords": [
+    "Eloquent",
+    "Table",
+    "DataTable",
+    "Laravel",
+    "Pagination",
+    "Filtering",
+    "Sorting"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.4",
+    "illuminate/database": "^12.0",
+    "illuminate/support": "^12.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "BrickNPC\\EloquentTables\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BrickNPC\\EloquentTables\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "BrickNPC\\EloquentTables\\Providers\\EloquentTablesServiceProvider"
+      ]
+    }
+  }
+}
