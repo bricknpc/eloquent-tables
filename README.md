@@ -34,9 +34,10 @@ You can publish the Eloquent Tables config and view files.
 # All assets
 php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider"
 
-# Only the views or only the config
+# Only one type of asset
 php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="views"
 php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="config"
+php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="lang"
 ```
 
 ## Local development
