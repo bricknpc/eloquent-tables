@@ -14,6 +14,14 @@ class EloquentTablesServiceProvider extends ServiceProvider
         View::addNamespace('eloquent-tables', __DIR__ . '/../../resources/views');
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/eloquent-tables.php', 'eloquent-tables');
+
+        $this->publishes([
+            __DIR__ . '/../../config/eloquent-tables.php' => config_path('package.php'),
+        ], 'config');
+
+        $this->publishes([
+            __DIR__ . '/../../resources/views' => resource_path('views/vendor/eloquent-tables'),
+        ], 'views');
     }
 
     public function register(): void {}

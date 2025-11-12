@@ -1,11 +1,50 @@
 # BrickNPC Eloquent Tables
 
+## Installation
+
+Install the package using composer.
+
+```bash
+composer require bricknpc/eloquent-tables
+```
+
+### Requirements
+
+- PHP ^8.4
+- Laravel ^12.0
+
+This package builds eloquent tables for you with the frontend framework of your choice. You need to install the 
+frontend framework yourself in your Laravel project.
+
+Supported frontend frameworks:
+
+- Bootstrap 5
+
+Frameworks that are planned:
+
+- Tailwind CSS V4
+- Bulma
+- BlazeUI
+
+### Publishing assets
+
+You can publish the Eloquent Tables config and view files.
+
+```php
+# All assets
+php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider"
+
+# Only the views or only the config
+php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="views"
+php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="config"
+```
+
 ## Local development
 
 ### Clone and install the project
 
-This project has a simple docker setup for local development. To start local development, download the project 
-and start the docker container. You need to have Docker installed on your local system to use this setup.
+This project has a simple docker setup for local development. TO start local development, download the project 
+and start the docker container. You need to have Docker installed on your lo
 
 First, clone the project.
 
