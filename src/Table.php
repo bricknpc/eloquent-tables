@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
+use BrickNPC\EloquentTables\Enums\Theme;
+use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
@@ -36,6 +38,12 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
     }
 
+    public Repository $config {
+        set(Repository $value) {
+            $this->config = $value;
+        }
+    }
+
     public function __invoke(): View
     {
         return $this->render();
@@ -55,7 +63,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
 
     public function render(): View
     {
-        return $this->viewFactory->make('eloquent-tables::table');
+        return $this->viewFactory->make('eloquent-tables::table', [
+            'theme' => Theme::from($this->config->get('eloquent-tables.theme')),
+        ]);
     }
 
     public function filters(): array

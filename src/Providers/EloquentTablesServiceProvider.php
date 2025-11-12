@@ -38,6 +38,7 @@ class EloquentTablesServiceProvider extends ServiceProvider
             $table->request     = $app->make('request');
             $table->viewFactory = $app->make('view');
             $table->trans       = $app->make('translator');
+            $table->config      = $app->make('config');
         });
     }
 }
