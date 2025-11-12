@@ -40,6 +40,10 @@ php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\Eloquen
 php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider" --tag="lang"
 ```
 
+## Documentation
+
+See the [docs](docs/index.md).
+
 ## Local development
 
 ### Clone and install the project
