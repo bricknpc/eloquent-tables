@@ -4,7 +4,7 @@
 
 ### Clone and install the project
 
-This project has a simple docker setup for local development. TO start local development, download the project 
+This project has a simple docker setup for local development. To start local development, download the project 
 and start the docker container. You need to have Docker installed on your local system to use this setup.
 
 First, clone the project.
