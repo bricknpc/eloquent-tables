@@ -68,7 +68,6 @@ declare(strict_types=1);
 namespace App\Tables;
 
 use App\Models\User;
-
 use BrickNPC\EloquentTables\Table;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 

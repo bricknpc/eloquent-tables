@@ -68,7 +68,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
 
         return $this->viewFactory->make('eloquent-tables::table', [
-            'theme' => Theme::from($this->config->get('eloquent-tables.theme')),
+            'theme' => $this->config->get('eloquent-tables.theme', Theme::Bootstrap5),
         ]);
     }
 
