@@ -1,6 +1,6 @@
 # Authorization
 
-You can check if a user has access to the table by implementing the `authorize` on your table.
+You can check if a user has access to the table by implementing the `authorize` method on your table.
 
 ```php
 <?php
