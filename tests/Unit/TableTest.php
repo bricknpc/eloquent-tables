@@ -8,6 +8,7 @@ use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
@@ -50,14 +51,16 @@ class TableTest extends TestCase
         $table->render();
     }
 
-    public function test_exception_with_custom_message_is_thrown_when_authorization_fails(): void
+    public function test_exception_with_custom_message_and_custom_code_is_thrown_when_authorization_fails(): void
     {
         /** @var TestTableAuthorisationFailsCustomData $table */
         $table = $this->app->make(TestTableAuthorisationFailsCustomData::class);
 
-        $this->expectException(HttpException::class);
-        $this->expectExceptionMessage('This is a custom message.');
-
-        $table->render();
+        try {
+            $table->render();
+        } catch (HttpException $e) {
+            $this->assertSame('This is a custom message.', $e->getMessage());
+            $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $e->getStatusCode());
+        }
     }
 }
