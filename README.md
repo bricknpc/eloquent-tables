@@ -84,3 +84,26 @@ docker-compose exec php bash
 ```bash
 docker-compose down
 ```
+
+## Running tests
+
+You can run the tests using the following command.
+
+```bash
+docker-compose exec php composer test
+```
+
+## Code quality tools
+
+Eloquent Tables uses PHP CS Fixer and PHPStan to ensure a high quality code base. You can run the tools locally 
+using the following commands.
+
+**PHP CS Fixer:**
+```bash
+docker-compose exec php composer cs
+```
+
+**PHPStan:**
+```bash
+docker-compose exec php composer ps
+```
