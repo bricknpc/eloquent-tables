@@ -77,10 +77,10 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * behaviour. That is why they are not marked as abstract.
      */
 
-    public function filters(): array
-    {
-        return [];
-    }
+    //    public function filters(): array
+    //    {
+    //        return [];
+    //    }
 
     /**
      * @return TableStyle[]
@@ -93,7 +93,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * Check whether the current user is authorized to view the table.
+     * Check whether the current user is authorised to view the table.
      */
     protected function authorize(Request $request): bool
     {
@@ -111,10 +111,10 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * Unauthorized callback.
+     * Unauthorised callback.
      *
-     * This callback is executed when the user is not authorized to view the table. THis method must always throw an
-     * exception, otherwise the table is rendered as normal even when the user is not authorized.
+     * This callback is executed when the user is not authorised to view the table. THis method must always throw an
+     * exception, otherwise the table is rendered as normal even when the user is not authorised.
      *
      * @throws HttpException
      */

@@ -11,6 +11,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 
 /**
@@ -34,5 +35,37 @@ class ColumnValueViewBuilderTest extends TestCase
         $view = $builder->build($request, $column, $model);
 
         $this->assertSame('eloquent-tables::column-value', $view->name());
+    }
+
+    public function test_it_builds_and_uses_formatter(): void
+    {
+        /** @var ColumnValueViewBuilder $builder */
+        $builder = $this->app->make(ColumnValueViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $model   = new class extends Model {};
+        $column  = new Column('name')->format(TestFormatter::class);
+
+        $view = $builder->build($request, $column, $model);
+
+        $this->assertSame('eloquent-tables::column-value', $view->name());
+        $this->assertStringContainsString('formatted', $view->render());
+    }
+
+    public function test_it_uses_formatter(): void
+    {
+        /** @var ColumnValueViewBuilder $builder */
+        $builder = $this->app->make(ColumnValueViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $model   = new class extends Model {};
+        $column  = new Column('name')->format(new TestFormatter());
+
+        $view = $builder->build($request, $column, $model);
+
+        $this->assertSame('eloquent-tables::column-value', $view->name());
+        $this->assertStringContainsString('formatted', $view->render());
     }
 }
