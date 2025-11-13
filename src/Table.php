@@ -54,13 +54,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return $this->render()->render();
     }
 
-    abstract public function query(): Builder;
-
-    /**
-     * @return Column[]
-     */
-    abstract public function columns(): array;
-
     public function render(): View
     {
         if (!$this->authorize($this->request)) {
@@ -76,6 +69,13 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     {
         return [];
     }
+
+    abstract protected function query(): Builder;
+
+    /**
+     * @return Column[]
+     */
+    abstract protected function columns(): array;
 
     /*
      * These functions are supposed to be overwritten by the user, but they are not required or have some default
