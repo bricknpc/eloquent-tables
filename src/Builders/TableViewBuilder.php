@@ -18,8 +18,8 @@ readonly class TableViewBuilder
     public function __construct(
         private Factory $viewFactory,
         private Repository $config,
-        private ColumnLabelViewBuilder $columnLabelViewBuilder,
-        private ColumnValueViewBuilder $columnValueViewBuilder,
+        //        private ColumnLabelViewBuilder $columnLabelViewBuilder,
+        //        private ColumnValueViewBuilder $columnValueViewBuilder,
         private LayoutFinder $layoutFinder,
     ) {}
 
@@ -41,8 +41,12 @@ readonly class TableViewBuilder
         };
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getViewData(Table $table, Request $request): array
     {
+        /** @var Theme $theme */
         $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
 
         $viewData = [

@@ -16,9 +16,6 @@ use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-/**
- * @mixin WithPagination
- */
 abstract class Table implements LoggerAwareInterface, \Stringable
 {
     use LoggerAwareTrait;
@@ -102,7 +99,8 @@ abstract class Table implements LoggerAwareInterface, \Stringable
 
     protected function unauthorizedMessage(): string
     {
-        return $this->trans->get('You are not authorized to view this table.');
+        // @todo Create own wrapper around the Laravel translator so we can ensure type-safety
+        return $this->trans->get('You are not authorized to view this table.'); // @phpstan-ignore-line
     }
 
     protected function unauthorizedResponseCode(): int

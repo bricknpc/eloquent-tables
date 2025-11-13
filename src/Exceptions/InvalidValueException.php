@@ -26,7 +26,7 @@ class InvalidValueException extends \Exception
             default             => $value,
         };
 
-        $exception            = new self(__('The value :value is not a valid value for formatting.', ['value' => $text ?? 'null']));
+        $exception            = new self(__('The value :value is not a valid value for formatting.', ['value' => $text ?? 'null'])); // @phpstan-ignore-line
         $exception->value     = $value;
         $exception->formatter = $formatter;
 

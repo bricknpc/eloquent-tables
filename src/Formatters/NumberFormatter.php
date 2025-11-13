@@ -26,6 +26,6 @@ readonly class NumberFormatter implements Formatter
         $decimalSeparator   = $formatter->getSymbol(\NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
         $thousandsSeparator = $formatter->getSymbol(\NumberFormatter::GROUPING_SEPARATOR_SYMBOL);
 
-        return str(number_format($value, $this->decimals, $decimalSeparator, $thousandsSeparator));
+        return str(number_format((float) $value, $this->decimals, $decimalSeparator, $thousandsSeparator));
     }
 }

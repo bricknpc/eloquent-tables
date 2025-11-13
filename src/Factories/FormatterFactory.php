@@ -14,7 +14,7 @@ readonly class FormatterFactory
     ) {}
 
     /**
-     * @param string<class-string<Formatter>> $formatter
+     * @param class-string<Formatter> $formatter
      */
     public function build(string $formatter): Formatter
     {

@@ -17,7 +17,9 @@ class LayoutFinder
     private function getLayoutByMethod(Table $table): ?Layout
     {
         if (method_exists($table, 'layout')) {
-            return $table->layout();
+            $layout = $table->layout();
+
+            return $layout instanceof Layout ? $layout : null;
         }
 
         return null;

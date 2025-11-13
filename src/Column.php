@@ -22,7 +22,8 @@ class Column
      * @param null|\Closure(Model $model): \Stringable                                   $valueUsing
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void     $sortUsing
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
-     * @param null|Formatter|string<class-string<Formatter>>                             $formatter
+     * @param null|class-string<Formatter>|Formatter                                     $formatter
+     * @param TableStyle[]                                                               $styles
      */
     public function __construct(
         public string $name,
@@ -92,7 +93,7 @@ class Column
     }
 
     /**
-     * @param Formatter|string<class-string<Formatter>> $formatter
+     * @param class-string<Formatter>|Formatter $formatter
      */
     public function format(Formatter|string $formatter): self
     {

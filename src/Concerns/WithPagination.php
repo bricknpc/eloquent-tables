@@ -9,6 +9,8 @@ use BrickNPC\EloquentTables\Table;
 
 /**
  * @mixin Table
+ *
+ * @phpstan-ignore trait.unused
  */
 trait WithPagination
 {

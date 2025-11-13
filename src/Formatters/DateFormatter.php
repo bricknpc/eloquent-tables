@@ -27,7 +27,7 @@ readonly class DateFormatter implements Formatter
             timezone: $this->timezone,
         );
 
-        $formatted = $formatter->format($value);
+        $formatted = $formatter->format($value);  // @phpstan-ignore argument.type
 
         if (false === $formatted) {
             throw InvalidValueException::forInvalidValue($value, $this);

@@ -18,6 +18,6 @@ readonly class CurrencyFormatter implements Formatter
     {
         $formatter = new \NumberFormatter($this->locale, \NumberFormatter::CURRENCY);
 
-        return str($formatter->formatCurrency($value, $this->currency));
+        return str((string) $formatter->formatCurrency($value, $this->currency)); // @phpstan-ignore argument.type
     }
 }
