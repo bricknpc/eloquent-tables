@@ -107,3 +107,13 @@ docker-compose exec php composer cs
 ```bash
 docker-compose exec php composer ps
 ```
+
+## Contributing
+
+Pull requests are welcome. When creating a pull request, please include what you changed and why in the description of 
+the pull request. When fixing a bug, please include a test that reproduces the bug and describe how to test the bug 
+manually.
+
+Before creating a pull request, please run the tests and code quality tools locally.
+
+We only accept pull requests when PHPStan reports no errors and the test coverage hasn't gone down.
