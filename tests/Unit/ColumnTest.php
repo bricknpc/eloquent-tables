@@ -12,6 +12,7 @@ use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\ColumnType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\Contracts\Formatter;
@@ -216,6 +217,24 @@ class ColumnTest extends TestCase
 
         $column4 = new Column('name')->number();
         $this->assertSame(NumberFormatter::class, $column4->formatter);
+    }
+
+    public function test_fluent_setters_set_correct_column_type(): void
+    {
+        $column = new Column('name');
+        $this->assertSame(ColumnType::Text, $column->type);
+
+        $column2 = new Column(name: 'name', type: ColumnType::Boolean);
+        $this->assertSame(ColumnType::Boolean, $column2->type);
+
+        $column3 = new Column(name: 'name')->type(ColumnType::Boolean);
+        $this->assertSame(ColumnType::Boolean, $column3->type);
+
+        $column4 = new Column(name: 'name')->boolean();
+        $this->assertSame(ColumnType::Boolean, $column4->type);
+
+        $column4 = new Column(name: 'name')->checkbox();
+        $this->assertSame(ColumnType::Checkbox, $column4->type);
     }
 
     public function test_non_searchable_column_does_not_search_in_column(): void

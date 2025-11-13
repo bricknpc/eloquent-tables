@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
@@ -34,6 +35,7 @@ class Column
         public bool $searchable = false,
         public ?\Closure $searchUsing = null,
         public Formatter|string|null $formatter = null,
+        public ?ColumnType $type = ColumnType::Text,
     ) {}
 
     /**
@@ -117,6 +119,23 @@ class Column
     public function currency(): self
     {
         return $this->format(CurrencyFormatter::class);
+    }
+
+    public function type(ColumnType $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function checkbox(): self
+    {
+        return $this->type(ColumnType::Checkbox);
+    }
+
+    public function boolean(): self
+    {
+        return $this->type(ColumnType::Boolean);
     }
 
     public function renderLabel(Request $request, Factory $viewFactory): View
