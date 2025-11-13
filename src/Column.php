@@ -137,31 +137,4 @@ class Column
     {
         return $this->type(ColumnType::Boolean);
     }
-
-    public function renderLabel(Request $request, Factory $viewFactory): View
-    {
-        return $viewFactory->make('eloquent-tables::column-label', [
-            'label'         => $this->label ?? str($this->name)->title()->value(),
-            'sortable'      => $this->sortable,
-            'searchable'    => $this->searchable,
-            'isSorted'      => false, // todo
-            'sortDirection' => null, // todo
-            'href'          => $request->fullUrlWithQuery([
-                'sort[' . $this->name . ']' => Sort::Asc, // todo
-            ]),
-        ]);
-    }
-
-    public function renderValue(Request $request, Factory $viewFactory, Model $model): View
-    {
-        $value = is_callable($this->valueUsing) ? call_user_func($this->valueUsing, $model) : $model->{$this->name};
-
-        if (null !== $this->formatter) {
-            $value = $this->formatter->format($value, $model);
-        }
-
-        return $viewFactory->make('eloquent-tables::column-value', [
-            'value' => $value,
-        ]);
-    }
 }

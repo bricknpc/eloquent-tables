@@ -7,7 +7,6 @@ namespace BrickNPC\EloquentTables\Tests\Unit;
 use Mockery\Mock;
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
-use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
@@ -285,65 +284,5 @@ class ColumnTest extends TestCase
         $builder->shouldReceive('where')->once()->with('other', '=', '%test%');
 
         $column->search($request, $builder, $searchQuery);
-    }
-
-    public function test_it_renders_the_column_label_when_label_is_set(): void
-    {
-        $column = new Column(name: 'name', label: 'Column Label');
-
-        $rendered = $column->renderLabel(
-            $this->app->make(Request::class),
-            $this->app->make('view'),
-        );
-
-        $this->assertInstanceOf(View::class, $rendered);
-        $this->assertStringContainsString('Column Label', $rendered->render());
-        $this->assertSame('eloquent-tables::column-label', $rendered->getName());
-    }
-
-    public function test_it_renders_the_name_as_label_when_no_label_is_set(): void
-    {
-        $column = new Column(name: 'name');
-
-        $rendered = $column->renderLabel(
-            $this->app->make(Request::class),
-            $this->app->make('view'),
-        );
-
-        $this->assertInstanceOf(View::class, $rendered);
-        $this->assertStringContainsString('Name', $rendered->render());
-        $this->assertSame('eloquent-tables::column-label', $rendered->getName());
-    }
-
-    #[DataProvider('columnOptionsProvider')]
-    public function test_it_adds_column_options_when_rendering_the_label(array $columnOptions, array $expectedData): void
-    {
-        $column = new Column(...$columnOptions);
-
-        $rendered = $column->renderLabel(
-            $this->app->make(Request::class),
-            $this->app->make('view'),
-        );
-
-        $this->assertArrayIsIdenticalToArrayIgnoringListOfKeys($expectedData, $rendered->getData(), ['href']);
-    }
-
-    public static function columnOptionsProvider(): \Generator
-    {
-        yield [
-            [
-                'name'       => 'name',
-                'label'      => 'Column Label',
-                'sortable'   => false,
-                'searchable' => false,
-            ],
-            [
-                'label'         => 'Column Label',
-                'sortable'      => false,
-                'searchable'    => false,
-                'isSorted'      => false,
-                'sortDirection' => null,
-            ],
-        ];
     }
 }
