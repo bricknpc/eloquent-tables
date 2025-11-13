@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables;
 
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
-use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\ColumnType;

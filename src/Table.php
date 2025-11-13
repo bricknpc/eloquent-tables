@@ -8,12 +8,11 @@ use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
-use BrickNPC\EloquentTables\Enums\Theme;
-use Illuminate\Contracts\Config\Repository;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 abstract class Table implements LoggerAwareInterface, \Stringable
@@ -38,9 +37,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
     }
 
-    public Repository $config {
-        set(Repository $value) {
-            $this->config = $value;
+    public TableViewBuilder $builder {
+        set(TableViewBuilder $value) {
+            $this->builder = $value;
         }
     }
 
@@ -60,9 +59,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
             $this->unauthorized();
         }
 
-        return $this->viewFactory->make('eloquent-tables::table', [
-            'theme' => $this->config->get('eloquent-tables.theme', Theme::Bootstrap5),
-        ]);
+        return $this->builder->build($this, $this->request);
     }
 
     public function filters(): array

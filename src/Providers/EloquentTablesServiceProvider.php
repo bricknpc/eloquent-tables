@@ -10,6 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
+use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
@@ -43,7 +44,7 @@ class EloquentTablesServiceProvider extends ServiceProvider
             $table->request     = $app->make('request');
             $table->viewFactory = $app->make('view');
             $table->trans       = $app->make('translator');
-            $table->config      = $app->make('config');
+            $table->builder     = $app->make(TableViewBuilder::class);
         });
 
         $this->registerFormatters();
