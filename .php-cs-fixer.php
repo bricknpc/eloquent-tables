@@ -7,10 +7,12 @@ $finder =
         ->in([
             __DIR__ . '/src',
             __DIR__ . '/tests',
-//            __DIR__ . '/config',
+            __DIR__ . '/config',
         ])
         ->notName('*.blade.php')
 ;
+
+$parallelConfig = PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect();
 
 $config = new PhpCsFixer\Config();
 
@@ -29,4 +31,4 @@ return $config->setRules([
     'php_unit_method_casing'              => ['case' => 'snake_case'],
     'trailing_comma_in_multiline'         => ['elements' => ['arguments', 'arrays', 'match', 'parameters']],
     'new_with_parentheses'                => ['anonymous_class' => false, 'named_class' => true],
-])->setFinder($finder);
+])->setFinder($finder)->setParallelConfig($parallelConfig);

@@ -14,15 +14,22 @@
             <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>
     </testsuites>
-    <coverage>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
+    <coverage includeUncoveredFiles="true"
+              pathCoverage="false"
+              ignoreDeprecatedCodeUnits="true"
+              disableCodeCoverageIgnore="true">
         <report>
-            <html outputDirectory="coverage"/>
-            <clover outputFile="coverage/clover.xml"/>
+            <html outputDirectory="./tests/coverage/html" lowUpperBound="50" highLowerBound="90"/>
         </report>
     </coverage>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+        <exclude>
+            <directory>src/Providers</directory>
+        </exclude>
+    </source>
     <php>
         <env name="APP_ENV" value="testing"/>
     </php>

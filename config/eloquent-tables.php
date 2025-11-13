@@ -17,5 +17,5 @@ return [
      * --------------------------------
      * The theme to use for rendering the tables. Use any of the values from the Theme enum.
      */
-    'theme' => Theme::Bootstrap5->value,
+    'theme' => Theme::Bootstrap5,
 ];
