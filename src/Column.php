@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\ColumnType;
+use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
@@ -34,6 +35,7 @@ class Column
         public ?\Closure $searchUsing = null,
         public Formatter|string|null $formatter = null,
         public ?ColumnType $type = ColumnType::Text,
+        public array $styles = [],
     ) {}
 
     /**
@@ -134,5 +136,19 @@ class Column
     public function boolean(): self
     {
         return $this->type(ColumnType::Boolean);
+    }
+
+    public function styles(TableStyle ...$styles): self
+    {
+        $this->styles = array_merge($this->styles, $styles);
+
+        return $this;
+    }
+
+    public function style(TableStyle $style): self
+    {
+        $this->styles[] = $style;
+
+        return $this;
     }
 }

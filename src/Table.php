@@ -8,10 +8,10 @@ use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
+use BrickNPC\EloquentTables\Enums\TableStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
-use Illuminate\Contracts\View\Factory as ViewFactory;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -22,12 +22,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     public Request $request {
         set(Request $value) {
             $this->request = $value;
-        }
-    }
-
-    public ViewFactory $viewFactory {
-        set(ViewFactory $value) {
-            $this->viewFactory = $value;
         }
     }
 
@@ -62,11 +56,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return $this->builder->build($this, $this->request);
     }
 
-    public function filters(): array
-    {
-        return [];
-    }
-
     abstract public function query(): Builder;
 
     /**
@@ -78,6 +67,21 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * These functions are supposed to be overwritten by the user, but they are not required or have some default
      * behaviour. That is why they are not marked as abstract.
      */
+
+    public function filters(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return TableStyle[]
+     */
+    public function tableStyles(): array
+    {
+        return [
+            TableStyle::Default,
+        ];
+    }
 
     /**
      * Check whether the current user is authorized to view the table.

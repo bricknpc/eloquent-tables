@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Theme;
 use Illuminate\Contracts\Config\Repository;
+use BrickNPC\EloquentTables\Enums\TableStyle;
 
 readonly class TableViewBuilder
 {
@@ -22,8 +23,14 @@ readonly class TableViewBuilder
 
     public function build(Table $table, Request $request): View
     {
+        $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
+
         return $this->viewFactory->make('eloquent-tables::table', [
-            'theme' => $this->config->get('eloquent-tables.theme', Theme::Bootstrap5),
+            'theme'       => $theme,
+            'request'     => $request,
+            'tableStyles' => collect($table->tableStyles())
+                ->each(fn (TableStyle $style) => $style->toCssClass($theme))
+                ->implode(' '),
         ]);
     }
 }

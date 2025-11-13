@@ -42,7 +42,6 @@ class EloquentTablesServiceProvider extends ServiceProvider
         $this->app->resolving(Table::class, function (Table $table, Application $app) {
             $table->setLogger($app->make('log'));
             $table->request     = $app->make('request');
-            $table->viewFactory = $app->make('view');
             $table->trans       = $app->make('translator');
             $table->builder     = $app->make(TableViewBuilder::class);
         });

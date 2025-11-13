@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\ColumnType;
+use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\Contracts\Formatter;
@@ -234,6 +235,24 @@ class ColumnTest extends TestCase
 
         $column4 = new Column(name: 'name')->checkbox();
         $this->assertSame(ColumnType::Checkbox, $column4->type);
+    }
+
+    public function test_fluent_setters_set_correct_styles(): void
+    {
+        $column = new Column(name: 'name');
+        $this->assertEmpty($column->styles);
+
+        $column2 = new Column(name: 'name', styles: [TableStyle::Dark]);
+        $this->assertCount(1, $column2->styles);
+        $this->assertSame([TableStyle::Dark], $column2->styles);
+
+        $column3 = new Column(name: 'name', styles: [TableStyle::Dark])->styles(TableStyle::Striped, TableStyle::Active);
+        $this->assertCount(3, $column3->styles);
+        $this->assertSame([TableStyle::Dark, TableStyle::Striped, TableStyle::Active], $column3->styles);
+
+        $column4 = new Column(name: 'name', styles: [TableStyle::Dark])->styles(TableStyle::Striped, TableStyle::Active)->style(TableStyle::Info);
+        $this->assertCount(4, $column4->styles);
+        $this->assertSame([TableStyle::Dark, TableStyle::Striped, TableStyle::Active, TableStyle::Info], $column4->styles);
     }
 
     public function test_non_searchable_column_does_not_search_in_column(): void

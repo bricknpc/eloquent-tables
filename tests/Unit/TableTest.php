@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables\Tests\Unit;
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
@@ -26,6 +27,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomDat
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
+#[UsesClass(TableStyle::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void
