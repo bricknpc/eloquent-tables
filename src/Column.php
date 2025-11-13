@@ -78,6 +78,10 @@ class Column
 
     public function search(Request $request, Builder $query, string $searchQuery): void
     {
+        if (!$this->searchable) {
+            return;
+        }
+
         if (is_callable($this->searchUsing)) {
             call_user_func($this->searchUsing, $request, $query, $searchQuery);
         } else {
