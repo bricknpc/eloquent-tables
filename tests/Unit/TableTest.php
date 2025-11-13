@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Tests\Unit;
 
+use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
@@ -18,11 +23,13 @@ use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomData;
+use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCallback;
 
 /**
  * @internal
  */
 #[CoversClass(Table::class)]
+#[CoversClass(WithPagination::class)]
 #[UsesClass(TableViewBuilder::class)]
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
@@ -64,5 +71,108 @@ class TableTest extends TestCase
             $this->assertSame('This is a custom message.', $e->getMessage());
             $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $e->getStatusCode());
         }
+    }
+
+    public function test_authorisation_fail_with_custom_callback_throws_custom_exception(): void
+    {
+        /** @var TestTableAuthorisationFailsCustomCallback $table */
+        $table = $this->app->make(TestTableAuthorisationFailsCustomCallback::class);
+
+        $this->expectException(\RuntimeException::class);
+
+        $table->render();
+    }
+
+    public function test_table_can_check_for_pagination(): void
+    {
+        $withPagination    = $this->getTableWithPagination();
+        $withoutPagination = $this->getTableWithoutPagination();
+
+        $this->assertTrue($withPagination->withPagination());
+        $this->assertFalse($withoutPagination->withPagination());
+    }
+
+    public function test_table_with_pagination_returns_default_per_page(): void
+    {
+        $table = $this->getTableWithPagination();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $this->assertSame(15, $table->getPerPage($request));
+    }
+
+    public function test_table_with_pagination_returns_per_page_in_request(): void
+    {
+        $table = $this->getTableWithPagination();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('per_page', 10);
+
+        $this->assertSame(10, $table->getPerPage($request));
+    }
+
+    #[DataProvider('invalidPerPageValues')]
+    public function test_table_with_pagination_returns_default_per_page_for_invalid_request(string $invalidValue): void
+    {
+        $table = $this->getTableWithPagination();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('per_page', $invalidValue);
+
+        $this->assertSame(15, $table->getPerPage($request));
+    }
+
+    public static function invalidPerPageValues(): \Generator
+    {
+        yield [
+            'true',
+        ];
+
+        yield [
+            'false',
+        ];
+
+        yield [
+            'string',
+        ];
+
+        yield [
+            'array',
+        ];
+    }
+
+    private function getTableWithPagination(): Table
+    {
+        return new class extends Table {
+            use WithPagination;
+
+            public function query(): Builder
+            {
+                return Model::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
+    }
+
+    private function getTableWithoutPagination(): Table
+    {
+        return new class extends Table {
+            public function query(): Builder
+            {
+                return Model::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
     }
 }

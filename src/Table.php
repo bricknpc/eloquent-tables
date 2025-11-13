@@ -12,9 +12,13 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * @mixin WithPagination
+ */
 abstract class Table implements LoggerAwareInterface, \Stringable
 {
     use LoggerAwareTrait;
@@ -54,6 +58,11 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
 
         return $this->builder->build($this, $this->request);
+    }
+
+    public function withPagination(): bool
+    {
+        return in_array(WithPagination::class, class_uses_recursive(static::class), true);
     }
 
     abstract public function query(): Builder;
