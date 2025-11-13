@@ -20,7 +20,7 @@ class UserTable extends Table
     /**
     * @return Column[]
      */
-    protected function columns(): array
+    public function columns(): array
     {
         return [
             new Column('email'),
@@ -54,7 +54,7 @@ class UserTable extends Table
     /**
     * @return Column[]
      */
-    protected function columns(): array
+    public function columns(): array
     {
         return [
             new Column('email'),
@@ -73,7 +73,7 @@ You can add the ability to sort the table by a specific column by adding the `so
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('email')->sortable(),
@@ -91,7 +91,7 @@ If you want the table to be sorted by a specific column by default, you can use 
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('email')->sortable(default: \BrickNPC\EloquentTables\Enums\Sort::Asc),
@@ -112,7 +112,7 @@ requested by the user. The closure should not return anything.
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('email')->sortable(sortUsing: function(\Illuminate\Http\Request $request, \Illuminate\Contracts\Database\Query\Builder $query, \BrickNPC\EloquentTables\Enums\Sort $direction): void {
@@ -138,7 +138,7 @@ search field will be shown.
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('email')->searchable(),
@@ -154,7 +154,7 @@ If there are multiple columns that are searchable, each column will be added to 
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('email')->searchable(),
@@ -185,7 +185,7 @@ The closure should not return anything.
 /**
  * @return Column[]
  */
-protected function columns(): array
+public function columns(): array
 {
     return [
         new Column('name')->searchable(searchUsing: function(\Illuminate\Http\Request $request, \Illuminate\Contracts\Database\Query\Builder $query, string $searchValue): void {
