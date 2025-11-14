@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Tests\Unit\Services;
 
 use BrickNPC\EloquentTables\Table;
-use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ class LayoutFinderTest extends TestCase
         $table = new class extends Table {
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array
@@ -46,7 +46,7 @@ class LayoutFinderTest extends TestCase
         $table = new class extends Table {
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array
@@ -74,7 +74,7 @@ class LayoutFinderTest extends TestCase
         $table = new #[Layout(name: 'layout-via-attribute')] class extends Table {
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array
@@ -97,7 +97,7 @@ class LayoutFinderTest extends TestCase
         $table = new #[Layout(name: 'layout-via-attribute')] class extends Table {
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array

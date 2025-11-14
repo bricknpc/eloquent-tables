@@ -34,7 +34,7 @@ class ColumnValueViewBuilderTest extends TestCase
 
         $view = $builder->build($request, $column, $model);
 
-        $this->assertSame('eloquent-tables::column-value', $view->name());
+        $this->assertSame('eloquent-tables::table.td', $view->name());
     }
 
     public function test_it_builds_and_uses_formatter(): void
@@ -49,7 +49,7 @@ class ColumnValueViewBuilderTest extends TestCase
 
         $view = $builder->build($request, $column, $model);
 
-        $this->assertSame('eloquent-tables::column-value', $view->name());
+        $this->assertSame('eloquent-tables::table.td', $view->name());
         $this->assertStringContainsString('formatted', $view->render());
     }
 
@@ -65,7 +65,7 @@ class ColumnValueViewBuilderTest extends TestCase
 
         $view = $builder->build($request, $column, $model);
 
-        $this->assertSame('eloquent-tables::column-value', $view->name());
+        $this->assertSame('eloquent-tables::table.td', $view->name());
         $this->assertStringContainsString('formatted', $view->render());
     }
 }

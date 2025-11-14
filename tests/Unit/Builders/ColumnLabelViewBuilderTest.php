@@ -31,7 +31,7 @@ class ColumnLabelViewBuilderTest extends TestCase
 
         $view = $builder->build($request, $column);
 
-        $this->assertSame('eloquent-tables::column-label', $view->name());
+        $this->assertSame('eloquent-tables::table.th', $view->name());
     }
 
     #[DataProvider('sortOrderProvider')]

@@ -1,7 +1,7 @@
 <section>
     <div class="card mb-3">
         <div class="card-body">
-            @include('eloquent-tables::bootstrap-5.table.header')
+            @include('eloquent-tables::bootstrap-5.header')
         </div>
     </div>
 
@@ -13,9 +13,11 @@
         </table>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-body">
-            @include('eloquent-tables::bootstrap-5.table.links')
+    @if($links)
+        <div class="card mb-3">
+            <div class="card-body">
+                @include('eloquent-tables::bootstrap-5.links')
+            </div>
         </div>
-    </div>
+    @endif
 </section>

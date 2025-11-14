@@ -1,8 +1,10 @@
 @php
+    use Illuminate\Http\Request;
     use BrickNPC\EloquentTables\Column;
     use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
     use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 
+    /** @var Request $request */
     /** @var Column[] $columns */
     /** @var ColumnLabelViewBuilder $columnLabelViewBuilder */
     /** @var ColumnValueViewBuilder $columnValueViewBuilder */
@@ -10,10 +12,7 @@
 <thead>
     <tr>
         @foreach($columns as $column)
-            @include('eloquent-tables::bootstrap-5.table.thead.th', [
-                'column'  => $column,
-                'builder' => $columnLabelViewBuilder,
-            ])
+            {{ $columnLabelViewBuilder->build($request, $column) }}
         @endforeach
     </tr>
 </thead>

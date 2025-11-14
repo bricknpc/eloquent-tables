@@ -6,7 +6,6 @@ namespace BrickNPC\EloquentTables\Tests\Unit;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -17,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -153,7 +153,7 @@ class TableTest extends TestCase
 
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array
@@ -168,7 +168,7 @@ class TableTest extends TestCase
         return new class extends Table {
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function columns(): array

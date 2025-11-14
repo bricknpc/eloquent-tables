@@ -9,11 +9,14 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
+use BrickNPC\EloquentTables\Enums\Theme;
+use Illuminate\Contracts\Config\Repository;
 
 readonly class ColumnLabelViewBuilder
 {
     public function __construct(
         private Factory $viewFactory,
+        private Repository $config,
     ) {}
 
     public function build(Request $request, Column $column): View
@@ -21,7 +24,8 @@ readonly class ColumnLabelViewBuilder
         $sortDirection     = $this->sortDirectionForColumn($request, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
 
-        return $this->viewFactory->make('eloquent-tables::column-label', [
+        return $this->viewFactory->make('eloquent-tables::table.th', [
+            'theme'         => $this->getTheme(),
             'label'         => $this->getLabelValue($column),
             'sortable'      => $column->sortable,
             'searchable'    => $column->searchable,
@@ -62,5 +66,13 @@ readonly class ColumnLabelViewBuilder
         $currentSort = is_array($request->query('sort', [])) ? $request->query('sort', []) : [];
 
         return array_merge($currentSort, [$name => $direction->value]);
+    }
+
+    private function getTheme(): Theme
+    {
+        /** @var Theme $theme */
+        $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
+
+        return $theme;
     }
 }

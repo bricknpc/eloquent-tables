@@ -6,8 +6,10 @@ namespace BrickNPC\EloquentTables\Tests\Unit\Builders;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use BrickNPC\EloquentTables\Column;
-use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\TableStyle;
@@ -15,7 +17,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
@@ -32,6 +36,8 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(Column::class)]
 #[UsesClass(TableStyle::class)]
 #[UsesClass(Layout::class)]
+#[UsesClass(WithPagination::class)]
+#[UsesClass(Theme::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -49,7 +55,7 @@ class TableViewBuilderTest extends TestCase
 
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
         };
 
@@ -73,7 +79,7 @@ class TableViewBuilderTest extends TestCase
 
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
         };
 
@@ -97,7 +103,7 @@ class TableViewBuilderTest extends TestCase
 
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
 
             public function layout(): Layout
@@ -127,7 +133,7 @@ class TableViewBuilderTest extends TestCase
 
             public function query(): Builder
             {
-                return Model::query();
+                return TestModel::query();
             }
         };
 
@@ -137,10 +143,85 @@ class TableViewBuilderTest extends TestCase
         $this->assertEmpty($view->getData()['tableStyles']);
     }
 
-    private function injectDependencies(Table $table): void
+    public function test_it_gets_all_results_without_pagination(): void
     {
-        $table->request = $this->app->make('request');
-        $table->trans   = $this->app->make('translator');
-        $table->builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableViewBuilder $builder */
+        $builder = $this->app->make(TableViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        // Create 100 test models
+        for ($i = 0; $i < 100; ++$i) {
+            DB::table('test_models')->insert([
+                'name'       => sprintf('Test Model %d', $i),
+                'email'      => sprintf('test-email-%d@test.com', $i),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $table = new class extends Table {
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
+
+        $view = $builder->build($table, $request);
+
+        $viewData = $view->getData();
+
+        $this->assertArrayHasKey('rows', $viewData);
+        $this->assertInstanceOf(Collection::class, $viewData['rows']);
+        $this->assertCount(100, $viewData['rows']);
+        $this->assertNull($viewData['links']);
+    }
+
+    public function test_it_gets_paginated_results_with_pagination(): void
+    {
+        /** @var TableViewBuilder $builder */
+        $builder = $this->app->make(TableViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        // Create 100 test models
+        for ($i = 0; $i < 100; ++$i) {
+            DB::table('test_models')->insert([
+                'name'       => sprintf('Test Model %d', $i),
+                'email'      => sprintf('test-email-%d@test.com', $i),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $table = new class extends Table {
+            use WithPagination;
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
+
+        $view = $builder->build($table, $request);
+
+        $viewData = $view->getData();
+
+        $this->assertArrayHasKey('rows', $viewData);
+        $this->assertInstanceOf(Collection::class, $viewData['rows']);
+        $this->assertCount(15, $viewData['rows']);
+        $this->assertNotNull($viewData['links']);
     }
 }
