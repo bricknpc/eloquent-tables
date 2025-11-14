@@ -38,18 +38,28 @@ class FormatterFactoryTest extends TestCase
     {
         yield [
             DateFormatter::class,
+            [
+                'locale'   => 'en',
+                'timezone' => new \DateTimeZone('UTC'),
+            ],
         ];
 
         yield [
             DateTimeFormatter::class,
+            [
+                'locale'   => 'en',
+                'timezone' => new \DateTimeZone('UTC'),
+            ],
         ];
 
         yield [
             NumberFormatter::class,
+            [],
         ];
 
         yield [
             CurrencyFormatter::class,
+            [],
         ];
     }
 }

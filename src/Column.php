@@ -19,6 +19,11 @@ use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 class Column
 {
     /**
+     * @var array<string, mixed>
+     */
+    private array $formatterParameters = [];
+
+    /**
      * @param null|\Closure(Model $model): \Stringable                                   $valueUsing
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void     $sortUsing
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
@@ -38,6 +43,14 @@ class Column
         public ?ColumnType $type = ColumnType::Text,
         public array $styles = [],
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getFormatterParameters(): array
+    {
+        return $this->formatterParameters;
+    }
 
     /**
      * @param \Closure(Model $model): \Stringable $valueUsing
@@ -112,13 +125,40 @@ class Column
         return $this->format(DateTimeFormatter::class);
     }
 
-    public function number(): self
+    public function number(int $decimals = 0, ?string $locale = null): self
     {
+        $this->formatterParameters = ['decimals' => $decimals];
+
+        if (null !== $locale) {
+            $this->formatterParameters['locale'] = $locale;
+        }
+
         return $this->format(NumberFormatter::class);
     }
 
-    public function currency(): self
+    public function float(int $decimals = 2, ?string $locale = null): self
     {
+        $this->formatterParameters = ['decimals' => $decimals];
+
+        if (null !== $locale) {
+            $this->formatterParameters['locale'] = $locale;
+        }
+
+        return $this->format(NumberFormatter::class);
+    }
+
+    public function currency(?string $currency = null, ?string $locale = null): self
+    {
+        $this->formatterParameters = [];
+
+        if (null !== $currency) {
+            $this->formatterParameters['currency'] = $currency;
+        }
+
+        if (null !== $locale) {
+            $this->formatterParameters['locale'] = $locale;
+        }
+
         return $this->format(CurrencyFormatter::class);
     }
 

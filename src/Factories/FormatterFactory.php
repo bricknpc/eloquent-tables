@@ -15,11 +15,12 @@ readonly class FormatterFactory
 
     /**
      * @param class-string<Formatter> $formatter
+     * @param array<string, mixed>    $parameters
      */
-    public function build(string $formatter): Formatter
+    public function build(string $formatter, array $parameters = []): Formatter
     {
         /** @var Formatter $formatterObject */
-        $formatterObject = $this->container->make($formatter);
+        $formatterObject = $this->container->make($formatter, $parameters);
 
         return $formatterObject;
     }

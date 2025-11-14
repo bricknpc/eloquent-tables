@@ -217,6 +217,126 @@ class ColumnTest extends TestCase
 
         $column4 = new Column('name')->number();
         $this->assertSame(NumberFormatter::class, $column4->formatter);
+
+        $column5 = new Column('name')->float();
+        $this->assertSame(NumberFormatter::class, $column5->formatter);
+    }
+
+    #[DataProvider('customFormatterPropertiesProvider')]
+    public function test_using_custom_properties_for_formatters_saves_them_correctly(string $method, array $properties, array $expected): void
+    {
+        $column = new Column('name');
+
+        call_user_func_array([$column, $method], $properties);
+
+        $this->assertSame($expected, $column->getFormatterParameters());
+    }
+
+    public static function customFormatterPropertiesProvider(): \Generator
+    {
+        yield [
+            'number',
+            [
+                'decimals' => 2,
+                'locale'   => 'nl',
+            ],
+            [
+                'decimals' => 2,
+                'locale'   => 'nl',
+            ],
+        ];
+
+        yield [
+            'number',
+            [
+                'decimals' => 5,
+            ],
+            [
+                'decimals' => 5,
+            ],
+        ];
+
+        yield [
+            'number',
+            [
+                'locale' => 'de',
+            ],
+            [
+                'decimals' => 0,
+                'locale'   => 'de',
+            ],
+        ];
+
+        yield [
+            'float',
+            [
+                'decimals' => 2,
+                'locale'   => 'en',
+            ],
+            [
+                'decimals' => 2,
+                'locale'   => 'en',
+            ],
+        ];
+
+        yield [
+            'float',
+            [
+                'decimals' => 1,
+            ],
+            [
+                'decimals' => 1,
+            ],
+        ];
+
+        yield [
+            'float',
+            [
+                'locale' => 'de',
+            ],
+            [
+                'decimals' => 2,
+                'locale'   => 'de',
+            ],
+        ];
+
+        yield [
+            'currency',
+            [
+                'currency' => 'USD',
+                'locale'   => 'en',
+            ],
+            [
+                'currency' => 'USD',
+                'locale'   => 'en',
+            ],
+        ];
+
+        yield [
+            'currency',
+            [
+                'currency' => 'EUR',
+            ],
+            [
+                'currency' => 'EUR',
+            ],
+        ];
+
+        yield [
+            'currency',
+            [
+                'locale' => 'de',
+            ],
+            [
+                'locale' => 'de',
+            ],
+        ];
+
+        yield [
+            'currency',
+            [],
+            [],
+        ];
     }
 
     public function test_fluent_setters_set_correct_column_type(): void

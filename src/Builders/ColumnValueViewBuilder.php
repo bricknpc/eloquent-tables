@@ -32,7 +32,7 @@ readonly class ColumnValueViewBuilder
         if (null !== $column->formatter) {
             $formatter = $column->formatter instanceof Formatter
                 ? $column->formatter
-                : $this->formatterFactory->build($column->formatter);
+                : $this->formatterFactory->build($column->formatter, $column->getFormatterParameters());
 
             $value = $formatter->format($value, $model);
         }
