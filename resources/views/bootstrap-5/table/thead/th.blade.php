@@ -6,7 +6,5 @@
     /** @var ColumnLabelViewBuilder $builder */
 @endphp
 <th>
-    <div class="d-flex justify-content-between">
-        {{ $builder->build($request, $column) }}
-    </div>
+    {{ $builder->build($request, $column) }}
 </th>
