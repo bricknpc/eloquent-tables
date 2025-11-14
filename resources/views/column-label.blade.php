@@ -6,7 +6,7 @@
                 <x-bi-sort-alpha-down class="text-muted" />
             @else
                 @if($sortDirection === \BrickNPC\EloquentTables\Enums\Sort::Asc)
-                    <x-bi-sort-alpha-up />
+                    <x-bi-sort-alpha-down />
                 @else
                     <x-bi-sort-alpha-up />
                 @endif
