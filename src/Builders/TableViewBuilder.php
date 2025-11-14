@@ -18,8 +18,8 @@ readonly class TableViewBuilder
     public function __construct(
         private Factory $viewFactory,
         private Repository $config,
-        //        private ColumnLabelViewBuilder $columnLabelViewBuilder,
-        //        private ColumnValueViewBuilder $columnValueViewBuilder,
+        private ColumnLabelViewBuilder $columnLabelViewBuilder,
+        private ColumnValueViewBuilder $columnValueViewBuilder,
         private LayoutFinder $layoutFinder,
     ) {}
 
@@ -50,11 +50,15 @@ readonly class TableViewBuilder
         $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
 
         $viewData = [
+            'id'          => spl_object_id($table),
             'theme'       => $theme,
             'request'     => $request,
             'tableStyles' => collect($table->tableStyles())
                 ->each(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
+            'columns'                => $table->columns(),
+            'columnLabelViewBuilder' => $this->columnLabelViewBuilder,
+            'columnValueViewBuilder' => $this->columnValueViewBuilder,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
