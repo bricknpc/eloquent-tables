@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center">
     @if($sortable)
-        <a href="{{ $href }}" class="d-flex justify-content-between align-items-center">
+        <a href="{{ $href }}" class="d-flex justify-content-between align-items-center w-100 text-decoration-none text-light">
             <span>{{ $label }}</span>
             @if (!$isSorted)
                 <x-bi-sort-alpha-down class="text-muted" />
