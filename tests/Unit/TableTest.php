@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -22,6 +23,7 @@ use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomData;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCallback;
@@ -34,9 +36,11 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(TableViewBuilder::class)]
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
+#[UsesClass(TableActionViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(TableStyle::class)]
+#[UsesClass(Config::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void

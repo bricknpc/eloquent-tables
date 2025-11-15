@@ -10,6 +10,7 @@ use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use Symfony\Component\HttpFoundation\Response;
+use BrickNPC\EloquentTables\Actions\TableAction;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
@@ -87,6 +88,14 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return [
             TableStyle::Default,
         ];
+    }
+
+    /**
+     * @return TableAction[]
+     */
+    public function tableActions(): array
+    {
+        return [];
     }
 
     /**

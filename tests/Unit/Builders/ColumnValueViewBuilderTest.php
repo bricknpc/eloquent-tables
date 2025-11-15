@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
@@ -20,6 +21,7 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[CoversClass(ColumnValueViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(Column::class)]
+#[UsesClass(Config::class)]
 class ColumnValueViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

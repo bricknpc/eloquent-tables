@@ -1,0 +1,1 @@
+<a href="{{ $action }}" class="btn {{ $styles }}" role="button">{{ $label }}</a>

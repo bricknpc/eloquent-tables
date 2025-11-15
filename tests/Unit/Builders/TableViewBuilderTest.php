@@ -12,6 +12,7 @@ use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
@@ -23,6 +24,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 
 /**
  * @internal
@@ -30,6 +32,7 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[CoversClass(TableViewBuilder::class)]
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
+#[UsesClass(TableActionViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(Table::class)]
@@ -38,6 +41,7 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(Layout::class)]
 #[UsesClass(WithPagination::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(Config::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

@@ -10,9 +10,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\Theme;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Contracts\Config\Repository;
+use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use Illuminate\Contracts\Pagination\Paginator;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
@@ -36,9 +35,10 @@ class TableViewBuilder
 
     public function __construct(
         private readonly Factory $viewFactory,
-        private readonly Repository $config,
+        private readonly Config $config,
         private readonly ColumnLabelViewBuilder $columnLabelViewBuilder,
         private readonly ColumnValueViewBuilder $columnValueViewBuilder,
+        private readonly TableActionViewBuilder $tableActionViewBuilder,
         private readonly LayoutFinder $layoutFinder,
     ) {}
 
@@ -65,7 +65,7 @@ class TableViewBuilder
      */
     private function getViewData(Table $table, Request $request): array
     {
-        $theme = $this->getTheme();
+        $theme = $this->config->theme();
 
         $viewData = [
             'id'          => spl_object_id($table),
@@ -74,11 +74,14 @@ class TableViewBuilder
             'tableStyles' => collect($table->tableStyles())
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
-            'columns'                => $table->columns(),
-            'columnLabelViewBuilder' => $this->columnLabelViewBuilder,
-            'rows'                   => $this->getRows($table, $request),
-            'columnValueViewBuilder' => $this->columnValueViewBuilder,
-            'links'                  => $this->getLinks($table, $request),
+            'columns'                 => $table->columns(),
+            'columnLabelViewBuilder'  => $this->columnLabelViewBuilder,
+            'rows'                    => $this->getRows($table, $request),
+            'columnValueViewBuilder'  => $this->columnValueViewBuilder,
+            'links'                   => $this->getLinks($table, $request),
+            'tableActionCount'        => count($table->tableActions()),
+            'tableActions'            => $table->tableActions(),
+            'tableActionViewBuilder'  => $this->tableActionViewBuilder,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
@@ -110,7 +113,7 @@ class TableViewBuilder
             return null;
         }
 
-        $theme = $this->getTheme();
+        $theme = $this->config->theme();
 
         return $this->getResults($table, $request)->links($theme->getLinksView()); // @phpstan-ignore-line
     }
@@ -127,13 +130,5 @@ class TableViewBuilder
             : $table->query()->get();
 
         return $this->results; // @phpstan-ignore-line
-    }
-
-    private function getTheme(): Theme
-    {
-        /** @var Theme $theme */
-        $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
-
-        return $theme;
     }
 }

@@ -9,8 +9,7 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\Theme;
-use Illuminate\Contracts\Config\Repository;
+use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
@@ -20,12 +19,12 @@ readonly class ColumnValueViewBuilder
     public function __construct(
         private Factory $viewFactory,
         private FormatterFactory $formatterFactory,
-        private Repository $config,
+        private Config $config,
     ) {}
 
     public function build(Request $request, Column $column, Model $model): View
     {
-        $theme = $this->getTheme();
+        $theme = $this->config->theme();
 
         $value = is_callable($column->valueUsing) ? call_user_func($column->valueUsing, $model) : $model->{$column->name};
 
@@ -42,13 +41,5 @@ readonly class ColumnValueViewBuilder
             'value'  => $value,
             'styles' => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
         ]);
-    }
-
-    private function getTheme(): Theme
-    {
-        /** @var Theme $theme */
-        $theme = $this->config->get('eloquent-tables.theme', Theme::Bootstrap5);
-
-        return $theme;
     }
 }

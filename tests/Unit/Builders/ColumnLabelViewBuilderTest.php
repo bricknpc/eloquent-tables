@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
@@ -18,6 +19,7 @@ use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
  */
 #[CoversClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(Column::class)]
+#[UsesClass(Config::class)]
 class ColumnLabelViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
