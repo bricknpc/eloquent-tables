@@ -11,4 +11,12 @@ enum Method: string
     case Put    = 'PUT';
     case Patch  = 'PATCH';
     case Delete = 'DELETE';
+
+    public function getFormMethod(): string
+    {
+        return match ($this) {
+            self::Get, self::Post => $this->value,
+            default              => 'POST',
+        };
+    }
 }

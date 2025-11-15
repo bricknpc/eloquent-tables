@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
 abstract class Action
@@ -12,11 +13,11 @@ abstract class Action
      * @param ButtonStyle[] $styles
      */
     public function __construct(
-        public string|\Stringable|null $label = null,
+        public Htmlable|string|\Stringable|null $label = null,
         public array $styles = [],
     ) {}
 
-    public function label(string|\Stringable $label): self
+    public function label(Htmlable|string|\Stringable $label): self
     {
         $this->label = $label;
 

@@ -30,7 +30,7 @@ readonly class RowActionBuilder
         }
 
         return $this->viewFactory->make('eloquent-tables::action.row-action', [
-            'id'            => spl_object_id($action),
+            'id'            => $this->getId($action, $model),
             'theme'         => $this->config->theme(),
             'dataNamespace' => $this->config->dataNamespace(),
             'action'        => is_string($action->action) ? $action->action : call_user_func($action->action, $model),
@@ -59,5 +59,14 @@ readonly class RowActionBuilder
         }
 
         return (bool) call_user_func($action->when, $model);
+    }
+
+    private function getId(RowAction $action, Model $model): string
+    {
+        $objectId = (string) spl_object_id($action);
+        $modelId  = (string) spl_object_id($model);
+        $random   = uniqid();
+
+        return sprintf('%s-%s-%s', $objectId, $modelId, $random);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
 class TableAction extends Action
@@ -13,7 +14,7 @@ class TableAction extends Action
      */
     public function __construct(
         public string $action,
-        public string|\Stringable|null $label = null,
+        public Htmlable|string|\Stringable|null $label = null,
         public array $styles = [],
         public bool $asModal = false,
     ) {

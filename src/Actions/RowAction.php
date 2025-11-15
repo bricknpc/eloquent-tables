@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables\Actions;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\Method;
+use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
 class RowAction extends Action
@@ -20,7 +21,7 @@ class RowAction extends Action
      */
     public function __construct(
         public \Closure|string $action,
-        public string|\Stringable|null $label = null,
+        public Htmlable|string|\Stringable|null $label = null,
         public array $styles = [],
         public bool $asForm = false,
         public ?Method $method = null,
