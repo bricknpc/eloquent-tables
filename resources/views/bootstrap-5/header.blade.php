@@ -15,7 +15,7 @@
             <form action="{{ $tableSearchUrl }}" method="get" id="search-form-{{ $id }}">
                 <div class="input-group">
                     <input type="search" name="{{ $searchQueryName }}" class="form-control" placeholder="{{ __('Search') }}" value="{{ $searchQuery }}" />
-                    <button class="btn btn-outline-primary" type="submit" form="search-form-{{ $id }}"><x-bi-search class="d-flex align-items-center" /></button>
+                    <button class="btn btn-outline-primary d-flex align-items-center" type="submit" form="search-form-{{ $id }}">{{ $searchIcon }}</button>
                 </div>
             </form>
         </div>

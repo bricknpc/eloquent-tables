@@ -82,6 +82,7 @@ readonly class TableViewBuilder
             'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
+            'searchIcon'              => $this->config->searchIcon(),
         ];
 
         $layout = $this->layoutFinder->getLayout($table);

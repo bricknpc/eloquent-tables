@@ -4,12 +4,12 @@
             <a href="{{ $href }}" class="d-flex justify-content-between align-items-center w-100 text-decoration-none text-light">
                 <span>{{ $label }}</span>
                 @if (!$isSorted)
-                    <x-bi-sort-alpha-down class="text-muted" />
+                    <span class="text-muted">{{ $iconNone }}</span>
                 @else
                     @if($sortDirection === \BrickNPC\EloquentTables\Enums\Sort::Asc)
-                        <x-bi-sort-alpha-down />
+                        {{ $iconDesc }}
                     @else
-                        <x-bi-sort-alpha-up />
+                        {{ $iconAsc }}
                     @endif
                 @endif
             </a>

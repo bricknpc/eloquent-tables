@@ -31,6 +31,9 @@ readonly class ColumnLabelViewBuilder
             'isSorted'      => null !== $sortDirection,
             'sortDirection' => $sortDirection,
             'href'          => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
+            'iconNone'      => $this->config->sortNoneIcon(),
+            'iconAsc'       => $this->config->sortAscIcon(),
+            'iconDesc'      => $this->config->sortDescIcon(),
         ]);
     }
 

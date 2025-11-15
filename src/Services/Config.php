@@ -39,4 +39,32 @@ readonly class Config
 
         return $searchQueryName;
     }
+
+    public function searchIcon(): string|\Stringable
+    {
+        return $this->icon('search', "\u{1F50D}");
+    }
+
+    public function sortNoneIcon(): string|\Stringable
+    {
+        return $this->icon('sort-none', "\u{25C0}");
+    }
+
+    public function sortAscIcon(): string|\Stringable
+    {
+        return $this->icon('sort-asc', "\u{25B2}");
+    }
+
+    public function sortDescIcon(): string|\Stringable
+    {
+        return $this->icon('sort-desc', "\u{25BC}");
+    }
+
+    private function icon(string $name, ?string $default = null): string|\Stringable
+    {
+        /** @var string|\Stringable $icon */
+        $icon = $this->config->get('eloquent-tables.icons.' . $name, $default);
+
+        return $icon;
+    }
 }

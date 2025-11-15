@@ -6,3 +6,4 @@
 - [Translations](translations.md)
 - [Themes](themes.md)
 - [Styling](styling.md)
+- [Actions](actions.md)

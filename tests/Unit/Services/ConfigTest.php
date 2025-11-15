@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Tests\Unit\Services;
 
+use Illuminate\Support\HtmlString;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @internal
@@ -53,5 +55,37 @@ class ConfigTest extends TestCase
         $config = $this->app->make(Config::class);
 
         $this->assertSame('s', $config->sortQueryName());
+    }
+
+    #[DataProvider('iconProvider')]
+    public function test_it_returns_the_correct_icons(string $method, string $name, string|\Stringable $value): void
+    {
+        config()->set('eloquent-tables.icons.' . $name, $value);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $icon = call_user_func([$config, $method]);
+
+        $this->assertSame($value, $icon);
+    }
+
+    public static function iconProvider(): \Generator
+    {
+        yield [
+            'searchIcon', 'search', new HtmlString('&#x1F50E;&#xFE0E;'),
+        ];
+
+        yield [
+            'sortAscIcon', 'sort-asc', new HtmlString('&#x25B2;'),
+        ];
+
+        yield [
+            'sortDescIcon', 'sort-desc', new HtmlString('&#x25BC;'),
+        ];
+
+        yield [
+            'sortNoneIcon', 'sort-none', new HtmlString('&#x25C0;'),
+        ];
     }
 }

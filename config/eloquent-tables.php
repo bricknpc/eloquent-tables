@@ -9,6 +9,7 @@ declare(strict_types=1);
  * Configuration options for the Eloquent Tables package.
  */
 
+use Illuminate\Support\HtmlString;
 use BrickNPC\EloquentTables\Enums\Theme;
 
 return [
@@ -42,5 +43,22 @@ return [
          * the names of the columns to sort by and the values are the sort directions (asc or desc).
          */
         'query_name' => 'sort',
+    ],
+
+    /*
+     * Icons
+     * --------------------------------
+     * This package shows icons in various places. You can customise the icons shown here.
+     *
+     * We recommend using the Blade Icons package, though you are free to use any other icon library you prefer. The
+     * icons defined here should be either a string or a Stringable object.
+     *
+     * When using HTML encoded strings, warp them in a HtmlString object.
+     */
+    'icons' => [
+        'search'    => new HtmlString('&#x1F50E;&#xFE0E;'),
+        'sort-asc'  => '⭡', // new HtmlString("&#x25B2;"), // "u\{25B2}"
+        'sort-desc' => '⭣', // new HtmlString("&#x25BC;"), // "u\{25BC}"
+        'sort-none' => '⭥', // new HtmlString("&#x25C0;"), // "u\{25C0}"
     ],
 ];
