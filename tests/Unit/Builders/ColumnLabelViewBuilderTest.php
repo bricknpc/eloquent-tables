@@ -37,7 +37,7 @@ class ColumnLabelViewBuilderTest extends TestCase
     }
 
     #[DataProvider('sortOrderProvider')]
-    public function test_it_builds_the_correct_sort_url(?Sort $currentOrder, Sort $nextOrder): void
+    public function test_it_builds_the_correct_sort_url(?Sort $currentOrder, ?Sort $nextOrder): void
     {
         /** @var ColumnLabelViewBuilder $builder */
         $builder = $this->app->make(ColumnLabelViewBuilder::class);
@@ -54,7 +54,11 @@ class ColumnLabelViewBuilderTest extends TestCase
         $view = $builder->build($request, $column);
 
         $this->assertArrayHasKey('href', $view->getData());
-        $this->assertSame('http://localhost/?sort%5Bname%5D=' . $nextOrder->value, $view->getData()['href']);
+        if (null === $nextOrder) {
+            $this->assertSame('http://localhost/?', $view->getData()['href']);
+        } else {
+            $this->assertSame('http://localhost/?sort%5Bname%5D=' . $nextOrder->value, $view->getData()['href']);
+        }
     }
 
     public static function sortOrderProvider(): \Generator
@@ -71,7 +75,7 @@ class ColumnLabelViewBuilderTest extends TestCase
 
         yield [
             Sort::Desc,
-            Sort::Asc,
+            null,
         ];
     }
 }

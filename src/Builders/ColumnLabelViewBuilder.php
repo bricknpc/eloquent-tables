@@ -51,18 +51,28 @@ readonly class ColumnLabelViewBuilder
         return null;
     }
 
-    private function getNextSortDirection(?Sort $currentSortDirection): Sort
+    private function getNextSortDirection(?Sort $currentSortDirection): ?Sort
     {
-        return Sort::Asc === $currentSortDirection ? Sort::Desc : Sort::Asc;
+        return match ($currentSortDirection) {
+            Sort::Asc  => Sort::Desc,
+            Sort::Desc => null,
+            default    => Sort::Asc,
+        };
     }
 
     /**
      * @return array<string, string>
      */
-    private function getSortArray(Request $request, string $name, Sort $direction): array
+    private function getSortArray(Request $request, string $name, ?Sort $direction): array
     {
         /** @var array<string, string> $currentSort */
         $currentSort = is_array($request->query($this->config->sortQueryName(), [])) ? $request->query($this->config->sortQueryName(), []) : [];
+
+        unset($currentSort[$name]);
+
+        if (null === $direction) {
+            return $currentSort;
+        }
 
         return array_merge($currentSort, [$name => $direction->value]);
     }
