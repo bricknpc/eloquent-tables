@@ -14,6 +14,7 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
+use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
@@ -41,6 +42,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(TableStyle::class)]
 #[UsesClass(Config::class)]
+#[UsesClass(RowsBuilder::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void

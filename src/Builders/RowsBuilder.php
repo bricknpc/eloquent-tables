@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace BrickNPC\EloquentTables\Builders;
+
+use Illuminate\Http\Request;
+use BrickNPC\EloquentTables\Table;
+use Illuminate\Support\Collection;
+use BrickNPC\EloquentTables\Column;
+use BrickNPC\EloquentTables\Enums\Sort;
+use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Services\Config;
+use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
+use Illuminate\Pagination\AbstractPaginator as Paginator;
+
+class RowsBuilder
+{
+    /**
+     * @var Collection<int, Column>
+     */
+    private Collection $columns;
+
+    /**
+     * @var null|Collection<int, Model>|Paginator<int, Model>
+     */
+    private Collection|Paginator|null $result = null;
+
+    public function __construct(
+        private readonly Config $config,
+    ) {}
+
+    /**
+     * @param Table|WithPagination $table
+     *
+     * @return Collection<int, Model>|Paginator<int, Model>
+     */
+    public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator // @phpstan-ignore-line
+    {
+        if (null !== $this->result && !$forceReload) {
+            return $this->result;
+        }
+
+        $this->columns = collect($table->columns());
+
+        $query = $table->query();
+
+        $this->applySearch($query, $request);
+        $this->applyFilters($query, $table, $request);
+        $this->applySort($query, $request);
+
+        /** @var Collection<int, Model>|Paginator<int, Model> $result */
+        $result = $table->withPagination()
+            ? $query->paginate($table->getPerPage($request), $table->perPageName) // @phpstan-ignore-line
+            : $query->get();
+
+        return $this->result = $result;
+    }
+
+    private function applyFilters(Builder $query, Table $table, Request $request): void {}
+
+    private function applySort(Builder $query, Request $request): void
+    {
+        /** @var array<string, string>|string $sortRequest */
+        $sortRequest = $request->query($this->config->sortQueryName(), []);
+
+        if (!is_array($sortRequest)) {
+            $sortRequest = [];
+        }
+
+        $this->columns
+            ->filter(fn (Column $column) => $column->sortable)
+            ->filter(fn (Column $column) => array_key_exists($column->name, $sortRequest) || null !== $column->defaultSort)
+            ->each(function (Column $column) use ($sortRequest, $query) {
+                if (array_key_exists($column->name, $sortRequest)) {
+                    $sort = Sort::from($sortRequest[$column->name]);
+
+                    $query->orderBy($column->name, $sort->value);
+
+                    return;
+                }
+
+                $query->orderBy($column->name, $column->defaultSort->value); // @phpstan-ignore-line
+            })
+        ;
+    }
+
+    private function applySearch(Builder $query, Request $request): void
+    {
+        $search = $request->query($this->config->searchQueryName());
+
+        if (!is_string($search) || empty($search)) {
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($search, $request) {
+            $this->columns
+                ->filter(fn (Column $column) => $column->searchable)
+                ->each(function (Column $column) use ($search, $request, $query) {
+                    $query->orWhere(fn (Builder $query) => $column->search($request, $query, $search));
+                })
+            ;
+        });
+    }
+}

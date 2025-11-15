@@ -17,6 +17,7 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
@@ -42,6 +43,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(WithPagination::class)]
 #[UsesClass(Theme::class)]
 #[UsesClass(Config::class)]
+#[UsesClass(RowsBuilder::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

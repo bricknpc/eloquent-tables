@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
-use Illuminate\Contracts\Pagination\Paginator;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 
@@ -26,20 +25,16 @@ use BrickNPC\EloquentTables\Concerns\WithPagination;
  * If a better solution exists or is implemented in the future, feel free to open a PR.
  * </todo>
  */
-class TableViewBuilder
+readonly class TableViewBuilder
 {
-    /**
-     * @var null|Collection<int, Model>|Paginator<int, Model>
-     */
-    private Collection|Paginator|null $results = null;
-
     public function __construct(
-        private readonly Factory $viewFactory,
-        private readonly Config $config,
-        private readonly ColumnLabelViewBuilder $columnLabelViewBuilder,
-        private readonly ColumnValueViewBuilder $columnValueViewBuilder,
-        private readonly TableActionViewBuilder $tableActionViewBuilder,
-        private readonly LayoutFinder $layoutFinder,
+        private ColumnLabelViewBuilder $columnLabelViewBuilder,
+        private ColumnValueViewBuilder $columnValueViewBuilder,
+        private TableActionViewBuilder $tableActionViewBuilder,
+        private Factory $viewFactory,
+        private LayoutFinder $layoutFinder,
+        private Config $config,
+        private RowsBuilder $rowsBuilder,
     ) {}
 
     public function build(Table $table, Request $request): View
@@ -93,21 +88,16 @@ class TableViewBuilder
     }
 
     /**
-     * @param Table|WithPagination $table
-     *
      * @return Collection<int, Model>
      */
-    private function getRows(Table $table, Request $request): Collection // @phpstan-ignore-line
+    private function getRows(Table $table, Request $request): Collection
     {
-        $results = $this->getResults($table, $request);
+        $results = $this->rowsBuilder->build($table, $request);
 
-        return $table->withPagination() ? $results->values() : $results; // @phpstan-ignore-line
+        return $results instanceof Collection ? $results : $results->getCollection();
     }
 
-    /**
-     * @param Table|WithPagination $table
-     */
-    private function getLinks(Table $table, Request $request): ?Htmlable // @phpstan-ignore-line
+    private function getLinks(Table $table, Request $request): ?Htmlable
     {
         if (!$table->withPagination()) {
             return null;
@@ -115,20 +105,6 @@ class TableViewBuilder
 
         $theme = $this->config->theme();
 
-        return $this->getResults($table, $request)->links($theme->getLinksView()); // @phpstan-ignore-line
-    }
-
-    /**
-     * @param Table|WithPagination $table
-     *
-     * @return Collection<int, Model>|Paginator<int, Model>
-     */
-    private function getResults(Table $table, Request $request): Collection|Paginator // @phpstan-ignore-line
-    {
-        $this->results ??= $table->withPagination() // @phpstan-ignore-line
-            ? $table->query()->paginate($table->getPerPage($request), $table->perPageName)->withQueryString() // @phpstan-ignore-line
-            : $table->query()->get();
-
-        return $this->results; // @phpstan-ignore-line
+        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView()); // @phpstan-ignore-line
     }
 }

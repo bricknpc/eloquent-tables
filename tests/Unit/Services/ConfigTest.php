@@ -34,4 +34,24 @@ class ConfigTest extends TestCase
 
         $this->assertSame(Theme::Bootstrap5, $config->theme());
     }
+
+    public function test_it_returns_the_correct_search_query_name(): void
+    {
+        config()->set('eloquent-tables.search.query_name', 'q');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('q', $config->searchQueryName());
+    }
+
+    public function test_it_returns_the_correct_sort_query_name(): void
+    {
+        config()->set('eloquent-tables.sorting.query_name', 's');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('s', $config->sortQueryName());
+    }
 }

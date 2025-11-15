@@ -23,4 +23,20 @@ readonly class Config
 
         return $theme;
     }
+
+    public function searchQueryName(): string
+    {
+        /** @var string $searchQueryName */
+        $searchQueryName = $this->config->get('eloquent-tables.search.query_name', 'search');
+
+        return $searchQueryName;
+    }
+
+    public function sortQueryName(): string
+    {
+        /** @var string $searchQueryName */
+        $searchQueryName = $this->config->get('eloquent-tables.sorting.query_name', 'sort');
+
+        return $searchQueryName;
+    }
 }
