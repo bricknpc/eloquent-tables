@@ -30,7 +30,7 @@ readonly class ColumnLabelViewBuilder
             'searchable'    => $column->searchable,
             'isSorted'      => null !== $sortDirection,
             'sortDirection' => $sortDirection,
-            'href'          => $request->fullUrlWithQuery(['sort' => $this->getSortArray($request, $column->name, $nextSortDirection)]),
+            'href'          => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
         ]);
     }
 
@@ -42,7 +42,7 @@ readonly class ColumnLabelViewBuilder
     private function sortDirectionForColumn(Request $request, Column $column): ?Sort
     {
         /** @var array<string, string>|string $sort */
-        $sort = $request->query('sort', []);
+        $sort = $request->query($this->config->sortQueryName(), []);
 
         if (is_array($sort) && array_key_exists($column->name, $sort)) {
             return Sort::from($sort[$column->name]);
@@ -62,7 +62,7 @@ readonly class ColumnLabelViewBuilder
     private function getSortArray(Request $request, string $name, Sort $direction): array
     {
         /** @var array<string, string> $currentSort */
-        $currentSort = is_array($request->query('sort', [])) ? $request->query('sort', []) : [];
+        $currentSort = is_array($request->query($this->config->sortQueryName(), [])) ? $request->query($this->config->sortQueryName(), []) : [];
 
         return array_merge($currentSort, [$name => $direction->value]);
     }
