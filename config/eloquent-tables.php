@@ -21,6 +21,14 @@ return [
     'theme' => Theme::Bootstrap5,
 
     /*
+     * Data namespace
+     * --------------------------------
+     * Eloquent Tables uses data attributes to store information about the table state. This option allows you to use
+     * a different namespace for these attributes to avoid conflicts with other libraries or your own custom attributes.
+     */
+    'data-namespace' => 'et',
+
+    /*
      * Search options
      * --------------------------------
      * Searching is automatically enabled when one or more columns on a table are marked as searchable.
@@ -50,10 +58,8 @@ return [
      * --------------------------------
      * This package shows icons in various places. You can customise the icons shown here.
      *
-     * We recommend using the Blade Icons package, though you are free to use any other icon library you prefer. The
-     * icons defined here should be either a string or a Stringable object.
-     *
-     * When using HTML encoded strings, warp them in a HtmlString object.
+     * The icons defined here should be either a string or a Stringable object. When using HTML encoded strings, wrap
+     * them in a HtmlString object.
      */
     'icons' => [
         'search'    => new HtmlString('&#x1F50E;&#xFE0E;'),

@@ -18,3 +18,4 @@ Planned languages:
 If you want to use your own translations, you can add these translation keys to your translation files:
 
 - `You are not authorized to view this table.`
+- `Are you sure?`

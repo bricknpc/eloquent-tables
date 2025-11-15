@@ -12,7 +12,6 @@ abstract class Action
      * @param ButtonStyle[] $styles
      */
     public function __construct(
-        public string $action,
         public string|\Stringable|null $label = null,
         public array $styles = [],
     ) {}

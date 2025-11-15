@@ -32,6 +32,7 @@ readonly class TableViewBuilder
         private ColumnLabelViewBuilder $columnLabelViewBuilder,
         private ColumnValueViewBuilder $columnValueViewBuilder,
         private TableActionViewBuilder $tableActionViewBuilder,
+        private RowActionBuilder $rowActionBuilder,
         private Factory $viewFactory,
         private LayoutFinder $layoutFinder,
         private Config $config,
@@ -83,6 +84,8 @@ readonly class TableViewBuilder
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
             'searchIcon'              => $this->config->searchIcon(),
+            'rowActions'              => $table->rowActions(),
+            'rowActionBuilder'        => $this->rowActionBuilder,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);

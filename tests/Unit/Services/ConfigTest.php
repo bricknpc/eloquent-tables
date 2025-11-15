@@ -27,6 +27,16 @@ class ConfigTest extends TestCase
         $this->assertSame(Theme::Bootstrap5, $config->theme());
     }
 
+    public function test_it_returns_the_correct_data_namespace_when_set(): void
+    {
+        config()->set('eloquent-tables.data-namespace', 'namespace');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('namespace', $config->dataNamespace());
+    }
+
     public function test_it_returns_the_default_theme_when_none_set(): void
     {
         config()->set('eloquent-tables.theme', null);

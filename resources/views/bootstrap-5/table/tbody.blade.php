@@ -17,6 +17,15 @@
                 @endphp
                 {{ $columnValueViewBuilder->build($request, $column, $row) }}
             @endforeach
+            @if(count($rowActions) > 0)
+                <td>
+                    <div class="btn-group">
+                        @foreach($rowActions as $action)
+                            {{ $rowActionBuilder->build($action, $request, $row) }}
+                        @endforeach
+                    </div>
+                </td>
+            @endif
         </tr>
     @endforeach
 </tbody>

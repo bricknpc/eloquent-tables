@@ -18,7 +18,6 @@ class TableAction extends Action
         public bool $asModal = false,
     ) {
         parent::__construct(
-            action: $action,
             label: $label,
             styles: $styles,
         );

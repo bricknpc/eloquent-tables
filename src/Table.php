@@ -9,6 +9,7 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Actions\RowAction;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Actions\TableAction;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -94,6 +95,14 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * @return TableAction[]
      */
     public function tableActions(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return RowAction[]
+     */
+    public function rowActions(): array
     {
         return [];
     }

@@ -24,6 +24,14 @@ readonly class Config
         return $theme;
     }
 
+    public function dataNamespace(): string
+    {
+        /** @var string $dataNamespace */
+        $dataNamespace = $this->config->get('eloquent-tables.data-namespace', 'et');
+
+        return $dataNamespace;
+    }
+
     public function searchQueryName(): string
     {
         /** @var string $searchQueryName */

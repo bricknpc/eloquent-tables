@@ -14,5 +14,8 @@
         @foreach($columns as $column)
             {{ $columnLabelViewBuilder->build($request, $column) }}
         @endforeach
+        @if(count($rowActions) > 0)
+            <th>&nbsp;</th>
+        @endif
     </tr>
 </thead>
