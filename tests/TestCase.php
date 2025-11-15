@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Tests;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +25,9 @@ abstract class TestCase extends BaseTestCase
             $table->string('email')->unique();
             $table->timestamps();
         });
+
+        // Mock the Blade Icons components
+        Blade::component('blade-icon', '');
     }
 
     protected function tearDown(): void

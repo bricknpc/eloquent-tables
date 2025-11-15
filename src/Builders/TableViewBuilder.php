@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables\Builders;
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
 use Illuminate\Support\Collection;
+use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -77,6 +78,10 @@ readonly class TableViewBuilder
             'tableActionCount'        => count($table->tableActions()),
             'tableActions'            => $table->tableActions(),
             'tableActionViewBuilder'  => $this->tableActionViewBuilder,
+            'showSearchForm'          => $this->hasSearchableColumns($table->columns()),
+            'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
+            'searchQuery'             => $request->query($this->config->searchQueryName()),
+            'searchQueryName'         => $this->config->searchQueryName(),
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
@@ -106,5 +111,16 @@ readonly class TableViewBuilder
         $theme = $this->config->theme();
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView()); // @phpstan-ignore-line
+    }
+
+    /**
+     * @param Column[] $columns
+     */
+    private function hasSearchableColumns(array $columns): bool
+    {
+        return collect($columns)
+            ->filter(fn (Column $column) => $column->searchable)
+            ->isNotEmpty()
+        ;
     }
 }

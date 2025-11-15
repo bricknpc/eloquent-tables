@@ -230,4 +230,37 @@ class TableViewBuilderTest extends TestCase
         $this->assertCount(15, $viewData['rows']);
         $this->assertNotNull($viewData['links']);
     }
+
+    public function test_it_shows_search_form_when_there_are_searchable_columns(): void
+    {
+        /** @var TableViewBuilder $builder */
+        $builder = $this->app->make(TableViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $table = new class extends Table {
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->searchable(),
+                ];
+            }
+        };
+
+        $view = $builder->build($table, $request);
+
+        $viewData = $view->getData();
+
+        $this->assertArrayHasKey('showSearchForm', $viewData);
+        $this->assertTrue($viewData['showSearchForm']);
+        $this->assertArrayHasKey('tableSearchUrl', $viewData);
+        $this->assertArrayHasKey('searchQuery', $viewData);
+        $this->assertArrayHasKey('searchQueryName', $viewData);
+    }
 }
