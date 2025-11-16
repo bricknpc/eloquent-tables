@@ -14,6 +14,10 @@
                 data-{{ $dataNamespace }}-confirm-value="{{ $confirmValue }}"
             @endif
         @endif
+        @if($tooltip)
+            data-bs-toggle="tooltip"
+            data-bs-title="{{ $tooltip }}"
+        @endif
     >{{ $label }}</button>
 @else
     <a
@@ -24,6 +28,10 @@
             @if($confirmValue)
                 data-{{ $dataNamespace }}-confirm-value="{{ $confirmValue }}"
             @endif
+        @endif
+        @if($tooltip)
+            data-bs-toggle="tooltip"
+            data-bs-title="{{ $tooltip }}"
         @endif
     >{{ $label }}</a>
 @endif

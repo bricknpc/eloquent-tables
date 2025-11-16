@@ -32,4 +32,6 @@ class TableActionViewBuilderTest extends TestCase
 
         $this->assertSame('eloquent-tables::action.table-action', $view->name());
     }
+
+    // todo: test each individual data item
 }

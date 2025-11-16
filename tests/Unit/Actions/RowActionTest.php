@@ -41,6 +41,24 @@ class RowActionTest extends TestCase
         $this->assertSame([ButtonStyle::DarkOutline, ButtonStyle::Link], $action->styles);
     }
 
+    public function test_it_sets_tooltip_through_constructor_or_fluent_setter(): void
+    {
+        $action = new RowAction(action: '#');
+        $this->assertNull($action->tooltip);
+
+        $action2 = new RowAction(action: '#', tooltip: 'tooltip');
+        $this->assertSame('tooltip', $action2->tooltip);
+
+        $action3 = new RowAction(action: '#')->tooltip('tooltip');
+        $this->assertSame('tooltip', $action3->tooltip);
+
+        $action4 = new RowAction(action: '#', tooltip: fn () => 'tooltip');
+        $this->assertInstanceOf(\Closure::class, $action4->tooltip);
+
+        $action5 = new RowAction(action: '#')->tooltip(fn () => 'tooltip');
+        $this->assertInstanceOf(\Closure::class, $action5->tooltip);
+    }
+
     public function test_it_sets_as_form_through_constructor_or_fluent_setter(): void
     {
         $action = new RowAction(action: '#');

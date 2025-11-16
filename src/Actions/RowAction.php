@@ -14,6 +14,7 @@ class RowAction extends Action
 {
     /**
      * @param \Closure(Model $model): string|string           $action
+     * @param null|\Closure(Model $model): string|string      $tooltip
      * @param ButtonStyle[]                                   $styles
      * @param ?\Closure(Request $request, Model $model): bool $authorize
      * @param ?\Closure(Model $model): bool                   $when
@@ -22,6 +23,7 @@ class RowAction extends Action
     public function __construct(
         public \Closure|string $action,
         public Htmlable|string|\Stringable|null $label = null,
+        public \Closure|string|null $tooltip = null,
         public array $styles = [],
         public bool $asForm = false,
         public ?Method $method = null,
@@ -34,6 +36,16 @@ class RowAction extends Action
             label: $label,
             styles: $styles,
         );
+    }
+
+    /**
+     * @param \Closure(Model $model): string|string $tooltip
+     */
+    public function tooltip(\Closure|string $tooltip): self
+    {
+        $this->tooltip = $tooltip;
+
+        return $this;
     }
 
     public function asForm(Method $method = Method::Post): self

@@ -12,7 +12,7 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Actions\RowAction;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
-readonly class RowActionBuilder
+readonly class RowActionViewBuilder
 {
     public function __construct(
         private Factory $viewFactory,
@@ -36,10 +36,11 @@ readonly class RowActionBuilder
             'action'        => is_string($action->action) ? $action->action : call_user_func($action->action, $model),
             'styles'        => collect($action->styles)->map(fn (ButtonStyle $style) => $style->toCssClass($this->config->theme()))->implode(' '),
             'label'         => $action->label,
-            'confirm'       => $action->confirm,
+            'confirm'       => $this->getConfirm($action, $model),
             'confirmValue'  => $action->confirmValue,
             'asForm'        => $action->asForm,
             'method'        => $action->method,
+            'tooltip'       => $this->getTooltip($action, $model),
         ]);
     }
 
@@ -68,5 +69,15 @@ readonly class RowActionBuilder
         $random   = uniqid();
 
         return sprintf('%s-%s-%s', $objectId, $modelId, $random);
+    }
+
+    private function getConfirm(RowAction $action, Model $model): ?string
+    {
+        return !$action->confirm instanceof \Closure ? $action->confirm : call_user_func($action->confirm, $model);
+    }
+
+    private function getTooltip(RowAction $action, Model $model): ?string
+    {
+        return !$action->tooltip instanceof \Closure ? $action->tooltip : call_user_func($action->tooltip, $model);
     }
 }

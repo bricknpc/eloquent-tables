@@ -20,10 +20,10 @@ use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
-use BrickNPC\EloquentTables\Builders\RowActionBuilder;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Builders\RowActionViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
@@ -35,7 +35,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
 #[UsesClass(TableActionViewBuilder::class)]
-#[UsesClass(RowActionBuilder::class)]
+#[UsesClass(RowActionViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(Table::class)]

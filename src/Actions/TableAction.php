@@ -16,12 +16,20 @@ class TableAction extends Action
         public string $action,
         public Htmlable|string|\Stringable|null $label = null,
         public array $styles = [],
+        public ?string $tooltip = null,
         public bool $asModal = false,
     ) {
         parent::__construct(
             label: $label,
             styles: $styles,
         );
+    }
+
+    public function tooltip(string $tooltip): self
+    {
+        $this->tooltip = $tooltip;
+
+        return $this;
     }
 
     public function asModal(): self

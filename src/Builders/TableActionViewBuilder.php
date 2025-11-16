@@ -25,6 +25,7 @@ readonly class TableActionViewBuilder
             'styles'  => collect($action->styles)->map(fn (ButtonStyle $style) => $style->toCssClass($this->config->theme()))->implode(' '),
             'label'   => $action->label,
             'asModal' => $action->asModal,
+            'tooltip' => $action->tooltip,
         ]);
     }
 }

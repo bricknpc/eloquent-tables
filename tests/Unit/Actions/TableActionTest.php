@@ -49,4 +49,16 @@ class TableActionTest extends TestCase
         $action3 = new TableAction(action: '#')->asModal();
         $this->assertTrue($action3->asModal);
     }
+
+    public function test_it_sets_tooltip_through_constructor_or_fluent_setter(): void
+    {
+        $action = new TableAction(action: '#');
+        $this->assertNull($action->tooltip);
+
+        $action2 = new TableAction(action: '#', tooltip: 'tooltip');
+        $this->assertSame('tooltip', $action2->tooltip);
+
+        $action3 = new TableAction(action: '#')->tooltip('tooltip');
+        $this->assertSame('tooltip', $action3->tooltip);
+    }
 }
