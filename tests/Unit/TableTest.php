@@ -23,6 +23,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Builders\RowActionViewBuilder;
+use BrickNPC\EloquentTables\Builders\MassActionViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
@@ -45,6 +46,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(TableStyle::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(RowsBuilder::class)]
+#[UsesClass(MassActionViewBuilder::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void

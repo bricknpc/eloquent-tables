@@ -3,5 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.table')
-@include('eloquent-tables::js')
+@include('eloquent-tables::' . $theme->value . '.action.mass-action')

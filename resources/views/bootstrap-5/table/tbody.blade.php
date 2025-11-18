@@ -11,13 +11,18 @@
 <tbody>
     @foreach($rows as $row)
         <tr>
+            @if($massActionCount > 0)
+                <td class="text-center">
+                    <input type="checkbox" name="selected[]" value="{{ $row->getKey() }}" />
+                </td>
+            @endif
             @foreach($columns as $column)
                 @php
                     /** @var Model $row */
                 @endphp
                 {{ $columnValueViewBuilder->build($request, $column, $row) }}
             @endforeach
-            @if(count($rowActions) > 0)
+            @if($rowActionCount > 0)
                 <td>
                     <div class="btn-group">
                         @foreach($rowActions as $action)

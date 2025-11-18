@@ -24,6 +24,7 @@ use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Builders\RowActionViewBuilder;
+use BrickNPC\EloquentTables\Builders\MassActionViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
@@ -46,6 +47,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(Theme::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(RowsBuilder::class)]
+#[UsesClass(MassActionViewBuilder::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

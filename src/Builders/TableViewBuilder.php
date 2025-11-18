@@ -15,7 +15,6 @@ use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
-use BrickNPC\EloquentTables\Concerns\WithPagination;
 
 /**
  * <todo>
@@ -37,6 +36,7 @@ readonly class TableViewBuilder
         private LayoutFinder $layoutFinder,
         private Config $config,
         private RowsBuilder $rowsBuilder,
+        private MassActionViewBuilder $massActionViewBuilder,
     ) {}
 
     public function build(Table $table, Request $request): View
@@ -65,10 +65,11 @@ readonly class TableViewBuilder
         $theme = $this->config->theme();
 
         $viewData = [
-            'id'          => spl_object_id($table),
-            'theme'       => $theme,
-            'request'     => $request,
-            'tableStyles' => collect($table->tableStyles())
+            'id'            => spl_object_id($table),
+            'theme'         => $theme,
+            'dataNamespace' => $this->config->dataNamespace(),
+            'request'       => $request,
+            'tableStyles'   => collect($table->tableStyles())
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
             'columns'                 => $table->columns(),
@@ -84,8 +85,12 @@ readonly class TableViewBuilder
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
             'searchIcon'              => $this->config->searchIcon(),
+            'rowActionCount'          => count($table->rowActions()),
             'rowActions'              => $table->rowActions(),
             'rowActionBuilder'        => $this->rowActionBuilder,
+            'massActionCount'         => count($table->massActions()),
+            'massActions'             => $table->massActions(),
+            'massActionViewBuilder'   => $this->massActionViewBuilder,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
