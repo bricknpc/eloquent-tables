@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Actions\RowAction;
@@ -20,6 +21,9 @@ use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * @template TModel of Model
+ */
 abstract class Table implements LoggerAwareInterface, \Stringable
 {
     use LoggerAwareTrait;
@@ -36,6 +40,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
     }
 
+    /**
+     * @var TableViewBuilder<TModel>
+     */
     public TableViewBuilder $builder {
         set(TableViewBuilder $value) {
             $this->builder = $value;
@@ -69,7 +76,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     abstract public function query(): Builder;
 
     /**
-     * @return Column[]
+     * @return Column<TModel>[]
      */
     abstract public function columns(): array;
 
@@ -105,7 +112,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * @return RowAction[]
+     * @return RowAction<TModel>[]
      */
     public function rowActions(): array
     {

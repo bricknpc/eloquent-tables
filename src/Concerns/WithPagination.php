@@ -6,9 +6,12 @@ namespace BrickNPC\EloquentTables\Concerns;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * @mixin Table
+ * @template TModel of Model
+ *
+ * @mixin Table<TModel>
  *
  * @phpstan-ignore trait.unused
  */

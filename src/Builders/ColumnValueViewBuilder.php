@@ -14,6 +14,9 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 
+/**
+ * @template TModel of Model
+ */
 readonly class ColumnValueViewBuilder
 {
     public function __construct(
@@ -22,6 +25,10 @@ readonly class ColumnValueViewBuilder
         private Config $config,
     ) {}
 
+    /**
+     * @param Column<TModel> $column
+     * @param TModel         $model
+     */
     public function build(Request $request, Column $column, Model $model): View
     {
         $theme = $this->config->theme();

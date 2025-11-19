@@ -9,8 +9,12 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
+use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 
+/**
+ * @template TModel of Model
+ */
 readonly class ColumnLabelViewBuilder
 {
     public function __construct(
@@ -18,6 +22,9 @@ readonly class ColumnLabelViewBuilder
         private Config $config,
     ) {}
 
+    /**
+     * @param Column<TModel> $column
+     */
     public function build(Request $request, Column $column): View
     {
         $sortDirection     = $this->sortDirectionForColumn($request, $column);
@@ -37,11 +44,17 @@ readonly class ColumnLabelViewBuilder
         ]);
     }
 
+    /**
+     * @param Column<TModel> $column
+     */
     private function getLabelValue(Column $column): string
     {
         return $column->label ?? str($column->name)->title()->value();
     }
 
+    /**
+     * @param Column<TModel> $column
+     */
     private function sortDirectionForColumn(Request $request, Column $column): ?Sort
     {
         /** @var array<string, string>|string $sort */

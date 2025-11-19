@@ -16,10 +16,13 @@ use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use Illuminate\Pagination\AbstractPaginator as Paginator;
 
+/**
+ * @template TModel of Model
+ */
 class RowsBuilder
 {
     /**
-     * @var Collection<int, Column>
+     * @var Collection<int, Column<TModel>>
      */
     private Collection $columns;
 
@@ -43,7 +46,10 @@ class RowsBuilder
             return $this->result;
         }
 
-        $this->columns = collect($table->columns());
+        /** @var Collection<int, Column<TModel>> $collected */
+        $collected = collect($table->columns());
+
+        $this->columns = $collected;
 
         $query = $table->query();
 
@@ -59,6 +65,9 @@ class RowsBuilder
         return $this->result = $result;
     }
 
+    /**
+     * @param Table<TModel> $table
+     */
     private function applyFilters(Builder $query, Table $table, Request $request): void
     {
         /** @var array<string, string>|string $filterRequest */

@@ -15,6 +15,13 @@ readonly class NumberFormatter implements Formatter
         private int $decimals = 2,
     ) {}
 
+    /**
+     * @template TModel of Model
+     *
+     * @param TModel $model
+     *
+     * @throws InvalidValueException
+     */
     public function format(mixed $value, Model $model): \Stringable
     {
         if (!is_numeric($value)) {

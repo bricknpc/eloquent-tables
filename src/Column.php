@@ -16,6 +16,9 @@ use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 
+/**
+ * @template TModel of Model
+ */
 class Column
 {
     /**
@@ -24,7 +27,7 @@ class Column
     private array $formatterParameters = [];
 
     /**
-     * @param null|\Closure(Model $model): \Stringable                                   $valueUsing
+     * @param null|\Closure(TModel $model): \Stringable                                  $valueUsing
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void     $sortUsing
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      * @param null|class-string<Formatter>|Formatter                                     $formatter
@@ -53,16 +56,16 @@ class Column
     }
 
     /**
-     * @param \Closure(Model $model): \Stringable $valueUsing
+     * @param \Closure(TModel $model): \Stringable $valueUsing
      */
-    public function valueUsing(\Closure $valueUsing): self
+    public function valueUsing(\Closure $valueUsing): static
     {
         $this->valueUsing = $valueUsing;
 
         return $this;
     }
 
-    public function label(string $label): self
+    public function label(string $label): static
     {
         $this->label = $label;
 
@@ -72,7 +75,7 @@ class Column
     /**
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void $sortUsing
      */
-    public function sortable(?\Closure $sortUsing = null, ?Sort $default = null): self
+    public function sortable(?\Closure $sortUsing = null, ?Sort $default = null): static
     {
         $this->sortable    = true;
         $this->sortUsing   = $sortUsing;
@@ -84,7 +87,7 @@ class Column
     /**
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      */
-    public function searchable(?\Closure $searchUsing = null): self
+    public function searchable(?\Closure $searchUsing = null): static
     {
         $this->searchable  = true;
         $this->searchUsing = $searchUsing;
@@ -108,24 +111,24 @@ class Column
     /**
      * @param class-string<Formatter>|Formatter $formatter
      */
-    public function format(Formatter|string $formatter): self
+    public function format(Formatter|string $formatter): static
     {
         $this->formatter = $formatter;
 
         return $this;
     }
 
-    public function date(): self
+    public function date(): static
     {
         return $this->format(DateFormatter::class);
     }
 
-    public function dateTime(): self
+    public function dateTime(): static
     {
         return $this->format(DateTimeFormatter::class);
     }
 
-    public function number(int $decimals = 0, ?string $locale = null): self
+    public function number(int $decimals = 0, ?string $locale = null): static
     {
         $this->formatterParameters = ['decimals' => $decimals];
 
@@ -136,7 +139,7 @@ class Column
         return $this->format(NumberFormatter::class);
     }
 
-    public function float(int $decimals = 2, ?string $locale = null): self
+    public function float(int $decimals = 2, ?string $locale = null): static
     {
         $this->formatterParameters = ['decimals' => $decimals];
 
@@ -147,7 +150,7 @@ class Column
         return $this->format(NumberFormatter::class);
     }
 
-    public function currency(?string $currency = null, ?string $locale = null): self
+    public function currency(?string $currency = null, ?string $locale = null): static
     {
         $this->formatterParameters = [];
 
@@ -162,31 +165,31 @@ class Column
         return $this->format(CurrencyFormatter::class);
     }
 
-    public function type(ColumnType $type): self
+    public function type(ColumnType $type): static
     {
         $this->type = $type;
 
         return $this;
     }
 
-    public function checkbox(): self
+    public function checkbox(): static
     {
         return $this->type(ColumnType::Checkbox);
     }
 
-    public function boolean(): self
+    public function boolean(): static
     {
         return $this->type(ColumnType::Boolean);
     }
 
-    public function styles(TableStyle ...$styles): self
+    public function styles(TableStyle ...$styles): static
     {
         $this->styles = array_merge($this->styles, $styles);
 
         return $this;
     }
 
-    public function style(TableStyle $style): self
+    public function style(TableStyle $style): static
     {
         $this->styles[] = $style;
 

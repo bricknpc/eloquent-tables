@@ -12,6 +12,9 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Actions\RowAction;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
+/**
+ * @template TModel of Model
+ */
 readonly class RowActionViewBuilder
 {
     public function __construct(
@@ -19,6 +22,10 @@ readonly class RowActionViewBuilder
         private Config $config,
     ) {}
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     public function build(RowAction $action, Request $request, Model $model): ?View
     {
         if (!$this->isAuthorized($action, $request, $model)) {
@@ -44,6 +51,10 @@ readonly class RowActionViewBuilder
         ]);
     }
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     private function isAuthorized(RowAction $action, Request $request, Model $model): bool
     {
         if (null === $action->authorize) {
@@ -53,6 +64,10 @@ readonly class RowActionViewBuilder
         return (bool) call_user_func($action->authorize, $request, $model);
     }
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     private function when(RowAction $action, Model $model): bool
     {
         if (null === $action->when) {
@@ -62,6 +77,10 @@ readonly class RowActionViewBuilder
         return (bool) call_user_func($action->when, $model);
     }
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     private function getId(RowAction $action, Model $model): string
     {
         $objectId = (string) spl_object_id($action);
@@ -71,11 +90,19 @@ readonly class RowActionViewBuilder
         return sprintf('%s-%s-%s', $objectId, $modelId, $random);
     }
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     private function getConfirm(RowAction $action, Model $model): ?string
     {
         return !$action->confirm instanceof \Closure ? $action->confirm : call_user_func($action->confirm, $model);
     }
 
+    /**
+     * @param RowAction<TModel> $action
+     * @param TModel            $model
+     */
     private function getTooltip(RowAction $action, Model $model): ?string
     {
         return !$action->tooltip instanceof \Closure ? $action->tooltip : call_user_func($action->tooltip, $model);

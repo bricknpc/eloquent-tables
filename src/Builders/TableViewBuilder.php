@@ -17,6 +17,8 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 
 /**
+ * @template TModel of Model
+ *
  * <todo>
  * All the ignore comments for PHPStan in this class are because of the fact that the WithPagination trait is
  * optional for tables. PHPStan does not have a valid way to handle this, so instead of writing a bunch of
@@ -27,6 +29,13 @@ use BrickNPC\EloquentTables\Services\LayoutFinder;
  */
 readonly class TableViewBuilder
 {
+    /**
+     * @param RowActionViewBuilder<TModel>   $rowActionBuilder
+     * @param ColumnLabelViewBuilder<TModel> $columnLabelViewBuilder
+     * @param ColumnValueViewBuilder<TModel> $columnValueViewBuilder
+     * @param LayoutFinder<TModel>           $layoutFinder
+     * @param RowsBuilder<TModel>            $rowsBuilder
+     */
     public function __construct(
         private ColumnLabelViewBuilder $columnLabelViewBuilder,
         private ColumnValueViewBuilder $columnValueViewBuilder,
@@ -40,6 +49,9 @@ readonly class TableViewBuilder
         private FilterViewBuilder $filterViewBuilder,
     ) {}
 
+    /**
+     * @param Table<TModel> $table
+     */
     public function build(Table $table, Request $request): View
     {
         return $this->viewFactory->make(
@@ -48,6 +60,9 @@ readonly class TableViewBuilder
         );
     }
 
+    /**
+     * @param Table<TModel> $table
+     */
     private function getViewFile(Table $table): string
     {
         $layout = $this->layoutFinder->getLayout($table);
@@ -59,6 +74,8 @@ readonly class TableViewBuilder
     }
 
     /**
+     * @param Table<TModel> $table
+     *
      * @return array<string, mixed>
      */
     private function getViewData(Table $table, Request $request): array
@@ -106,6 +123,8 @@ readonly class TableViewBuilder
     }
 
     /**
+     * @param Table<TModel> $table
+     *
      * @return Collection<int, Model>
      */
     private function getRows(Table $table, Request $request): Collection
@@ -115,6 +134,9 @@ readonly class TableViewBuilder
         return $results instanceof Collection ? $results : $results->getCollection();
     }
 
+    /**
+     * @param Table<TModel> $table
+     */
     private function getLinks(Table $table, Request $request): ?Htmlable
     {
         if (!$table->withPagination()) {
@@ -127,7 +149,7 @@ readonly class TableViewBuilder
     }
 
     /**
-     * @param Column[] $columns
+     * @param Column<TModel>[] $columns
      */
     private function hasSearchableColumns(array $columns): bool
     {

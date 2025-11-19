@@ -17,14 +17,14 @@ abstract class Action
         public array $styles = [],
     ) {}
 
-    public function label(Htmlable|string|\Stringable $label): self
+    public function label(Htmlable|string|\Stringable $label): static
     {
         $this->label = $label;
 
         return $this;
     }
 
-    public function styles(ButtonStyle ...$styles): self
+    public function styles(ButtonStyle ...$styles): static
     {
         $this->styles = array_merge($this->styles, $styles);
 

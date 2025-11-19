@@ -14,6 +14,11 @@ readonly class CurrencyFormatter implements Formatter
         private string $currency,
     ) {}
 
+    /**
+     * @template TModel of Model
+     *
+     * @param TModel $model
+     */
     public function format(mixed $value, Model $model): \Stringable
     {
         $formatter = new \NumberFormatter($this->locale, \NumberFormatter::CURRENCY);
