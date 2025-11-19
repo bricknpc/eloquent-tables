@@ -20,6 +20,13 @@
             </form>
         </div>
     @endif
+    @if($filterCount > 0)
+        <div class="d-flex align-items-center table-filters ms-3">
+            @foreach($filters as $filter)
+                {!! $filterViewBuilder->build($filter, $request) !!}
+            @endforeach
+        </div>
+    @endif
     @if($massActionCount > 0)
         <div class="d-flex align-items-center table-mass-actions ms-auto">
             @foreach($massActions as $massAction)

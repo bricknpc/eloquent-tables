@@ -48,6 +48,14 @@ readonly class Config
         return $searchQueryName;
     }
 
+    public function filterQueryName(): string
+    {
+        /** @var string $searchQueryName */
+        $searchQueryName = $this->config->get('eloquent-tables.filtering.query_name', 'filter');
+
+        return $searchQueryName;
+    }
+
     public function searchIcon(): string|\Stringable
     {
         return $this->icon('search', "\u{1F50D}");

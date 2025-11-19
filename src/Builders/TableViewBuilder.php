@@ -37,6 +37,7 @@ readonly class TableViewBuilder
         private Config $config,
         private RowsBuilder $rowsBuilder,
         private MassActionViewBuilder $massActionViewBuilder,
+        private FilterViewBuilder $filterViewBuilder,
     ) {}
 
     public function build(Table $table, Request $request): View
@@ -91,6 +92,9 @@ readonly class TableViewBuilder
             'massActionCount'         => count($table->massActions()),
             'massActions'             => $table->massActions(),
             'massActionViewBuilder'   => $this->massActionViewBuilder,
+            'filterCount'             => count($table->filters()),
+            'filters'                 => $table->filters(),
+            'filterViewBuilder'       => $this->filterViewBuilder,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);

@@ -24,3 +24,4 @@ If you want to use your own translations, you can add these translation keys to 
 - `Yes, confirm`
 - `Close`
 - `To confirm this action, please type the text <code>:confirmValue</code> into the textbox below.`
+- `Filter on :name`

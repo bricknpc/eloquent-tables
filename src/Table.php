@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
+use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Actions\RowAction;
 use Symfony\Component\HttpFoundation\Response;
@@ -77,10 +78,13 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * behaviour. That is why they are not marked as abstract.
      */
 
-    //    public function filters(): array
-    //    {
-    //        return [];
-    //    }
+    /**
+     * @return Filter[]
+     */
+    public function filters(): array
+    {
+        return [];
+    }
 
     /**
      * @return TableStyle[]

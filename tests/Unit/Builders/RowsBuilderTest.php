@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
+use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
@@ -29,6 +30,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 #[UsesClass(Config::class)]
 #[UsesClass(Column::class)]
 #[UsesClass(WithPagination::class)]
+#[UsesClass(Filter::class)]
 class RowsBuilderTest extends TestCase
 {
     protected function setUp(): void
@@ -243,6 +245,115 @@ class RowsBuilderTest extends TestCase
         $this->assertInstanceOf(Collection::class, $rows);
         $this->assertCount(50, $rows);
         $this->assertSame('Test Model 49', $rows[0]->name);
+    }
+
+    public function test_it_applies_filters(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('name', []),
+                ];
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('filter', ['name' => 'Test Model 01']);
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(1, $rows);
+        $this->assertSame('Test Model 01', $rows[0]->name);
+    }
+
+    public function test_empty_filter_is_not_applied(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('name', []),
+                ];
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('filter', ['name' => '']);
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(50, $rows);
+    }
+
+    public function test_invalid_filter_is_not_applied(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('name', []),
+                ];
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('filter', 'invalid');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(50, $rows);
     }
 
     public function test_it_returns_paginator_for_tables_with_pagination(): void

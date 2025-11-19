@@ -67,6 +67,16 @@ class ConfigTest extends TestCase
         $this->assertSame('s', $config->sortQueryName());
     }
 
+    public function test_it_returns_the_correct_filter_query_name(): void
+    {
+        config()->set('eloquent-tables.filtering.query_name', 'f');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('f', $config->filterQueryName());
+    }
+
     #[DataProvider('iconProvider')]
     public function test_it_returns_the_correct_icons(string $method, string $name, string|\Stringable $value): void
     {

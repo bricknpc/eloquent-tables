@@ -6,4 +6,7 @@ namespace BrickNPC\EloquentTables\Tests\Resources;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TestModel extends Model {}
+class TestModel extends Model
+{
+    protected $fillable = ['*'];
+}

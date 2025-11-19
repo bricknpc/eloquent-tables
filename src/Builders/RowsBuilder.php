@@ -11,6 +11,7 @@ use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use Illuminate\Pagination\AbstractPaginator as Paginator;
@@ -58,7 +59,30 @@ class RowsBuilder
         return $this->result = $result;
     }
 
-    private function applyFilters(Builder $query, Table $table, Request $request): void {}
+    private function applyFilters(Builder $query, Table $table, Request $request): void
+    {
+        /** @var array<string, string>|string $filterRequest */
+        $filterRequest = $request->query('filter', []);
+
+        if (!is_array($filterRequest)) {
+            $filterRequest = [];
+        }
+
+        foreach ($filterRequest as $key => $value) {
+            if (empty($value)) {
+                unset($filterRequest[$key]);
+            }
+        }
+
+        collect($table->filters())
+            ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
+            ->each(fn (Filter $filter) => $filter(
+                $request,
+                $query,
+                $filterRequest[$filter->name],
+            ))
+        ;
+    }
 
     private function applySort(Builder $query, Request $request): void
     {

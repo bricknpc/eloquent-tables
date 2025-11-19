@@ -54,6 +54,19 @@ return [
     ],
 
     /*
+     * Filtering options
+     * --------------------------------
+     * Filtering is automatically enabled when one or more filters are defined on a table.
+     */
+    'filtering' => [
+        /*
+         * The name of the query parameter used for filtering. The filter query parameter is an array where the keys are
+         * the names of the filters and the values are the filter values.
+         */
+        'query_name' => 'filter',
+    ],
+
+    /*
      * Icons
      * --------------------------------
      * This package shows icons in various places. You can customise the icons shown here.
