@@ -47,5 +47,59 @@
                 }
             });
         });
+
+        document.querySelectorAll('[data-{{ $dataNamespace }}-confirm="true"]').forEach(element => {
+            if (element.tagName === 'FORM') {
+                element.addEventListener('submit', submitEvent => {
+                    submitEvent.preventDefault();
+
+                    if(bootstrapLoaded && element.hasAttribute('data-{{ $dataNamespace }}-confirm')) {
+                        const modalElement = document.querySelector(element.getAttribute('data-{{ $dataNamespace }}-confirm-target'));
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+
+                        modalElement.querySelector('[data-{{ $dataNamespace }}-confirm-submit="true"]').addEventListener('click', event => {
+                            if(element.hasAttribute('data-{{ $dataNamespace }}-confirm-value')) {
+                                const confirmValue = element.getAttribute('data-{{ $dataNamespace }}-confirm-value');
+                                const confirmValueInput = document.querySelector('#'+element.getAttribute('data-{{ $dataNamespace }}-confirm-value-input'));
+
+                                if (confirmValueInput.value !== confirmValue) {
+                                    confirmValueInput.classList.add('is-invalid');
+
+                                    return;
+                                }
+                            }
+
+                            element.submit();
+                        });
+                    }
+                });
+            } else {
+                element.addEventListener('click', clickEvent => {
+                    clickEvent.preventDefault();
+
+                    if(bootstrapLoaded && element.hasAttribute('data-{{ $dataNamespace }}-confirm')) {
+                        const modalElement = document.querySelector(element.getAttribute('data-{{ $dataNamespace }}-confirm-target'));
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+
+                        modalElement.querySelector('[data-{{ $dataNamespace }}-confirm-submit="true"]').addEventListener('click', event => {
+                            if(element.hasAttribute('data-{{ $dataNamespace }}-confirm-value')) {
+                                const confirmValue = element.getAttribute('data-{{ $dataNamespace }}-confirm-value');
+                                const confirmValueInput = document.querySelector('#'+element.getAttribute('data-{{ $dataNamespace }}-confirm-value-input'));
+
+                                if (confirmValueInput.value !== confirmValue) {
+                                    confirmValueInput.classList.add('is-invalid');
+
+                                    return;
+                                }
+                            }
+
+                            document.location.href = element.getAttribute('href');
+                        });
+                    }
+                })
+            }
+        });
     });
 </script>

@@ -6,10 +6,10 @@
     data-{{ $dataNamespace }}-mass-action-form="true"
     @if($confirm)
         data-{{ $dataNamespace }}-confirm="true"
-        data-{{ $dataNamespace }}-confirm-target="#mass-delete-confirm-{{ $id }}"
+        data-{{ $dataNamespace }}-confirm-target="#mass-action-confirm-{{ $id }}"
         @if($confirmValue)
             data-{{ $dataNamespace }}-confirm-value="{{ $confirmValue }}"
-        data-{{ $dataNamespace }}-confirm-value-input="confirm-value-{{ $id }}"
+            data-{{ $dataNamespace }}-confirm-value-input="confirm-value-{{ $id }}"
         @endif
     @endif
 >
@@ -25,7 +25,7 @@
         @endif
     >{{ $label }}</button>
     @if($confirm)
-        <div class="modal" id="mass-delete-confirm-{{ $id }}">
+        <div class="modal" id="mass-action-confirm-{{ $id }}">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-body">
