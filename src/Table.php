@@ -15,11 +15,11 @@ use BrickNPC\EloquentTables\Actions\RowAction;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Actions\MassAction;
 use BrickNPC\EloquentTables\Actions\TableAction;
-use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Translation\Translator;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 
 /**
  * @template TModel of Model
@@ -49,18 +49,38 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         }
     }
 
+    /**
+     * @throws MissingMethodException
+     * @throws HttpException
+     */
     public function __invoke(): View
     {
         return $this->render();
     }
 
+    /**
+     * @throws MissingMethodException
+     * @throws HttpException
+     */
     public function __toString(): string
     {
         return $this->render()->render();
     }
 
+    /**
+     * @throws MissingMethodException
+     * @throws HttpException
+     */
     public function render(): View
     {
+        if (!method_exists($this, 'query')) {
+            throw MissingMethodException::forMethod('query');
+        }
+
+        if (!method_exists($this, 'columns')) {
+            throw MissingMethodException::forMethod('columns');
+        }
+
         if (!$this->authorize($this->request)) {
             $this->unauthorized();
         }
@@ -72,13 +92,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     {
         return in_array(WithPagination::class, class_uses_recursive(static::class), true);
     }
-
-    abstract public function query(): Builder;
-
-    /**
-     * @return Column<TModel>[]
-     */
-    abstract public function columns(): array;
 
     /*
      * These functions are supposed to be overwritten by the user, but they are not required or have some default

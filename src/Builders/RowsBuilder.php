@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Services\MethodInvoker;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use Illuminate\Pagination\AbstractPaginator as Paginator;
 
@@ -33,6 +34,7 @@ class RowsBuilder
 
     public function __construct(
         private readonly Config $config,
+        private readonly MethodInvoker $methodInvoker,
     ) {}
 
     /**
@@ -46,12 +48,16 @@ class RowsBuilder
             return $this->result;
         }
 
+        /** @var array<int, Column<TModel>> $columns */
+        $columns = $this->methodInvoker->call($table, 'columns');
+
         /** @var Collection<int, Column<TModel>> $collected */
-        $collected = collect($table->columns());
+        $collected = collect($columns);
 
         $this->columns = $collected;
 
-        $query = $table->query();
+        /** @var Builder $query */
+        $query = $this->methodInvoker->call($table, 'query');
 
         $this->applySearch($query, $request);
         $this->applyFilters($query, $table, $request);

@@ -15,6 +15,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Services\MethodInvoker;
 
 /**
  * @template TModel of Model
@@ -47,6 +48,7 @@ readonly class TableViewBuilder
         private RowsBuilder $rowsBuilder,
         private MassActionViewBuilder $massActionViewBuilder,
         private FilterViewBuilder $filterViewBuilder,
+        private MethodInvoker $methodInvoker,
     ) {}
 
     /**
@@ -82,6 +84,9 @@ readonly class TableViewBuilder
     {
         $theme = $this->config->theme();
 
+        /** @var Column<TModel>[] $columns */
+        $columns = $this->methodInvoker->call($table, 'columns');
+
         $viewData = [
             'id'            => spl_object_id($table),
             'theme'         => $theme,
@@ -90,7 +95,7 @@ readonly class TableViewBuilder
             'tableStyles'   => collect($table->tableStyles())
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
-            'columns'                 => $table->columns(),
+            'columns'                 => $columns,
             'columnLabelViewBuilder'  => $this->columnLabelViewBuilder,
             'rows'                    => $this->getRows($table, $request),
             'columnValueViewBuilder'  => $this->columnValueViewBuilder,
@@ -98,7 +103,7 @@ readonly class TableViewBuilder
             'tableActionCount'        => count($table->tableActions()),
             'tableActions'            => $table->tableActions(),
             'tableActionViewBuilder'  => $this->tableActionViewBuilder,
-            'showSearchForm'          => $this->hasSearchableColumns($table->columns()),
+            'showSearchForm'          => $this->hasSearchableColumns($columns),
             'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
