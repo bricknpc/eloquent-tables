@@ -15,7 +15,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
-use BrickNPC\EloquentTables\Services\MethodInvoker;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 
 /**
  * @template TModel of Model
@@ -48,7 +48,7 @@ readonly class TableViewBuilder
         private RowsBuilder $rowsBuilder,
         private MassActionViewBuilder $massActionViewBuilder,
         private FilterViewBuilder $filterViewBuilder,
-        private MethodInvoker $methodInvoker,
+        private RouteModelBinder $methodInvoker,
     ) {}
 
     /**

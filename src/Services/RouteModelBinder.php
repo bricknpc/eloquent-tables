@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Container\Container;
 
-readonly class MethodInvoker
+readonly class RouteModelBinder
 {
     public function __construct(
         private Container $container,

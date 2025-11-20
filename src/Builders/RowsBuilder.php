@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
-use BrickNPC\EloquentTables\Services\MethodInvoker;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use Illuminate\Pagination\AbstractPaginator as Paginator;
 
 /**
@@ -34,7 +34,7 @@ class RowsBuilder
 
     public function __construct(
         private readonly Config $config,
-        private readonly MethodInvoker $methodInvoker,
+        private readonly RouteModelBinder $methodInvoker,
     ) {}
 
     /**
