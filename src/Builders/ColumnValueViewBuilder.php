@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
@@ -44,12 +45,14 @@ readonly class ColumnValueViewBuilder
         }
 
         return $this->viewFactory->make('eloquent-tables::table.td', [
-            'theme'     => $theme,
-            'value'     => $value,
-            'styles'    => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
-            'type'      => $column->type,
-            'checkIcon' => $this->config->checkIcon(),
-            'crossIcon' => $this->config->crossIcon(),
+            'theme'          => $theme,
+            'value'          => $value,
+            'styles'         => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
+            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
+            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
+            'type'           => $column->type,
+            'checkIcon'      => $this->config->checkIcon(),
+            'crossIcon'      => $this->config->crossIcon(),
         ]);
     }
 }

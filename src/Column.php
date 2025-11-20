@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables;
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
@@ -32,6 +33,7 @@ class Column
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      * @param null|class-string<Formatter>|Formatter                                     $formatter
      * @param TableStyle[]                                                               $styles
+     * @param CellStyle[]                                                                $cellStyles
      */
     public function __construct(
         public string $name,
@@ -45,6 +47,7 @@ class Column
         public Formatter|string|null $formatter = null,
         public ?ColumnType $type = ColumnType::Text,
         public array $styles = [],
+        public array $cellStyles = [],
     ) {}
 
     /**
@@ -189,9 +192,9 @@ class Column
         return $this;
     }
 
-    public function style(TableStyle $style): static
+    public function cellStyles(CellStyle ...$cellStyles): static
     {
-        $this->styles[] = $style;
+        $this->cellStyles = array_merge($this->cellStyles, $cellStyles);
 
         return $this;
     }

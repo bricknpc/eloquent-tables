@@ -1,1 +1,1 @@
-{{ $value }}
+<div class="{{ $cellStyles }}">{{ $value }}</div>

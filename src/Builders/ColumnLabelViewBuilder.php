@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 
 /**
@@ -27,21 +28,24 @@ readonly class ColumnLabelViewBuilder
      */
     public function build(Request $request, Column $column): View
     {
+        $theme             = $this->config->theme();
         $sortDirection     = $this->sortDirectionForColumn($request, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
 
         return $this->viewFactory->make('eloquent-tables::table.th', [
-            'theme'         => $this->config->theme(),
-            'label'         => $this->getLabelValue($column),
-            'sortable'      => $column->sortable,
-            'searchable'    => $column->searchable,
-            'isSorted'      => null !== $sortDirection,
-            'sortDirection' => $sortDirection,
-            'href'          => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
-            'iconNone'      => $this->config->sortNoneIcon(),
-            'iconAsc'       => $this->config->sortAscIcon(),
-            'iconDesc'      => $this->config->sortDescIcon(),
-            'type'          => $column->type,
+            'theme'          => $theme,
+            'label'          => $this->getLabelValue($column),
+            'sortable'       => $column->sortable,
+            'searchable'     => $column->searchable,
+            'isSorted'       => null !== $sortDirection,
+            'sortDirection'  => $sortDirection,
+            'href'           => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
+            'iconNone'       => $this->config->sortNoneIcon(),
+            'iconAsc'        => $this->config->sortAscIcon(),
+            'iconDesc'       => $this->config->sortDescIcon(),
+            'type'           => $column->type,
+            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
+            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
         ]);
     }
 

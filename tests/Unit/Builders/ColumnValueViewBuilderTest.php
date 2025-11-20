@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
@@ -27,6 +28,7 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(Config::class)]
 #[UsesClass(ColumnType::class)]
 #[UsesClass(TableStyle::class)]
+#[UsesClass(CellStyle::class)]
 class ColumnValueViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -110,6 +112,25 @@ class ColumnValueViewBuilderTest extends TestCase
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('styles', $view->getData());
         $this->assertSame('table-active table-dark', $view->getData()['styles']);
+    }
+
+    public function test_it_renders_the_correct_cell_styles(): void
+    {
+        /** @var ColumnValueViewBuilder $builder */
+        $builder = $this->app->make(ColumnValueViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $model   = new class extends Model {};
+        $column  = new Column('name')->cellStyles(CellStyle::AlignCenter, CellStyle::AlignBetween);
+
+        $view = $builder->build($request, $column, $model);
+
+        $this->assertIsArray($view->getData());
+        $this->assertArrayHasKey('cellStyles', $view->getData());
+        $this->assertSame('text-center ', $view->getData()['cellStyles']);
+        $this->assertArrayHasKey('cellStylesFlex', $view->getData());
+        $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStylesFlex']);
     }
 
     public function test_it_renders_the_correct_type(): void

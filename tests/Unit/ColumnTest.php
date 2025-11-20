@@ -11,6 +11,7 @@ use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -369,10 +370,20 @@ class ColumnTest extends TestCase
         $column3 = new Column(name: 'name', styles: [TableStyle::Dark])->styles(TableStyle::Striped, TableStyle::Active);
         $this->assertCount(3, $column3->styles);
         $this->assertSame([TableStyle::Dark, TableStyle::Striped, TableStyle::Active], $column3->styles);
+    }
 
-        $column4 = new Column(name: 'name', styles: [TableStyle::Dark])->styles(TableStyle::Striped, TableStyle::Active)->style(TableStyle::Info);
-        $this->assertCount(4, $column4->styles);
-        $this->assertSame([TableStyle::Dark, TableStyle::Striped, TableStyle::Active, TableStyle::Info], $column4->styles);
+    public function test_fluent_setters_set_correct_cell_styles(): void
+    {
+        $column = new Column(name: 'name');
+        $this->assertEmpty($column->cellStyles);
+
+        $column2 = new Column(name: 'name', cellStyles: [CellStyle::AlignBetween]);
+        $this->assertCount(1, $column2->cellStyles);
+        $this->assertSame([CellStyle::AlignBetween], $column2->cellStyles);
+
+        $column3 = new Column(name: 'name', cellStyles: [CellStyle::AlignBetween])->cellStyles(CellStyle::AlignCenter, CellStyle::AlignMiddle);
+        $this->assertCount(3, $column3->cellStyles);
+        $this->assertSame([CellStyle::AlignBetween, CellStyle::AlignCenter, CellStyle::AlignMiddle], $column3->cellStyles);
     }
 
     public function test_non_searchable_column_does_not_search_in_column(): void
