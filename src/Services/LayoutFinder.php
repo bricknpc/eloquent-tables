@@ -43,7 +43,7 @@ class LayoutFinder
         $reflection = new \ReflectionClass($table);
         $attributes = $reflection->getAttributes(Layout::class);
 
-        if (0 === count($attributes)) {
+        if (count($attributes) === 0) {
             return null;
         }
 

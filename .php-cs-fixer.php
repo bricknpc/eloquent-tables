@@ -31,4 +31,5 @@ return $config->setRules([
     'php_unit_method_casing'              => ['case' => 'snake_case'],
     'trailing_comma_in_multiline'         => ['elements' => ['arguments', 'arrays', 'match', 'parameters']],
     'new_with_parentheses'                => ['anonymous_class' => false, 'named_class' => true],
+    'yoda_style'                          => ['equal' => false, 'identical' => false, 'less_and_greater' => false],
 ])->setFinder($finder)->setParallelConfig($parallelConfig);

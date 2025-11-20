@@ -57,7 +57,7 @@ readonly class RowActionViewBuilder
      */
     private function isAuthorized(RowAction $action, Request $request, Model $model): bool
     {
-        if (null === $action->authorize) {
+        if ($action->authorize === null) {
             return true;
         }
 
@@ -70,7 +70,7 @@ readonly class RowActionViewBuilder
      */
     private function when(RowAction $action, Model $model): bool
     {
-        if (null === $action->when) {
+        if ($action->when === null) {
             return true;
         }
 

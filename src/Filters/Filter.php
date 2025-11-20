@@ -21,7 +21,7 @@ class Filter implements FilterContract
 
     public function __invoke(Request $request, Builder $query, mixed $value): void
     {
-        null !== $this->filter
+        $this->filter !== null
             ? call_user_func($this->filter, $request, $query, $value)
             : $query->where($this->name, '=', $value);
     }

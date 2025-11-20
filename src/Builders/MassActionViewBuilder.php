@@ -48,7 +48,7 @@ readonly class MassActionViewBuilder
 
     private function isAuthorized(MassAction $action, Request $request): bool
     {
-        if (null === $action->authorize) {
+        if ($action->authorize === null) {
             return true;
         }
 

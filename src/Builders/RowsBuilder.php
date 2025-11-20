@@ -42,7 +42,7 @@ class RowsBuilder
      */
     public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator // @phpstan-ignore-line
     {
-        if (null !== $this->result && !$forceReload) {
+        if ($this->result !== null && !$forceReload) {
             return $this->result;
         }
 
@@ -104,7 +104,7 @@ class RowsBuilder
 
         $this->columns
             ->filter(fn (Column $column) => $column->sortable)
-            ->filter(fn (Column $column) => array_key_exists($column->name, $sortRequest) || null !== $column->defaultSort)
+            ->filter(fn (Column $column) => array_key_exists($column->name, $sortRequest) || $column->defaultSort !== null)
             ->each(function (Column $column) use ($sortRequest, $query) {
                 if (array_key_exists($column->name, $sortRequest)) {
                     $sort = Sort::from($sortRequest[$column->name]);

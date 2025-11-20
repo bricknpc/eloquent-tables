@@ -48,7 +48,7 @@ class ColumnLabelViewBuilderTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
 
-        if (null !== $currentOrder) {
+        if ($currentOrder !== null) {
             $request->query->set('sort', ['name' => $currentOrder->value]);
         }
 
@@ -57,7 +57,7 @@ class ColumnLabelViewBuilderTest extends TestCase
         $view = $builder->build($request, $column);
 
         $this->assertArrayHasKey('href', $view->getData());
-        if (null === $nextOrder) {
+        if ($nextOrder === null) {
             $this->assertSame('http://localhost/?', $view->getData()['href']);
         } else {
             $this->assertSame('http://localhost/?sort%5Bname%5D=' . $nextOrder->value, $view->getData()['href']);

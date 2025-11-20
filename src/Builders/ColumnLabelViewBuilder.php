@@ -37,7 +37,7 @@ readonly class ColumnLabelViewBuilder
             'label'          => $this->getLabelValue($column),
             'sortable'       => $column->sortable,
             'searchable'     => $column->searchable,
-            'isSorted'       => null !== $sortDirection,
+            'isSorted'       => $sortDirection !== null,
             'sortDirection'  => $sortDirection,
             'href'           => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
             'iconNone'       => $this->config->sortNoneIcon(),
@@ -91,7 +91,7 @@ readonly class ColumnLabelViewBuilder
 
         unset($currentSort[$name]);
 
-        if (null === $direction) {
+        if ($direction === null) {
             return $currentSort;
         }
 

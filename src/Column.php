@@ -135,7 +135,7 @@ class Column
     {
         $this->formatterParameters = ['decimals' => $decimals];
 
-        if (null !== $locale) {
+        if ($locale !== null) {
             $this->formatterParameters['locale'] = $locale;
         }
 
@@ -146,7 +146,7 @@ class Column
     {
         $this->formatterParameters = ['decimals' => $decimals];
 
-        if (null !== $locale) {
+        if ($locale !== null) {
             $this->formatterParameters['locale'] = $locale;
         }
 
@@ -157,11 +157,11 @@ class Column
     {
         $this->formatterParameters = [];
 
-        if (null !== $currency) {
+        if ($currency !== null) {
             $this->formatterParameters['currency'] = $currency;
         }
 
-        if (null !== $locale) {
+        if ($locale !== null) {
             $this->formatterParameters['locale'] = $locale;
         }
 

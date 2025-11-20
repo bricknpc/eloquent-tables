@@ -33,7 +33,7 @@ readonly class DateTimeFormatter implements Formatter
 
         $formatted = $formatter->format($value); // @phpstan-ignore argument.type
 
-        if (false === $formatted) {
+        if ($formatted === false) {
             throw InvalidValueException::forInvalidValue($value, $this);
         }
 

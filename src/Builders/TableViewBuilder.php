@@ -115,7 +115,7 @@ readonly class TableViewBuilder
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
-        if (null !== $layout) {
+        if ($layout !== null) {
             $viewData['layout'] = $layout;
         }
 

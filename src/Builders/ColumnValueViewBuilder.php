@@ -36,7 +36,7 @@ readonly class ColumnValueViewBuilder
 
         $value = is_callable($column->valueUsing) ? call_user_func($column->valueUsing, $model) : $model->{$column->name};
 
-        if (null !== $column->formatter) {
+        if ($column->formatter !== null) {
             $formatter = $column->formatter instanceof Formatter
                 ? $column->formatter
                 : $this->formatterFactory->build($column->formatter, $column->getFormatterParameters());
