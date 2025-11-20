@@ -18,4 +18,13 @@ enum ColumnType
             self::Boolean  => 'td-boolean',
         };
     }
+
+    public function getThView(): string
+    {
+        return match ($this) {
+            self::Text     => 'th-text',
+            self::Checkbox => 'th-checkbox',
+            self::Boolean  => 'th-boolean',
+        };
+    }
 }

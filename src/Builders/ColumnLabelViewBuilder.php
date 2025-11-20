@@ -41,6 +41,7 @@ readonly class ColumnLabelViewBuilder
             'iconNone'      => $this->config->sortNoneIcon(),
             'iconAsc'       => $this->config->sortAscIcon(),
             'iconDesc'      => $this->config->sortDescIcon(),
+            'type'          => $column->type,
         ]);
     }
 

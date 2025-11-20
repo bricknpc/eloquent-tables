@@ -38,4 +38,28 @@ class ColumnTypeTest extends TestCase
             'td-checkbox',
         ];
     }
+
+    #[DataProvider('typeHeaderProvider')]
+    public function test_it_returns_the_correct_header_view(ColumnType $type, string $view): void
+    {
+        $this->assertSame($view, $type->getThView());
+    }
+
+    public static function typeHeaderProvider(): \Generator
+    {
+        yield [
+            ColumnType::Text,
+            'th-text',
+        ];
+
+        yield [
+            ColumnType::Boolean,
+            'th-boolean',
+        ];
+
+        yield [
+            ColumnType::Checkbox,
+            'th-checkbox',
+        ];
+    }
 }

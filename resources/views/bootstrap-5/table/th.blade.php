@@ -2,7 +2,9 @@
     <div class="d-flex justify-content-between align-items-center">
         @if($sortable)
             <a href="{{ $href }}" class="d-flex justify-content-between align-items-center w-100 text-decoration-none text-light">
-                <span>{{ $label }}</span>
+                @include('eloquent-tables::bootstrap-5.table.column-type.' . $type->getThView(), [
+                    'value' => $label,
+                ])
                 @if (!$isSorted)
                     <span class="text-muted">{{ $iconNone }}</span>
                 @else
