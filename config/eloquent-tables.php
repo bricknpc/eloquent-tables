@@ -79,5 +79,7 @@ return [
         'sort-asc'  => '⭡', // new HtmlString("&#x25B2;"), // "u\{25B2}"
         'sort-desc' => '⭣', // new HtmlString("&#x25BC;"), // "u\{25BC}"
         'sort-none' => '⭥', // new HtmlString("&#x25C0;"), // "u\{25C0}"
+        'check'     => '✓', // new HtmlString("&check;"), // "u\{2713}"
+        'cross'     => '✗', // new HtmlString("&cross;"), // "u\{2717}"
     ],
 ];

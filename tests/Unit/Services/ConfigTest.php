@@ -107,5 +107,13 @@ class ConfigTest extends TestCase
         yield [
             'sortNoneIcon', 'sort-none', new HtmlString('&#x25C0;'),
         ];
+
+        yield [
+            'checkIcon', 'check', new HtmlString('&check;'),
+        ];
+
+        yield [
+            'crossIcon', 'cross', new HtmlString('&cross;'),
+        ];
     }
 }

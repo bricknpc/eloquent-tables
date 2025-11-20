@@ -44,9 +44,12 @@ readonly class ColumnValueViewBuilder
         }
 
         return $this->viewFactory->make('eloquent-tables::table.td', [
-            'theme'  => $theme,
-            'value'  => $value,
-            'styles' => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
+            'theme'     => $theme,
+            'value'     => $value,
+            'styles'    => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
+            'type'      => $column->type,
+            'checkIcon' => $this->config->checkIcon(),
+            'crossIcon' => $this->config->crossIcon(),
         ]);
     }
 }

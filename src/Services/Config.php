@@ -76,6 +76,16 @@ readonly class Config
         return $this->icon('sort-desc', "\u{25BC}");
     }
 
+    public function checkIcon(): string|\Stringable
+    {
+        return $this->icon('check', "\u{2713}");
+    }
+
+    public function crossIcon(): string|\Stringable
+    {
+        return $this->icon('cross', "\u{2717}");
+    }
+
     private function icon(string $name, ?string $default = null): string|\Stringable
     {
         /** @var string|\Stringable $icon */

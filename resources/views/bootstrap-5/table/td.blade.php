@@ -1,3 +1,5 @@
 <td class="{{ $styles }}">
-    {{ $value }}
+    @include('eloquent-tables::bootstrap-5.table.column-type.' . $type->getTdView(), [
+        'value' => $value,
+    ])
 </td>
