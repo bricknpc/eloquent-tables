@@ -19,6 +19,8 @@ enum TableStyle: string
     case Light      = 'light';
     case Dark       = 'dark';
 
+    case Borderless     = 'borderless';
+    case Bordered       = 'bordered';
     case Striped        = 'striped';
     case StripedColumns = 'striped-columns';
     case Hover          = 'hover';

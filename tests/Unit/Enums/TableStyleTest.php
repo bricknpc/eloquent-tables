@@ -109,5 +109,17 @@ class TableStyleTest extends TestCase
             TableStyle::Active,
             'table-active',
         ];
+
+        yield [
+            Theme::Bootstrap5,
+            TableStyle::Bordered,
+            'table-bordered',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            TableStyle::Borderless,
+            'table-borderless',
+        ];
     }
 }
