@@ -23,7 +23,7 @@
                 {{ $columnValueViewBuilder->build($request, $column, $row) }}
             @endforeach
             @if($rowActionCount > 0)
-                <td>
+                <td class="text-end">
                     <div class="btn-group">
                         @foreach($rowActions as $action)
                             {{ $rowActionBuilder->build($action, $request, $row) }}
