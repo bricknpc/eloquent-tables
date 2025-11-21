@@ -42,7 +42,7 @@ php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\Eloquen
 
 ## Documentation
 
-See the [docs](docs/index.md).
+See the [documentation](https://bricknpc.github.io/eloquent-tables/docs/intro).
 
 ## Local development
 
