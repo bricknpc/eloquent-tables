@@ -35,6 +35,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
  * @internal
  */
 #[CoversClass(TableViewBuilder::class)]
+#[CoversClass(WithPagination::class)]
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
 #[UsesClass(TableActionViewBuilder::class)]
@@ -237,6 +238,47 @@ class TableViewBuilderTest extends TestCase
         $this->assertInstanceOf(Collection::class, $viewData['rows']);
         $this->assertCount(15, $viewData['rows']);
         $this->assertNotNull($viewData['links']);
+    }
+
+    public function test_it_sets_pagination_options_when_using_pagination(): void
+    {
+        /** @var TableViewBuilder $builder */
+        $builder = $this->app->make(TableViewBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $table = new class extends Table {
+            use WithPagination;
+
+            protected int $perPage          = 25;
+            protected string $perPageName   = 'per_page';
+            protected string $pageName      = 'page';
+            protected array $perPageOptions = [10, 25, 50];
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
+
+        $view = $builder->build($table, $request);
+
+        $viewData = $view->getData();
+
+        $this->assertArrayHasKey('perPage', $viewData);
+        $this->assertSame(25, $viewData['perPage']);
+
+        $this->assertArrayHasKey('perPageName', $viewData);
+        $this->assertSame('per_page', $viewData['perPageName']);
+
+        $this->assertArrayHasKey('perPageOptions', $viewData);
+        $this->assertSame([10, 25, 50], $viewData['perPageOptions']);
     }
 
     public function test_it_shows_search_form_when_there_are_searchable_columns(): void

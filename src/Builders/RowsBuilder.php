@@ -65,7 +65,7 @@ class RowsBuilder
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
-            ? $query->paginate($table->getPerPage($request), $table->perPageName) // @phpstan-ignore-line
+            ? $query->paginate($table->perPage($request), $table->pageName()) // @phpstan-ignore-line
             : $query->get();
 
         return $this->result = $result;

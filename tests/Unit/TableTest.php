@@ -132,35 +132,38 @@ class TableTest extends TestCase
 
     public function test_table_with_pagination_returns_default_per_page(): void
     {
+        /** @var Table&WithPagination $table */
         $table = $this->getTableWithPagination();
 
         /** @var Request $request */
         $request = $this->app->make('request');
 
-        $this->assertSame(15, $table->getPerPage($request));
+        $this->assertSame(15, $table->perPage($request));
     }
 
     public function test_table_with_pagination_returns_per_page_in_request(): void
     {
+        /** @var Table&WithPagination $table */
         $table = $this->getTableWithPagination();
 
         /** @var Request $request */
         $request = $this->app->make('request');
         $request->query->set('per_page', 10);
 
-        $this->assertSame(10, $table->getPerPage($request));
+        $this->assertSame(10, $table->perPage($request));
     }
 
     #[DataProvider('invalidPerPageValues')]
     public function test_table_with_pagination_returns_default_per_page_for_invalid_request(string $invalidValue): void
     {
+        /** @var Table&WithPagination $table */
         $table = $this->getTableWithPagination();
 
         /** @var Request $request */
         $request = $this->app->make('request');
         $request->query->set('per_page', $invalidValue);
 
-        $this->assertSame(15, $table->getPerPage($request));
+        $this->assertSame(15, $table->perPage($request));
     }
 
     public static function invalidPerPageValues(): \Generator

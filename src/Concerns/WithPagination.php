@@ -13,37 +13,35 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin Table<TModel>
  *
+ * @property string     $pageName       The name of the page query string parameter.
+ * @property array<int> $perPageOptions The available options for the number of items to show per page. If you don't want to show this option, set it to an empty array.
+ * @property string     $perPageName    The name of the per-page query string parameter.
+ *
  * @phpstan-ignore trait.unused
  */
 trait WithPagination
 {
-    /**
-     * The name of the page query string parameter.
-     */
-    public string $pageName = 'page';
-
-    /**
-     * The available options for the number of items to show per page. If you don't want to show this option, set it to
-     * an empty array.
-     *
-     * @var int[]
-     */
-    public array $perPageOptions = [10, 15, 25, 50, 100];
-
-    /**
-     * The name of the per-page query string parameter.
-     */
-    public string $perPageName = 'per_page';
-
-    /**
-     * The default number of items to show per page.
-     */
-    protected int $perPage = 15;
-
-    public function getPerPage(Request $request): int
+    public function pageName(): string
     {
-        $perPage = $request->integer($this->perPageName, $this->perPage);
+        return property_exists($this, 'pageName') ? $this->pageName : 'page';
+    }
 
-        return $perPage > 0 ? $perPage : $this->perPage;
+    public function perPage(Request $request): int
+    {
+        $defaultPerPage = property_exists($this, 'perPage') ? $this->perPage : 15;
+
+        $perPage = $request->integer($this->perPageName(), $defaultPerPage);
+
+        return $perPage > 0 ? $perPage : $defaultPerPage;
+    }
+
+    public function perPageName(): string
+    {
+        return property_exists($this, 'perPageName') ? $this->perPageName : 'per_page';
+    }
+
+    public function perPageOptions(): array
+    {
+        return property_exists($this, 'perPageOptions') ? $this->perPageOptions : [10, 15, 25, 50, 100];
     }
 }

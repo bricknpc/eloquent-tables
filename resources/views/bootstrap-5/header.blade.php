@@ -34,4 +34,13 @@
             @endforeach
         </div>
     @endif
+    @if(isset($perPageOptions) && count($perPageOptions) > 0)
+        <div class="d-flex align-items-center table-per-page-options ms-auto">
+            <form action="{{ $fullUrl }}" method="get" id="per-page-form-{{ $id }}">
+                @foreach($perPageOptions as $option)
+                    <option value="{{ $option }}" @if ($option === $perPage) selected="selected" @endif>{{ $option }}</option>
+                @endforeach
+            </form>
+        </div>
+    @endif
 </div>

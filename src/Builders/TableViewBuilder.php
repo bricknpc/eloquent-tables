@@ -15,6 +15,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 
 /**
@@ -122,6 +123,13 @@ readonly class TableViewBuilder
         $layout = $this->layoutFinder->getLayout($table);
         if ($layout !== null) {
             $viewData['layout'] = $layout;
+        }
+
+        if ($table->withPagination()) {
+            /* @var WithPagination|Table $table */
+            $viewData['perPage']        = $table->perPage($request); // @phpstan-ignore-line
+            $viewData['perPageName']    = $table->perPageName(); // @phpstan-ignore-line
+            $viewData['perPageOptions'] = $table->perPageOptions(); // @phpstan-ignore-line
         }
 
         return $viewData;
