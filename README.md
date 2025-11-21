@@ -1,4 +1,4 @@
-<center>
+<p align="center">
 
 # BrickNPC Eloquent Tables
 
@@ -10,7 +10,8 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/bricknpc/eloquent-tables)
 ![Codecov](https://img.shields.io/codecov/c/github/bricknpc/eloquent-tables)
 ![GitHub Release](https://img.shields.io/github/v/release/bricknpc/eloquent-tables)
-</center>
+
+</p>
 
 ## Installation
 
