@@ -23,8 +23,8 @@ composer require bricknpc/eloquent-tables
 
 ### Requirements
 
-- PHP ^8.4
-- Laravel ^12.0
+- PHP `^8.4`
+- Laravel `^12.0`
 
 This package builds eloquent tables for you with the frontend framework of your choice. You need to install the 
 frontend framework yourself in your Laravel project.
@@ -33,9 +33,9 @@ Supported frontend frameworks:
 
 - Bootstrap 5
 
-Frameworks that are planned:
+Roadmap:
 
-- Tailwind CSS V4
+- Tailwind 4
 - Bulma
 - BlazeUI
 
@@ -126,6 +126,12 @@ docker-compose exec php composer cs
 ```bash
 docker-compose exec php composer ps
 ```
+
+## Community showcase
+
+Are you using Eloquent Tables in your project? Let us know by opening a pull request to add your project to the 
+[community showcase](https://github.com/bricknpc/eloquent-tables/blob/main/docs/src/pages/showcase.js). We love seeing 
+what people are building with Eloquent Tables.
 
 ## Contributing
 

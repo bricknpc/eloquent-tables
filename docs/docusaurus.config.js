@@ -37,7 +37,7 @@ const config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'nl'],
+    locales: ['en'],
   },
 
   presets: [
@@ -96,6 +96,7 @@ const config = {
             label: 'Documentation',
           },
           {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/showcase', label: 'Community Showcase', position: 'left'},
           {
             href: 'https://github.com/bricknpc/eloquent-tables',
             label: 'GitHub',
@@ -121,6 +122,10 @@ const config = {
               {
                 label: 'Youtube',
                 href: 'https://youtube.com/@bricknpc-codes',
+              },
+              {
+                label: 'Showcase',
+                href: '/showcase',
               },
             ],
           },

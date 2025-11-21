@@ -1,19 +1,14 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
+laravel:
+  label: Laravel
+  permalink: /laravel
+  description: The Laravel Framework
 
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
+eloquent:
+  label: Eloquent
+  permalink: /eloquent
+  description: Eloquent is the ORM used in Laravel, which was the inspiration for this package.
 
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
-
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+table:
+  label: Table
+  permalink: /table
+  description: HTML Tables
