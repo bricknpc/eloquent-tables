@@ -21,6 +21,7 @@ use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
@@ -50,6 +51,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(RowsBuilder::class)]
 #[UsesClass(MassActionViewBuilder::class)]
 #[UsesClass(FilterViewBuilder::class)]
+#[UsesClass(RouteModelBinder::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

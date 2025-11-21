@@ -1,0 +1,10 @@
+{
+  "position": 8.5,
+  "label": "Actions",
+  "key": "actions",
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index"
+  }
+}

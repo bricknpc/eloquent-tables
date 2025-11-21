@@ -30,14 +30,16 @@ readonly class RouteModelBinder
                 continue;
             }
 
-            if (is_subclass_of($type->getName(), Model::class) && $this->request->route($parameter->getName()) !== null) {
-                /** @var Model $instance */
-                $instance = $this->container->make($type->getName());
-
-                $model = $instance->newQuery()->findOrFail($this->request->route($parameter->getName()));
-
-                $callParameters[$parameter->getName()] = $model;
+            if (!is_subclass_of($type->getName(), Model::class) || $this->request->route($parameter->getName()) === null) {
+                continue;
             }
+
+            /** @var Model $instance */
+            $instance = $this->container->make($type->getName());
+
+            $model = $instance->newQuery()->findOrFail($this->request->route($parameter->getName()));
+
+            $callParameters[$parameter->getName()] = $model;
         }
 
         return $this->container->call([$object, $method], $callParameters); // @phpstan-ignore-line

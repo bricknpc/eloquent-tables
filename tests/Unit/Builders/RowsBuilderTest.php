@@ -20,6 +20,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 
 /**
@@ -31,6 +32,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 #[UsesClass(Column::class)]
 #[UsesClass(WithPagination::class)]
 #[UsesClass(Filter::class)]
+#[UsesClass(RouteModelBinder::class)]
 class RowsBuilderTest extends TestCase
 {
     protected function setUp(): void

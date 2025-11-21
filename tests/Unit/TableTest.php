@@ -18,6 +18,7 @@ use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
@@ -28,6 +29,7 @@ use BrickNPC\EloquentTables\Builders\MassActionViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
+use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomData;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCallback;
@@ -49,6 +51,8 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(RowsBuilder::class)]
 #[UsesClass(MassActionViewBuilder::class)]
 #[UsesClass(FilterViewBuilder::class)]
+#[UsesClass(RouteModelBinder::class)]
+#[UsesClass(MissingMethodException::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void
@@ -70,6 +74,26 @@ class TableTest extends TestCase
         $table = $this->app->make(TestTableAuthorisationFails::class);
 
         $this->expectException(HttpException::class);
+
+        $table->render();
+    }
+
+    public function test_it_throws_exception_when_query_method_is_not_implemented(): void
+    {
+        $table = new class extends Table {};
+
+        $this->expectException(MissingMethodException::class);
+
+        $table->render();
+    }
+
+    public function test_it_throws_exception_when_columns_method_is_not_implemented(): void
+    {
+        $table = new class extends Table {
+            public function query(): void {}
+        };
+
+        $this->expectException(MissingMethodException::class);
 
         $table->render();
     }
