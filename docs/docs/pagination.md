@@ -29,9 +29,9 @@ class UserTable extends Table
 
 Pagination uses the default Laravel pagination options, but you can customise them.
 
-### Item per page
+### Items per page
 
-The number of items per page can be set by adding a `perPage` property to your Table. If not set, the default value is 15.
+The number of items per page can be set by adding a `perPage` property to your Table. If not set, the default value is `15`.
 
 ```php
 <?php
