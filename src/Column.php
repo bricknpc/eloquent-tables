@@ -30,6 +30,7 @@ class Column
     /**
      * @param null|\Closure(TModel $model): \Stringable                                  $valueUsing
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void     $sortUsing
+     * @param null|\Closure(Request $request, Builder $query): void|Sort                 $defaultSort
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      * @param null|class-string<Formatter>|Formatter                                     $formatter
      * @param TableStyle[]                                                               $styles
@@ -41,7 +42,7 @@ class Column
         public ?string $label = null,
         public bool $sortable = false,
         public ?\Closure $sortUsing = null,
-        public ?Sort $defaultSort = null,
+        public \Closure|Sort|null $defaultSort = null,
         public bool $searchable = false,
         public ?\Closure $searchUsing = null,
         public Formatter|string|null $formatter = null,
@@ -77,8 +78,9 @@ class Column
 
     /**
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void $sortUsing
+     * @param null|\Closure(Request $request, Builder $query): void|Sort             $default
      */
-    public function sortable(?\Closure $sortUsing = null, ?Sort $default = null): static
+    public function sortable(?\Closure $sortUsing = null, \Closure|Sort|null $default = null): static
     {
         $this->sortable    = true;
         $this->sortUsing   = $sortUsing;

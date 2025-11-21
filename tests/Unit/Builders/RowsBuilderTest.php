@@ -219,6 +219,35 @@ class RowsBuilderTest extends TestCase
         $this->assertSame('Test Model 49', $rows[0]->name);
     }
 
+    public function test_it_sorts_by_default_when_a_custom_default_sort_order_is_set(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(default: fn (Request $request, Builder $query) => $query->orderBy('id', 'asc')),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(50, $rows);
+        $this->assertSame('Test Model 00', $rows[0]->name);
+    }
+
     public function test_it_sorts_by_column_when_there_is_a_sort_value_given_and_there_is_a_sort_value(): void
     {
         /** @var RowsBuilder $builder */
@@ -247,6 +276,36 @@ class RowsBuilderTest extends TestCase
         $this->assertInstanceOf(Collection::class, $rows);
         $this->assertCount(50, $rows);
         $this->assertSame('Test Model 49', $rows[0]->name);
+    }
+
+    public function test_it_sorts_by_column_when_there_is_a_sort_value_given_and_there_is_a_custom_sort_value(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(sortUsing: fn (Request $request, Builder $query, Sort $direction) => $query->orderBy('id', $direction->value)),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('sort', ['name' => 'asc']);
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(50, $rows);
+        $this->assertSame('Test Model 00', $rows[0]->name);
     }
 
     public function test_it_applies_filters(): void

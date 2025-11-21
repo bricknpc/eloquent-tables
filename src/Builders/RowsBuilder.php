@@ -111,16 +111,24 @@ class RowsBuilder
         $this->columns
             ->filter(fn (Column $column) => $column->sortable)
             ->filter(fn (Column $column) => array_key_exists($column->name, $sortRequest) || $column->defaultSort !== null)
-            ->each(function (Column $column) use ($sortRequest, $query) {
+            ->each(function (Column $column) use ($sortRequest, $query, $request) {
                 if (array_key_exists($column->name, $sortRequest)) {
                     $sort = Sort::from($sortRequest[$column->name]);
 
-                    $query->orderBy($column->name, $sort->value);
+                    if ($column->sortUsing !== null) {
+                        call_user_func($column->sortUsing, $request, $query, $sort);
+                    } else {
+                        $query->orderBy($column->name, $sort->value);
+                    }
 
                     return;
                 }
 
-                $query->orderBy($column->name, $column->defaultSort->value); // @phpstan-ignore-line
+                if ($column->defaultSort instanceof \Closure) {
+                    call_user_func($column->defaultSort, $request, $query);
+                } else {
+                    $query->orderBy($column->name, $column->defaultSort?->value); // @phpstan-ignore-line
+                }
             })
         ;
     }

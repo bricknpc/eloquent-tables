@@ -85,6 +85,12 @@ docker-compose exec php bash
 docker-compose down
 ```
 
+### Documentation
+
+When starting the docker container, the documentation site will automatically be started as well and will be available 
+on http://localhost:3000/eloquent-tables. The documentation is built using [Docusaurus](https://docusaurus.io/). When 
+adding new features or making changes, please also update the documentation.
+
 ## Running tests
 
 You can run the tests using the following command.
