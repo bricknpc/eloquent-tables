@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @mixin Table<TModel>
  *
+ * @property int        $perPage        The number of items to show per page.
  * @property string     $pageName       The name of the page query string parameter.
  * @property array<int> $perPageOptions The available options for the number of items to show per page. If you don't want to show this option, set it to an empty array.
  * @property string     $perPageName    The name of the per-page query string parameter.
