@@ -27,20 +27,24 @@
             @endforeach
         </div>
     @endif
-    @if($massActionCount > 0)
-        <div class="d-flex align-items-center table-mass-actions ms-auto">
-            @foreach($massActions as $massAction)
-                {!! $massActionViewBuilder->build($massAction, $request) !!}
-            @endforeach
-        </div>
-    @endif
-    @if(isset($perPageOptions) && count($perPageOptions) > 0)
-        <div class="d-flex align-items-center table-per-page-options ms-auto">
-            <form action="{{ $fullUrl }}" method="get" id="per-page-form-{{ $id }}">
-                @foreach($perPageOptions as $option)
-                    <option value="{{ $option }}" @if ($option === $perPage) selected="selected" @endif>{{ $option }}</option>
+    <div class="d-flex align-items-center table-header-end ms-auto">
+        @if($massActionCount > 0)
+            <div class="d-flex align-items-center table-mass-actions">
+                @foreach($massActions as $massAction)
+                    {!! $massActionViewBuilder->build($massAction, $request) !!}
                 @endforeach
-            </form>
-        </div>
-    @endif
+            </div>
+        @endif
+        @if(isset($perPageOptions) && count($perPageOptions) > 0)
+            <div class="d-flex align-items-center table-per-page-options ms-3">
+                <form action="{{ $fullUrl }}" method="get" id="per-page-form-{{ $id }}">
+                    <select name="{{ $perPageName }}" onchange="this.form.submit()" class="form-select border-primary">
+                        @foreach($perPageOptions as $option)
+                            <option value="{{ $option }}" @if ($option === $perPage) selected="selected" @endif>{{ $option }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+        @endif
+    </div>
 </div>

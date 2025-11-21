@@ -106,6 +106,7 @@ readonly class TableViewBuilder
             'tableActionViewBuilder'  => $this->tableActionViewBuilder,
             'showSearchForm'          => $this->hasSearchableColumns($columns),
             'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
+            'fullUrl'                 => $request->fullUrl(),
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
             'searchIcon'              => $this->config->searchIcon(),
