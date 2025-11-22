@@ -13,3 +13,8 @@ We are proud to announce the first release of Eloquent Tables 🎉🎉🎉. We j
 This is the first stable release of the Eloquent Tables package. We hope you'll enjoy using it, and don't forget to 
 [open a PR](https://github.com/bricknpc/eloquent-tables/blob/main/docs/src/pages/showcase.js) to add your showcase if 
 you're using Eloquent Tables.
+
+> Edit: 22-11-2025
+
+And of course, not 15 minutes after the first release we found a bug 😔. Luckily we caught it right away, and version 
+`1.0.1` is now available 🎉!
