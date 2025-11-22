@@ -76,6 +76,10 @@ class RowsBuilder
      */
     private function applyFilters(Builder $query, Table $table, Request $request): void
     {
+        if (!$table->hasFilters()) {
+            return;
+        }
+
         /** @var array<string, string>|string $filterRequest */
         $filterRequest = $request->query('filter', []);
 
@@ -89,13 +93,12 @@ class RowsBuilder
             }
         }
 
-        collect($table->filters())
+        /** @var Filter[] $filters */
+        $filters = $this->methodInvoker->call($table, 'filters');
+
+        collect($filters)
             ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
-            ->each(fn (Filter $filter) => $filter(
-                $request,
-                $query,
-                $filterRequest[$filter->name],
-            ))
+            ->each(fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
         ;
     }
 

@@ -9,7 +9,6 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Actions\RowAction;
 use Symfony\Component\HttpFoundation\Response;
@@ -93,17 +92,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return in_array(WithPagination::class, class_uses_recursive(static::class), true);
     }
 
-    /*
-     * These functions are supposed to be overwritten by the user, but they are not required or have some default
-     * behaviour. That is why they are not marked as abstract.
-     */
-
-    /**
-     * @return Filter[]
-     */
-    public function filters(): array
+    public function hasFilters(): bool
     {
-        return [];
+        return method_exists($this, 'filters');
     }
 
     /**

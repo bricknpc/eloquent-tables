@@ -31,7 +31,7 @@ The following methods support dependency injection:
 - `tableActions()`
 - `massActions()`
 - `rowActions()`
-- 
+- `layout()`
 
 ## Route model binding
 

@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
@@ -88,6 +89,9 @@ readonly class TableViewBuilder
         /** @var Column<TModel>[] $columns */
         $columns = $this->methodInvoker->call($table, 'columns');
 
+        /** @var Filter[] $filters */
+        $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
+
         $viewData = [
             'id'            => spl_object_id($table),
             'theme'         => $theme,
@@ -116,8 +120,8 @@ readonly class TableViewBuilder
             'massActionCount'         => count($table->massActions()),
             'massActions'             => $table->massActions(),
             'massActionViewBuilder'   => $this->massActionViewBuilder,
-            'filterCount'             => count($table->filters()),
-            'filters'                 => $table->filters(),
+            'filterCount'             => count($filters),
+            'filters'                 => $filters,
             'filterViewBuilder'       => $this->filterViewBuilder,
         ];
 

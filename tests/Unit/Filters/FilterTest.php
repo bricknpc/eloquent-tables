@@ -12,7 +12,9 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Tests\Resources\TestEnum;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
+use BrickNPC\EloquentTables\Tests\Resources\TestBackedEnum;
 
 /**
  * @internal
@@ -66,6 +68,24 @@ class FilterTest extends TestCase
         $filter($request, $query, $value);
     }
 
+    public function test_it_can_set_option_key_through_constructor_of_fluent_setter(): void
+    {
+        $filter = new Filter('name', [], 'id');
+        $this->assertSame('id', $filter->optionKey);
+
+        $filter2 = new Filter('name', [], 'id')->optionKey('custom_id');
+        $this->assertSame('custom_id', $filter2->optionKey);
+    }
+
+    public function test_it_can_set_option_label_through_constructor_of_fluent_setter(): void
+    {
+        $filter = new Filter('name', [], 'id', 'label');
+        $this->assertSame('label', $filter->optionLabel);
+
+        $filter2 = new Filter('name', [], 'id', 'label')->optionLabel('custom_label');
+        $this->assertSame('custom_label', $filter2->optionLabel);
+    }
+
     public function test_it_returns_the_correct_view(): void
     {
         $filter = new Filter('name', []);
@@ -76,7 +96,7 @@ class FilterTest extends TestCase
     #[DataProvider('optionValueProvider')]
     public function test_it_returns_option_values(Collection|iterable $options, iterable $expectedOptions): void
     {
-        $filter = new Filter('name', $options);
+        $filter = new Filter('name', $options, 'id', 'name');
 
         $this->assertSame($expectedOptions, $filter->options());
     }
@@ -101,6 +121,24 @@ class FilterTest extends TestCase
             [
                 '1'  => 'name 1',
                 '17' => 'name 17',
+            ],
+        ];
+
+        yield [
+            TestEnum::cases(),
+            [
+                'First'  => 'First',
+                'Second' => 'Second',
+                'Third'  => 'Third',
+            ],
+        ];
+
+        yield [
+            TestBackedEnum::cases(),
+            [
+                'first'  => 'First',
+                'second' => 'Second',
+                'third'  => 'Third',
             ],
         ];
     }

@@ -19,7 +19,7 @@ interface Filter
      */
     public function __construct(string $name, Collection|iterable $options);
 
-    public function __invoke(Request $request, Builder $query, mixed $value): void;
+    public function __invoke(Request $request, Builder $query, string $value): void;
 
     public function view(): string;
 
