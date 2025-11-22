@@ -96,13 +96,13 @@ readonly class TableViewBuilder
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
         /** @var TableAction[] $tableActions */
-        $tableActions = property_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
+        $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
         /** @var RowAction<TModel>[] $rowActions */
-        $rowActions = property_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
+        $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
         /** @var MassAction[] $massActions */
-        $massActions = property_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
+        $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
 
         $viewData = [
             'id'            => spl_object_id($table),
