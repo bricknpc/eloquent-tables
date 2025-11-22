@@ -18,3 +18,7 @@ you're using Eloquent Tables.
 
 And of course, not 15 minutes after the first release we found a bug 😔. Luckily we caught it right away, and version 
 `1.0.1` is now available 🎉!
+
+> Edit: 22-11-2025
+
+And just like that, version `1.0.2` is a fact as well 🎉. So far for a quit first release 😔.
