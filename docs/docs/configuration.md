@@ -140,3 +140,32 @@ return [
     ],
 ];
 ```
+
+## App configuration
+
+Because the Eloquent Tables package is a Laravel package, there are a few Laravel configuration options that this 
+package uses as well.
+
+### Locale
+
+The built-in formatters need a locale to format things like dates and numbers. The Eloquent Tables package uses the 
+current locale of the application, which is usually set in the `.env` file as `APP_LOCALE`.
+
+### Timezone
+
+The built-in date formatters also need a timezone to format dates. The Eloquent Tables package uses the current 
+timezone of the application, which is usually set in the `app.php` config file under the Application Timezone heading.
+
+### Decimals
+
+This option is not a default Laravel configuration option, so you should add it yourself. The Eloquent Tables package 
+uses this option to format numbers. It is not required to add this option, but it is recommended to do so. Add a 
+`decimals` option to the `app.php` config file and set it to the default number of decimals you want to use when 
+formatting numbers.
+
+### Currency
+
+This option is not a default Laravel configuration option, so you should add it yourself. The Eloquent Tables package 
+uses this option to format currency. It is not required to add this option, but it is recommended to do so. 
+Add a `currency` option to the `app.php` config file and set it to the currency you want to use when formatting 
+numbers as currency. The value should be a 3-letter ISO 4217 currency code indicating the currency to use.
