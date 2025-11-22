@@ -17,3 +17,8 @@ tutorial:
   label: Tutorial
   permalink: /tutorial
   description: Tutorials and helpful articles.
+
+release:
+  label: Release
+  permalink: /release
+  description: Eloquent Tables releases.
