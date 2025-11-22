@@ -63,11 +63,11 @@ class RowActionTest extends TestCase
     {
         $action = new RowAction(action: '#');
         $this->assertFalse($action->asForm);
-        $this->assertNull($action->method);
+        $this->assertSame(Method::Post, $action->method);
 
         $action2 = new RowAction(action: '#', asForm: true);
         $this->assertTrue($action2->asForm);
-        $this->assertNull($action2->method);
+        $this->assertSame(Method::Post, $action2->method);
 
         $action3 = new RowAction(action: '#')->asForm();
         $this->assertTrue($action3->asForm);
@@ -77,7 +77,7 @@ class RowActionTest extends TestCase
     public function test_it_sets_method_through_constructor_or_fluent_setter(): void
     {
         $action = new RowAction(action: '#');
-        $this->assertNull($action->method);
+        $this->assertSame(Method::Post, $action->method);
 
         $action2 = new RowAction(action: '#', method: Method::Post);
         $this->assertSame(Method::Post, $action2->method);

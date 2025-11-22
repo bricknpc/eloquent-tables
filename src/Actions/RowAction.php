@@ -29,7 +29,7 @@ class RowAction extends Action
         public \Closure|string|null $tooltip = null,
         public array $styles = [],
         public bool $asForm = false,
-        public ?Method $method = null,
+        public Method $method = Method::Post,
         public ?\Closure $authorize = null,
         public ?\Closure $when = null,
         public \Closure|string|null $confirm = null,
