@@ -35,4 +35,31 @@ enum TableStyle: string
             },
         };
     }
+
+    public function affectsHeader(): bool
+    {
+        return match ($this) {
+            self::Primary,
+            self::Secondary,
+            self::Tertiary,
+            self::Quaternary,
+            self::Success,
+            self::Warning,
+            self::Danger,
+            self::Info,
+            self::Light,
+            self::Dark => true,
+            default    => false,
+        };
+    }
+
+    public function getHeaderClassStyle(Theme $theme): string
+    {
+        return match ($theme) {
+            Theme::Bootstrap5 => match ($this) {
+                self::Default => '',
+                default       => $this->value,
+            },
+        };
+    }
 }

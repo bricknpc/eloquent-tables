@@ -28,4 +28,18 @@ class ThemeTest extends TestCase
             'pagination::bootstrap-5',
         ];
     }
+
+    #[DataProvider('mainDefaultThemeProvider')]
+    public function test_it_returns_default_main_table_style(Theme $theme, string $expected): void
+    {
+        $this->assertSame($expected, $theme->defaultMainTableStyle());
+    }
+
+    public static function mainDefaultThemeProvider(): \Generator
+    {
+        yield [
+            Theme::Bootstrap5,
+            'primary',
+        ];
+    }
 }

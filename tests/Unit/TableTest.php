@@ -6,6 +6,7 @@ namespace BrickNPC\EloquentTables\Tests\Unit;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
+use BrickNPC\EloquentTables\Enums\Theme;
 use Illuminate\Database\Eloquent\Builder;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -53,6 +54,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(FilterViewBuilder::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(MissingMethodException::class)]
+#[UsesClass(Theme::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void

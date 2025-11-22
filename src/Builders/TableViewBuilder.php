@@ -142,6 +142,11 @@ readonly class TableViewBuilder
             $viewData['layout'] = $layout;
         }
 
+        $styles         = collect($table->tableStyles())->filter(fn (TableStyle $style) => $style->affectsHeader());
+        $mainTableStyle = $styles->isEmpty() ? $theme->defaultMainTableStyle() : $styles->first()->getHeaderClassStyle($theme);
+
+        $viewData['mainTableStyle'] = $mainTableStyle;
+
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */
             $viewData['perPage']        = $table->perPage($request); // @phpstan-ignore-line

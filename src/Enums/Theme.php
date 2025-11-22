@@ -14,4 +14,11 @@ enum Theme: string
             self::Bootstrap5 => 'pagination::bootstrap-5',
         };
     }
+
+    public function defaultMainTableStyle(): string
+    {
+        return match ($this) {
+            self::Bootstrap5 => 'primary',
+        };
+    }
 }
