@@ -34,7 +34,7 @@ class RowsBuilder
 
     public function __construct(
         private readonly Config $config,
-        private readonly RouteModelBinder $methodInvoker,
+        private readonly RouteModelBinder $routeModelBinder,
     ) {}
 
     /**
@@ -49,7 +49,7 @@ class RowsBuilder
         }
 
         /** @var array<int, Column<TModel>> $columns */
-        $columns = $this->methodInvoker->call($table, 'columns');
+        $columns = $this->routeModelBinder->call($table, 'columns');
 
         /** @var Collection<int, Column<TModel>> $collected */
         $collected = collect($columns);
@@ -57,7 +57,7 @@ class RowsBuilder
         $this->columns = $collected;
 
         /** @var Builder $query */
-        $query = $this->methodInvoker->call($table, 'query');
+        $query = $this->routeModelBinder->call($table, 'query');
 
         $this->applySearch($query, $request);
         $this->applyFilters($query, $table, $request);
@@ -94,7 +94,7 @@ class RowsBuilder
         }
 
         /** @var Filter[] $filters */
-        $filters = $this->methodInvoker->call($table, 'filters');
+        $filters = $this->routeModelBinder->call($table, 'filters');
 
         collect($filters)
             ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))

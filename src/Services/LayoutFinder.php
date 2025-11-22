@@ -11,8 +11,12 @@ use BrickNPC\EloquentTables\Attributes\Layout;
 /**
  * @template TModel of Model
  */
-class LayoutFinder
+readonly class LayoutFinder
 {
+    public function __construct(
+        private RouteModelBinder $routeModelBinder,
+    ) {}
+
     /**
      * @param Table<TModel> $table
      */
@@ -27,7 +31,7 @@ class LayoutFinder
     private function getLayoutByMethod(Table $table): ?Layout
     {
         if (method_exists($table, 'layout')) {
-            $layout = $table->layout();
+            $layout = $this->routeModelBinder->call($table, 'layout');
 
             return $layout instanceof Layout ? $layout : null;
         }

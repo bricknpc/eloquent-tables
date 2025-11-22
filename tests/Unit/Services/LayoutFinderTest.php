@@ -6,10 +6,12 @@ namespace BrickNPC\EloquentTables\Tests\Unit\Services;
 
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Tests\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 
 /**
@@ -17,6 +19,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestModel;
  */
 #[CoversClass(LayoutFinder::class)]
 #[CoversClass(Layout::class)]
+#[UsesClass(RouteModelBinder::class)]
 class LayoutFinderTest extends TestCase
 {
     public function test_table_without_layout_returns_null(): void

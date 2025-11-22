@@ -15,6 +15,9 @@ use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Actions\RowAction;
+use BrickNPC\EloquentTables\Actions\MassAction;
+use BrickNPC\EloquentTables\Actions\TableAction;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
@@ -92,6 +95,15 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
+        /** @var TableAction[] $tableActions */
+        $tableActions = property_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
+
+        /** @var RowAction<TModel>[] $rowActions */
+        $rowActions = property_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
+
+        /** @var MassAction[] $massActions */
+        $massActions = property_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
+
         $viewData = [
             'id'            => spl_object_id($table),
             'theme'         => $theme,
@@ -105,8 +117,8 @@ readonly class TableViewBuilder
             'rows'                    => $this->getRows($table, $request),
             'columnValueViewBuilder'  => $this->columnValueViewBuilder,
             'links'                   => $this->getLinks($table, $request),
-            'tableActionCount'        => count($table->tableActions()),
-            'tableActions'            => $table->tableActions(),
+            'tableActionCount'        => count($tableActions),
+            'tableActions'            => $tableActions,
             'tableActionViewBuilder'  => $this->tableActionViewBuilder,
             'showSearchForm'          => $this->hasSearchableColumns($columns),
             'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
@@ -114,11 +126,11 @@ readonly class TableViewBuilder
             'searchQuery'             => $request->query($this->config->searchQueryName()),
             'searchQueryName'         => $this->config->searchQueryName(),
             'searchIcon'              => $this->config->searchIcon(),
-            'rowActionCount'          => count($table->rowActions()),
-            'rowActions'              => $table->rowActions(),
+            'rowActionCount'          => count($rowActions),
+            'rowActions'              => $rowActions,
             'rowActionBuilder'        => $this->rowActionBuilder,
-            'massActionCount'         => count($table->massActions()),
-            'massActions'             => $table->massActions(),
+            'massActionCount'         => count($massActions),
+            'massActions'             => $massActions,
             'massActionViewBuilder'   => $this->massActionViewBuilder,
             'filterCount'             => count($filters),
             'filters'                 => $filters,
