@@ -20,7 +20,7 @@
 
     @if($links)
         <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-body pb-0">
                 @include('eloquent-tables::bootstrap-5.links')
             </div>
         </div>
