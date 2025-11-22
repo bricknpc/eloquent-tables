@@ -12,3 +12,8 @@ table:
   label: Table
   permalink: /table
   description: HTML Tables
+
+tutorial:
+  label: Tutorial
+  permalink: /tutorial
+  description: Tutorials and helpful articles.

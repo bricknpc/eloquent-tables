@@ -14,7 +14,7 @@ must return a Stringable value.
 ## Built-in Formatters
 
 The Eloquent Tables package ships with several commonly used formatters: a DateFormatter, a DateTimeFormatter, a 
-NumberFormatter, and a CurrencyFormatter. You can see how to use them in the [Column](columns.md) section.
+NumberFormatter, and a CurrencyFormatter. You can see how to use them in the [Column](columns.md#formatter) section.
 
 ## Custom Formatters
 
