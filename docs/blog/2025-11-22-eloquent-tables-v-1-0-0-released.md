@@ -21,4 +21,8 @@ And of course, not 15 minutes after the first release we found a bug 😔. Lucki
 
 > Edit: 22-11-2025
 
-And just like that, version `1.0.2` is a fact as well 🎉. So far for a quit first release 😔.
+And just like that, version `1.0.2` is a fact as well 🎉. So far for a quiet first release 😔.
+
+> Edit: 22-11-2025
+
+Make that `1.0.3` 🎉.
