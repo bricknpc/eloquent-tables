@@ -11,14 +11,7 @@ enum Theme: string
     public function getLinksView(): string
     {
         return match ($this) {
-            self::Bootstrap5 => 'pagination::bootstrap-5',
-        };
-    }
-
-    public function defaultMainTableStyle(): string
-    {
-        return match ($this) {
-            self::Bootstrap5 => 'primary',
+            self::Bootstrap5 => 'eloquent-tables::bootstrap-5.pagination',
         };
     }
 }

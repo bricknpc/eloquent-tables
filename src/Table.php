@@ -9,6 +9,7 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
@@ -102,6 +103,11 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return [
             TableStyle::Default,
         ];
+    }
+
+    public function pageStyle(): PageStyle
+    {
+        return PageStyle::Primary;
     }
 
     /**

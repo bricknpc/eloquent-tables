@@ -12,6 +12,7 @@ use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -53,6 +54,7 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(MassActionViewBuilder::class)]
 #[UsesClass(FilterViewBuilder::class)]
 #[UsesClass(RouteModelBinder::class)]
+#[UsesClass(PageStyle::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

@@ -142,10 +142,7 @@ readonly class TableViewBuilder
             $viewData['layout'] = $layout;
         }
 
-        $styles         = collect($table->tableStyles())->filter(fn (TableStyle $style) => $style->affectsHeader());
-        $mainTableStyle = $styles->isEmpty() ? $theme->defaultMainTableStyle() : $styles->first()->getHeaderClassStyle($theme);
-
-        $viewData['mainTableStyle'] = $mainTableStyle;
+        $viewData['mainTableStyle'] = $table->pageStyle()->toCssClass($theme);
 
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */
@@ -180,7 +177,11 @@ readonly class TableViewBuilder
 
         $theme = $this->config->theme();
 
-        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView()); // @phpstan-ignore-line
+        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
+            'mainTableStyle' => $table->pageStyle()->toCssClass($theme),
+            'disabledStyle' => $table->pageStyle()->toCssDisabledClass($theme),
+            'activeStyle' => $table->pageStyle()->toCssActiveClass($theme),
+        ]); // @phpstan-ignore-line
     }
 
     /**
