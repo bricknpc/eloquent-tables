@@ -177,11 +177,11 @@ readonly class TableViewBuilder
 
         $theme = $this->config->theme();
 
-        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
+        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
             'mainTableStyle' => $table->pageStyle()->toCssClass($theme),
-            'disabledStyle' => $table->pageStyle()->toCssDisabledClass($theme),
-            'activeStyle' => $table->pageStyle()->toCssActiveClass($theme),
-        ]); // @phpstan-ignore-line
+            'disabledStyle'  => $table->pageStyle()->toCssDisabledClass($theme),
+            'activeStyle'    => $table->pageStyle()->toCssActiveClass($theme),
+        ]);
     }
 
     /**

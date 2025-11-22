@@ -25,7 +25,7 @@ class ThemeTest extends TestCase
     {
         yield [
             Theme::Bootstrap5,
-            'pagination::bootstrap-5',
+            'eloquent-tables::bootstrap-5.pagination',
         ];
     }
 }

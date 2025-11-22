@@ -86,4 +86,146 @@ class PageStyleTest extends TestCase
             'dark',
         ];
     }
+
+    #[DataProvider('pageStyleActiveProvider')]
+    public function test_it_returns_to_correct_active_css_class(Theme $theme, PageStyle $style, string $expected): void
+    {
+        $result = $style->toCssActiveClass($theme);
+
+        $this->assertSame($expected, $result);
+    }
+
+    public static function pageStyleActiveProvider(): \Generator
+    {
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Primary,
+            'light',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Secondary,
+            'light',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Tertiary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Quaternary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Success,
+            'light',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Warning,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Danger,
+            'light',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Info,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Light,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Dark,
+            'light',
+        ];
+    }
+
+    #[DataProvider('pageStyleDisabledProvider')]
+    public function test_it_returns_to_correct_disabled_css_class(Theme $theme, PageStyle $style, string $expected): void
+    {
+        $result = $style->toCssDisabledClass($theme);
+
+        $this->assertSame($expected, $result);
+    }
+
+    public static function pageStyleDisabledProvider(): \Generator
+    {
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Primary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Secondary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Tertiary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Quaternary,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Success,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Warning,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Danger,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Info,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Light,
+            'dark',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            PageStyle::Dark,
+            'dark',
+        ];
+    }
 }

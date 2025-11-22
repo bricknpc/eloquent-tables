@@ -44,7 +44,7 @@ enum PageStyle: string
                 self::Success,
                 self::Dark,
                 self::Danger => 'light',
-                default => 'dark',
+                default      => 'dark',
             },
         };
     }
