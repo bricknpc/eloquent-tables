@@ -26,7 +26,7 @@ use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Contracts\Filter as FilterContract;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     

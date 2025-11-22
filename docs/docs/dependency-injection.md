@@ -62,7 +62,7 @@ use App\Models\User;
 use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     
@@ -96,7 +96,7 @@ use App\Models\User;
 use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     

@@ -20,7 +20,7 @@ use App\Models\User;
 use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     
@@ -48,7 +48,7 @@ use App\Models\User;
 use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     
@@ -77,7 +77,7 @@ use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     
@@ -113,7 +113,7 @@ use BrickNPC\EloquentTables\Table;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Other methods
     

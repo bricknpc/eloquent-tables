@@ -59,7 +59,7 @@ use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Attributes\Layout;
 
 #[Layout(name: 'layouts.app', section: 'content', with: ['foo' => 'bar'])]
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Configuration
 }
@@ -84,7 +84,7 @@ use Illuminte\Http\Request;
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Attributes\Layout;
 
-class UserTable extends \Relay\Table
+class UserTable extends Table
 {
     //... Configuration
     
