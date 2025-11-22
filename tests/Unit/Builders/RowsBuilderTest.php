@@ -248,6 +248,37 @@ class RowsBuilderTest extends TestCase
         $this->assertSame('Test Model 00', $rows[0]->name);
     }
 
+    public function test_it_does_not_sort_by_default_when_there_is_a_sort_value_given_and_there_is_a_sort_value(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(default: Sort::Desc),
+                    new Column('email')->sortable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('sort', ['email' => 'asc']);
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertCount(50, $rows);
+        $this->assertSame('Test Model 00', $rows[0]->name);
+    }
+
     public function test_it_sorts_by_column_when_there_is_a_sort_value_given_and_there_is_a_sort_value(): void
     {
         /** @var RowsBuilder $builder */

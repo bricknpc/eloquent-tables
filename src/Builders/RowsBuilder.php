@@ -127,6 +127,10 @@ class RowsBuilder
                     return;
                 }
 
+                if (count($sortRequest) > 0) {
+                    return;
+                }
+
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
                 } else {
