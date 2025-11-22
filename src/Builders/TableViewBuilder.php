@@ -143,6 +143,8 @@ readonly class TableViewBuilder
         }
 
         $viewData['mainTableStyle'] = $table->pageStyle()->toCssClass($theme);
+        $viewData['disabledStyle']  = $table->pageStyle()->toCssDisabledClass($theme);
+        $viewData['activeStyle']    = $table->pageStyle()->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */

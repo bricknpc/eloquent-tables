@@ -32,9 +32,7 @@ class UserTable extends Table
     
     public function pageStyle(): PageStyle
     {
-        return [
-            PageStyle::Primary,
-        ];
+        return PageStyle::Primary;
     }
 }
 ```

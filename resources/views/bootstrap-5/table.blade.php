@@ -26,3 +26,4 @@
         </div>
     @endif
 </section>
+@include('eloquent-tables::bootstrap-5.css')
