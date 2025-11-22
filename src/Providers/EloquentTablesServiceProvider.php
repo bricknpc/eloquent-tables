@@ -17,11 +17,18 @@ use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
+use BrickNPC\EloquentTables\Console\Commands\MakeTableCommand;
 
 class EloquentTablesServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                MakeTableCommand::class,
+            ]);
+        }
+
         View::addNamespace('eloquent-tables', __DIR__ . '/../../resources/views');
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/eloquent-tables.php', 'eloquent-tables');

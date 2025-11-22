@@ -82,4 +82,12 @@ return [
         'check'     => '✓', // new HtmlString("&check;"), // "u\{2713}"
         'cross'     => '✗', // new HtmlString("&cross;"), // "u\{2717}"
     ],
+
+    /*
+     * Tables location
+     * --------------------------------
+     *
+     * The location where the generated tables will be created.
+     */
+    'tables-location' => 'Tables',
 ];

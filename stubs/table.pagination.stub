@@ -1,0 +1,39 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ modelImport }}
+use BrickNPC\EloquentTables\Table;
+use BrickNPC\EloquentTables\Column;
+use BrickNPC\EloquentTables\Concerns\WithPagination;
+
+/**
+ * @extends Table<{{ modelType }}>
+ */
+class {{ class }} extends Table
+{
+    /**
+     * @use WithPagination<{{ modelType }}>
+     */
+    use WithPagination;
+
+    /**
+     * Return the eloquent query builder for the table.
+     */
+    public function query(): Builder
+    {
+        return {{ modelType }}::query();
+    }
+
+    /**
+     * Define the table columns.
+     *
+     * @return Column<{{ modelType }}>[]
+     */
+    public function columns(): array
+    {
+        return [
+            //
+        ];
+    }
+}

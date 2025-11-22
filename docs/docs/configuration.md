@@ -141,6 +141,21 @@ return [
 ];
 ```
 
+### Tables location
+
+The `tables-location` option determines where the make table command will place the generated table classes. By 
+default, the command will place the table classes in the `app/Tables` directory.
+
+```php
+<?php
+// config/eloquent-tables.php
+
+return [
+    // Other options
+    'tables-location' => 'Tables',
+];
+```
+
 ## App configuration
 
 Because the Eloquent Tables package is a Laravel package, there are a few Laravel configuration options that this 

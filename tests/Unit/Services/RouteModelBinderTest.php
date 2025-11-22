@@ -7,16 +7,19 @@ namespace BrickNPC\EloquentTables\Tests\Unit\Services;
 use Mockery\Mock;
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Tests\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Illuminate\Contracts\Container\Container;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use BrickNPC\EloquentTables\Console\Commands\MakeTableCommand;
 
 /**
  * @internal
  */
 #[CoversClass(RouteModelBinder::class)]
+#[UsesClass(MakeTableCommand::class)]
 class RouteModelBinderTest extends TestCase
 {
     use LazilyRefreshDatabase;

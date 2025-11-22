@@ -1,0 +1,33 @@
+<?php
+
+namespace {{ namespace }};
+
+{{ modelImport }}
+use BrickNPC\EloquentTables\Table;
+use BrickNPC\EloquentTables\Column;
+
+/**
+ * @extends Table<{{ modelType }}>
+ */
+class {{ class }} extends Table
+{
+    /**
+     * Return the eloquent query builder for the table.
+     */
+    public function query(): Builder
+    {
+        return {{ modelType }}::query();
+    }
+
+    /**
+     * Define the table columns.
+     *
+     * @return Column<{{ modelType }}>[]
+     */
+    public function columns(): array
+    {
+        return [
+            //
+        ];
+    }
+}
