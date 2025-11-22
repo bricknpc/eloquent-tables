@@ -12,7 +12,7 @@
     "Filtering",
     "Sorting"
   ],
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "require": {
     "php": "^8.4",
