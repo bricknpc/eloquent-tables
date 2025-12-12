@@ -61,4 +61,18 @@ class TableActionTest extends TestCase
         $action3 = new TableAction(action: '#')->tooltip('tooltip');
         $this->assertSame('tooltip', $action3->tooltip);
     }
+
+    public function test_it_sets_authorize_through_constructor_or_fluent_setter(): void
+    {
+        $action = new TableAction(action: '#');
+        $this->assertNull($action->authorize);
+
+        $action2 = new TableAction(action: '#', authorize: fn () => true);
+        $this->assertInstanceOf(\Closure::class, $action2->authorize);
+        $this->assertTrue(call_user_func($action2->authorize));
+
+        $action3 = new TableAction(action: '#')->authorize(fn () => true);
+        $this->assertInstanceOf(\Closure::class, $action3->authorize);
+        $this->assertTrue(call_user_func($action3->authorize));
+    }
 }
