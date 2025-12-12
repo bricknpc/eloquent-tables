@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables;
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
@@ -28,7 +29,7 @@ class Column
     private array $formatterParameters = [];
 
     /**
-     * @param null|\Closure(TModel $model): \Stringable                                  $valueUsing
+     * @param null|(\Closure(TModel $model): (float|Htmlable|int|string|\Stringable))    $valueUsing
      * @param null|\Closure(Request $request, Builder $query, Sort $direction): void     $sortUsing
      * @param null|\Closure(Request $request, Builder $query): void|Sort                 $defaultSort
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
@@ -60,7 +61,7 @@ class Column
     }
 
     /**
-     * @param \Closure(TModel $model): \Stringable $valueUsing
+     * @param (\Closure(TModel $model): (float|Htmlable|int|string|\Stringable)) $valueUsing
      */
     public function valueUsing(\Closure $valueUsing): static
     {
