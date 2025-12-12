@@ -75,16 +75,16 @@ class EloquentTablesServiceProvider extends ServiceProvider
         $decimals = $this->getConfig('app.decimals', 2);
 
         $this->app->when(CurrencyFormatter::class)->needs('$currency')->give($currency);
-        $this->app->when(CurrencyFormatter::class)->needs('$locale')->give($this->app->getLocale());
+        $this->app->when(CurrencyFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
         $this->app->when(NumberFormatter::class)->needs('$decimals')->give($decimals);
-        $this->app->when(NumberFormatter::class)->needs('$locale')->give($this->app->getLocale());
+        $this->app->when(NumberFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
         $this->app->when(DateFormatter::class)->needs(\DateTimeZone::class)->give(fn () => $timezone);
-        $this->app->when(DateFormatter::class)->needs('$locale')->give($this->app->getLocale());
+        $this->app->when(DateFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
         $this->app->when(DateTimeFormatter::class)->needs(\DateTimeZone::class)->give(fn () => $timezone);
-        $this->app->when(DateTimeFormatter::class)->needs('$locale')->give($this->app->getLocale());
+        $this->app->when(DateTimeFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
     }
 
     private function getConfig(string $key, mixed $default = null): mixed
