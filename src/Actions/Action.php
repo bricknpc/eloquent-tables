@@ -4,11 +4,24 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Actions\Concerns\Authorizable;
+use BrickNPC\EloquentTables\Actions\Contracts\WithAuthorization;
 
-abstract class Action
+/**
+ * @template TModel of Model
+ *
+ * @implements Authorizable<TModel>
+ */
+abstract class Action implements Authorizable
 {
+    /**
+     * @use WithAuthorization<TModel>
+     */
+    use WithAuthorization;
+
     /**
      * @param ButtonStyle[] $styles
      */

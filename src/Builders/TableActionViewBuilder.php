@@ -7,10 +7,14 @@ namespace BrickNPC\EloquentTables\Builders;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\TableAction;
 
+/**
+ * @template TModel of Model
+ */
 readonly class TableActionViewBuilder
 {
     public function __construct(
@@ -18,6 +22,9 @@ readonly class TableActionViewBuilder
         private Config $config,
     ) {}
 
+    /**
+     * @param TableAction<TModel> $action
+     */
     public function build(TableAction $action, Request $request): ?View
     {
         if (!$this->isAuthorized($action, $request)) {
@@ -34,12 +41,15 @@ readonly class TableActionViewBuilder
         ]);
     }
 
+    /**
+     * @param TableAction<TModel> $action
+     */
     private function isAuthorized(TableAction $action, Request $request): bool
     {
         if ($action->authorize === null) {
             return true;
         }
 
-        return (bool) call_user_func($action->authorize, $request);
+        return (bool) call_user_func($action->authorize, $request, null);
     }
 }

@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
+/**
+ * @template TModel of Model
+ *
+ * @extends Action<TModel>
+ */
 class TableAction extends Action
 {
     /**
-     * @param ButtonStyle[]                         $styles
-     * @param null|\Closure(Request $request): bool $authorize
+     * @param ButtonStyle[] $styles
      */
     public function __construct(
         public string $action,
@@ -20,7 +24,6 @@ class TableAction extends Action
         public array $styles = [],
         public ?string $tooltip = null,
         public bool $asModal = false,
-        public ?\Closure $authorize = null,
     ) {
         parent::__construct(
             label: $label,
@@ -28,6 +31,9 @@ class TableAction extends Action
         );
     }
 
+    /**
+     * @return $this
+     */
     public function tooltip(string $tooltip): self
     {
         $this->tooltip = $tooltip;
@@ -35,19 +41,12 @@ class TableAction extends Action
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function asModal(): self
     {
         $this->asModal = true;
-
-        return $this;
-    }
-
-    /**
-     * @param \Closure(Request $request): bool $authorize
-     */
-    public function authorize(\Closure $authorize): self
-    {
-        $this->authorize = $authorize;
 
         return $this;
     }
