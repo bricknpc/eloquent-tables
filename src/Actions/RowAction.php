@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\Method;
 use Illuminate\Contracts\Support\Htmlable;
@@ -12,16 +11,17 @@ use BrickNPC\EloquentTables\Enums\ButtonStyle;
 
 /**
  * @template TModel of Model
+ *
+ * @extends Action<TModel>
  */
 class RowAction extends Action
 {
     /**
-     * @param \Closure(TModel $model): string|string           $action
-     * @param null|\Closure(TModel $model): string|string      $tooltip
-     * @param ButtonStyle[]                                    $styles
-     * @param ?\Closure(Request $request, TModel $model): bool $authorize
-     * @param ?\Closure(TModel $model): bool                   $when
-     * @param null|\Closure(TModel $model): string|string      $confirm
+     * @param \Closure(TModel $model): string|string      $action
+     * @param null|\Closure(TModel $model): string|string $tooltip
+     * @param ButtonStyle[]                               $styles
+     * @param ?\Closure(TModel $model): bool              $when
+     * @param null|\Closure(TModel $model): string|string $confirm
      */
     public function __construct(
         public \Closure|string $action,
@@ -30,7 +30,6 @@ class RowAction extends Action
         public array $styles = [],
         public bool $asForm = false,
         public Method $method = Method::Post,
-        public ?\Closure $authorize = null,
         public ?\Closure $when = null,
         public \Closure|string|null $confirm = null,
         public ?string $confirmValue = null,
@@ -43,6 +42,8 @@ class RowAction extends Action
 
     /**
      * @param \Closure(TModel $model): string|string $tooltip
+     *
+     * @return $this
      */
     public function tooltip(\Closure|string $tooltip): static
     {
@@ -51,6 +52,9 @@ class RowAction extends Action
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function asForm(Method $method = Method::Post): static
     {
         $this->asForm = true;
@@ -59,6 +63,9 @@ class RowAction extends Action
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function method(Method $method): static
     {
         $this->method = $method;
@@ -66,43 +73,50 @@ class RowAction extends Action
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function get(): static
     {
         return $this->asForm(Method::Get);
     }
 
+    /**
+     * @return $this
+     */
     public function post(): static
     {
         return $this->asForm(Method::Post);
     }
 
+    /**
+     * @return $this
+     */
     public function delete(): static
     {
         return $this->asForm(Method::Delete);
     }
 
+    /**
+     * @return $this
+     */
     public function put(): static
     {
         return $this->asForm(Method::Put);
     }
 
+    /**
+     * @return $this
+     */
     public function patch(): static
     {
         return $this->asForm(Method::Patch);
     }
 
     /**
-     * @param \Closure(Request $request, TModel $model): bool $authorize
-     */
-    public function authorize(\Closure $authorize): static
-    {
-        $this->authorize = $authorize;
-
-        return $this;
-    }
-
-    /**
      * @param \Closure(TModel $model): bool $when
+     *
+     * @return $this
      */
     public function when(\Closure $when): static
     {
@@ -113,6 +127,8 @@ class RowAction extends Action
 
     /**
      * @param null|\Closure(TModel $model): string|string $confirm
+     *
+     * @return $this
      */
     public function confirm(\Closure|string|null $confirm = null, ?string $confirmValue = null): static
     {

@@ -115,13 +115,17 @@ class RowActionTest extends TestCase
         $this->assertSame(Method::Patch, $action5->method);
     }
 
-    public function test_it_sets_authorize_through_constructor_or_fluent_setter(): void
+    public function test_it_sets_authorize_through_property_or_fluent_setter(): void
     {
-        $action = new RowAction(action: '#', authorize: fn (Request $request, Model $model) => true);
+        $action            = new RowAction(action: '#');
+        $action->authorize = fn (Request $request, Model $model) => true;
         $this->assertInstanceOf(\Closure::class, $action->authorize);
 
         $action2 = new RowAction(action: '#')->authorize(fn (Request $request, Model $model) => true);
         $this->assertInstanceOf(\Closure::class, $action2->authorize);
+
+        $action3 = new RowAction(action: '#');
+        $this->assertNull($action3->authorize);
     }
 
     public function test_it_sets_when_through_constructor_or_fluent_setter(): void

@@ -41,6 +41,8 @@ readonly class TableViewBuilder
      * @param ColumnValueViewBuilder<TModel> $columnValueViewBuilder
      * @param LayoutFinder<TModel>           $layoutFinder
      * @param RowsBuilder<TModel>            $rowsBuilder
+     * @param MassActionViewBuilder<TModel>  $massActionViewBuilder
+     * @param TableActionViewBuilder<TModel> $tableActionViewBuilder
      */
     public function __construct(
         private ColumnLabelViewBuilder $columnLabelViewBuilder,
@@ -95,13 +97,13 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
-        /** @var TableAction[] $tableActions */
+        /** @var TableAction<TModel>[] $tableActions */
         $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
         /** @var RowAction<TModel>[] $rowActions */
         $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
-        /** @var MassAction[] $massActions */
+        /** @var MassAction<TModel>[] $massActions */
         $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
 
         $viewData = [

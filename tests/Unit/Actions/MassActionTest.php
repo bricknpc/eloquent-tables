@@ -99,13 +99,17 @@ class MassActionTest extends TestCase
         $this->assertSame(Method::Delete, $action5->method);
     }
 
-    public function test_it_sets_authorize_through_constructor_or_fluent_setter(): void
+    public function test_it_sets_authorize_through_property_or_fluent_setter(): void
     {
-        $action = new MassAction('#', 'Label', authorize: fn () => true);
+        $action            = new MassAction('#', 'Label');
+        $action->authorize = fn () => true;
         $this->assertInstanceOf(\Closure::class, $action->authorize);
 
         $action2 = new MassAction('#')->authorize(fn () => true);
         $this->assertInstanceOf(\Closure::class, $action2->authorize);
+
+        $action3 = new MassAction('#');
+        $this->assertNull($action3->authorize);
     }
 
     public function test_it_sets_confirm_through_constructor_or_fluent_setter(): void
