@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Builders;
 
+use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Services\Config;
@@ -17,8 +18,12 @@ readonly class TableActionViewBuilder
         private Config $config,
     ) {}
 
-    public function build(TableAction $action): View
+    public function build(TableAction $action, Request $request): ?View
     {
+        if (!$this->isAuthorized($action, $request)) {
+            return null;
+        }
+
         return $this->viewFactory->make('eloquent-tables::action.table-action', [
             'theme'   => $this->config->theme(),
             'action'  => $action->action,
@@ -27,5 +32,14 @@ readonly class TableActionViewBuilder
             'asModal' => $action->asModal,
             'tooltip' => $action->tooltip,
         ]);
+    }
+
+    private function isAuthorized(TableAction $action, Request $request): bool
+    {
+        if ($action->authorize === null) {
+            return true;
+        }
+
+        return (bool) call_user_func($action->authorize, $request);
     }
 }

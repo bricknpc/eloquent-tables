@@ -4,7 +4,7 @@
             <div class="btn-group">
         @endif
         @foreach($tableActions as $tableAction)
-            {!! $tableActionViewBuilder->build($tableAction) !!}
+            {!! $tableActionViewBuilder->build($tableAction, $request) !!}
         @endforeach
         @if($tableActionCount > 1)
             </div>
