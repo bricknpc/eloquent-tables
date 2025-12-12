@@ -21,6 +21,9 @@ concurrency:
 jobs:
   phpunit:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +31,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
           coverage: xdebug
 
@@ -37,9 +40,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
@@ -49,6 +52,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        if: matrix.php-version == '8.5'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -56,6 +60,7 @@ jobs:
           verbose: true
 
       - name: Get coverage percentage
+        if: matrix.php-version == '8.5'
         id: coverage
         run: |
           COVERAGE=$(php -r "
@@ -68,6 +73,7 @@ jobs:
           echo "Current coverage: $COVERAGE%"
 
       - name: Download previous coverage
+        if: matrix.php-version == '8.5'
         uses: actions/cache@v3
         with:
           path: previous-coverage.txt
@@ -76,6 +82,7 @@ jobs:
             coverage-${{ github.ref }}-
 
       - name: Compare coverage
+        if: matrix.php-version == '8.5'
         run: |
           CURRENT_COVERAGE=${{ steps.coverage.outputs.current }}
           
@@ -97,14 +104,17 @@ jobs:
           echo "$CURRENT_COVERAGE" > previous-coverage.txt
 
       - name: Save current coverage
+        if: matrix.php-version == '8.5' && always()
         uses: actions/cache/save@v3
-        if: always()
         with:
           path: previous-coverage.txt
           key: coverage-${{ github.ref }}-${{ github.sha }}
 
   phpstan:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +122,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
 
       - name: Cache Composer packages
@@ -120,9 +130,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
@@ -132,6 +142,9 @@ jobs:
 
   php-cs-fixer:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
 
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +152,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
 
       - name: Cache Composer packages
@@ -147,9 +160,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
@@ -159,7 +172,7 @@ jobs:
 
   deploy-docs:
     runs-on: ubuntu-latest
-    # Only deploy on push to main branch (adjust branch name if needed)
+    # Only deploy on push to main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [phpunit, phpstan, php-cs-fixer]
 
