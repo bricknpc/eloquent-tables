@@ -12,12 +12,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
+use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
-use BrickNPC\EloquentTables\Actions\RowAction;
-use BrickNPC\EloquentTables\Actions\MassAction;
-use BrickNPC\EloquentTables\Actions\TableAction;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
@@ -93,13 +91,13 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
-        /** @var TableAction<TModel>[] $tableActions */
+        /** @var Action<TModel>[] $tableActions */
         $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
-        /** @var RowAction<TModel>[] $rowActions */
+        /** @var Action<TModel>[] $rowActions */
         $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
-        /** @var MassAction<TModel>[] $massActions */
+        /** @var Action<TModel>[] $massActions */
         $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
 
         $viewData = [

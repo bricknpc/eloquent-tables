@@ -9,7 +9,7 @@ use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentAlreadySet;
 use BrickNPC\EloquentTables\Actions\Contracts\ActionCapability;
 
-abstract class Action
+class Action
 {
     protected ActionDescriptor $descriptor;
 
@@ -23,6 +23,11 @@ abstract class Action
         $this->descriptor = new ActionDescriptor();
     }
 
+    /**
+     * @param \Closure(ActionContext $context): string|string $label
+     *
+     * @return $this
+     */
     public function label(\Closure|string $label): static
     {
         $this->descriptor->label = new LazyValue($label);
@@ -38,7 +43,7 @@ abstract class Action
     public function as(ActionIntent $intent): static
     {
         if ($this->descriptor->intent !== null) {
-            throw ActionIntentAlreadySet::forIntent($this->descriptor->intent, $this);
+            throw ActionIntentAlreadySet::forIntent($this->descriptor->intent, $intent, $this);
         }
 
         $this->descriptor->intent = $intent;
