@@ -17,6 +17,6 @@ final readonly class LazyValue
 
     public function resolve(ActionContext $context): string
     {
-        return is_callable($this->value) ? call_user_func($this->value, $context) : (string) $this->value;
+        return is_callable($this->value) ? call_user_func($this->value, $context) : $this->value;
     }
 }

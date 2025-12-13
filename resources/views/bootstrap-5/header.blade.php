@@ -1,6 +1,5 @@
 @php
     use BrickNPC\EloquentTables\Actions\ActionRenderer;
-    use BrickNPC\EloquentTables\Enums\ActionContextType;
     use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
     /** @var ActionRenderer $actionRenderer */
@@ -12,7 +11,7 @@
             <div class="btn-group">
         @endif
         @foreach($tableActions as $tableAction)
-            {!! $actionRenderer->render($tableAction, ActionContext::table($request)) !!}
+            {!! $actionRenderer->render($tableAction, new ActionContext($request)) !!}
         @endforeach
         @if($tableActionCount > 1)
             </div>
@@ -39,7 +38,7 @@
         @if($massActionCount > 0)
             <div class="d-flex align-items-center table-mass-actions">
                 @foreach($massActions as $massAction)
-                    {!! $actionRenderer->render($massAction, ActionContext::mass($request)) !!}
+                    {!! $actionRenderer->render($massAction, new ActionContext($request)) !!}
                 @endforeach
             </div>
         @endif

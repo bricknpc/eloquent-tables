@@ -9,12 +9,15 @@ use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 final class ActionDescriptor
 {
     public LazyValue $label;
-    public string $element = 'button'; // to, change to enum
 
     /**
      * @var array<string, string>
      */
     public array $attributes = [];
+
+    public string $beforeRender       = '';
+    public string $afterRender        = '';
+    public string $attributesRendered = '';
 
     public ?ActionIntent $intent = null;
 

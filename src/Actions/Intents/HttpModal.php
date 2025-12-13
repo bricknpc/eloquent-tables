@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions\Intents;
 
 use BrickNPC\EloquentTables\Actions\ActionIntent;
-use BrickNPC\EloquentTables\Enums\ActionIntentType;
-use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 
 final readonly class HttpModal extends ActionIntent
 {
-    public function __construct(LazyValue|string $title, LazyValue|string $url)
-    {
-        parent::__construct(ActionIntentType::Modal, [
-            'title' => $title,
-            'url'   => $url,
-        ]);
-    }
+    public function __construct(
+        public \Closure|string $title,
+        public \Closure|string $url,
+    ) {}
 
     public function view(): string
     {
