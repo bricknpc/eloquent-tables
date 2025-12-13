@@ -10,16 +10,23 @@ use BrickNPC\EloquentTables\Actions\ActionIntent;
 class ActionIntentAlreadySet extends \Exception
 {
     private ActionIntent $intent;
+    private ActionIntent $newIntent;
     private Action $action;
 
-    public static function forIntent(ActionIntent $intent, Action $action): self
+    public static function forIntent(ActionIntent $intent, ActionIntent $newIntent, Action $action): self
     {
         $exception = new self(
-            sprintf('The action %s already has an intent % set', get_class($action), get_class($intent)),
+            sprintf(
+                'The action %s already has an intent %, new intent %s can not be set',
+                get_class($action),
+                get_class($intent),
+                get_class($newIntent),
+            ),
         );
 
-        $exception->intent = $intent;
-        $exception->action = $action;
+        $exception->intent    = $intent;
+        $exception->newIntent = $newIntent;
+        $exception->action    = $action;
 
         return $exception;
     }
@@ -30,8 +37,9 @@ class ActionIntentAlreadySet extends \Exception
     public function context(): array
     {
         return [
-            'intent' => $this->intent,
-            'action' => $this->action,
+            'intent'    => $this->intent,
+            'newIntent' => $this->newIntent,
+            'action'    => $this->action,
         ];
     }
 }
