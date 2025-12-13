@@ -71,9 +71,9 @@ abstract class Action
                 continue;
             }
 
-            $this->descriptor->beforeRender       .= $contribution->renderBefore($this->descriptor, $context);
-            $this->descriptor->attributesRendered .= $contribution->renderAttributes($this->descriptor, $context);
-            $this->descriptor->afterRender        .= $contribution->renderAfter($this->descriptor, $context);
+            $this->descriptor->beforeRender->add($contribution->renderBefore($this->descriptor, $context));
+            $this->descriptor->attributesRender->add($contribution->renderAttributes($this->descriptor, $context));
+            $this->descriptor->afterRender->add($contribution->renderAfter($this->descriptor, $context));
         }
 
         return $this->descriptor;

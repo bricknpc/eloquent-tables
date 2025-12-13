@@ -33,7 +33,7 @@ final readonly class ActionRenderer
             'attributes'         => $descriptor->attributes,
             'beforeContent'      => $descriptor->beforeRender,
             'afterContent'       => $descriptor->afterRender,
-            'renderedAttributes' => $descriptor->attributesRendered,
+            'renderedAttributes' => $descriptor->attributesRender,
             'intent'             => $descriptor->intent,
         ]);
 
