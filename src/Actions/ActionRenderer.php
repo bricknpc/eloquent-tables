@@ -14,17 +14,32 @@ final readonly class ActionRenderer
         private Config $config,
     ) {}
 
-    public function render(Action $action, ActionContext $context): View
+    public function render(Action $action, ActionContext $context): ?View
     {
         $descriptor = $action->descriptor($context);
 
-        return view($descriptor->intent->view(), [
-            'theme'         => $this->config->theme(),
-            'dataNamespace' => $this->config->dataNamespace(),
-            'type'          => $descriptor->element,
-            'attributes'    => $descriptor->attributes,
-            'intent'        => $descriptor->intent,
-            'payload'       => $descriptor->intent->payload,
+        if ($descriptor === null) {
+            return null;
+        }
+
+        // Call before render hook
+        $descriptor->intent->beforeRender($descriptor, $context);
+
+        $result = view($descriptor->intent->view(), [
+            'theme'              => $this->config->theme(),
+            'dataNamespace'      => $this->config->dataNamespace(),
+            'context'            => $context,
+            'label'              => $descriptor->label->resolve($context),
+            'attributes'         => $descriptor->attributes,
+            'beforeContent'      => $descriptor->beforeRender,
+            'afterContent'       => $descriptor->afterRender,
+            'renderedAttributes' => $descriptor->attributesRendered,
+            'intent'             => $descriptor->intent,
         ]);
+
+        // Call after render hook
+        $descriptor->intent->afterRender($descriptor, $context);
+
+        return $result;
     }
 }

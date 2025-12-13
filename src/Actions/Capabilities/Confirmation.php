@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions\Capabilities;
 
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
-use BrickNPC\EloquentTables\Actions\Contracts\AttributeActionCapability;
 
-final readonly class Confirmation implements AttributeActionCapability
+final class Confirmation extends ActionCapability
 {
     public function __construct(
-        public LazyValue|string $text,
-        public LazyValue|string|null $confirmValue = null,
-        public LazyValue|string|null $cancelValue = null,
-        public LazyValue|string|null $inputConfirmationValue = null,
+        private readonly \Closure|string $text,
+        private readonly \Closure|string|null $confirmValue = null,
+        private readonly \Closure|string|null $cancelValue = null,
+        private readonly \Closure|string|null $inputConfirmationValue = null,
     ) {}
 
     public function apply(ActionDescriptor $descriptor, ActionContext $context): void
     {
-        $descriptor->attributes['tooltip']                = $this->text instanceof LazyValue ? $this->text->resolve($context) : $this->text;
-        $descriptor->attributes['confirmValue']           = $this->confirmValue instanceof LazyValue ? $this->confirmValue->resolve($context) : $this->confirmValue;
-        $descriptor->attributes['cancelValue']            = $this->cancelValue instanceof LazyValue ? $this->cancelValue->resolve($context) : $this->cancelValue;
-        $descriptor->attributes['inputConfirmationValue'] = $this->inputConfirmationValue instanceof LazyValue ? $this->inputConfirmationValue->resolve($context) : $this->inputConfirmationValue;
+        // Todo this does not work. Needs to be moved to a renderer or something
+        $descriptor->attributes['tooltip']                = new LazyValue($this->text)->resolve($context);
+        $descriptor->attributes['confirmValue']           = new LazyValue($this->confirmValue)->resolve($context);
+        $descriptor->attributes['cancelValue']            = new LazyValue($this->cancelValue)->resolve($context);
+        $descriptor->attributes['inputConfirmationValue'] = new LazyValue($this->inputConfirmationValue)->resolve($context);
     }
 }

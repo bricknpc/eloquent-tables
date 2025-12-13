@@ -3,7 +3,6 @@
     use BrickNPC\EloquentTables\Column;
     use Illuminate\Database\Eloquent\Model;
     use BrickNPC\EloquentTables\Actions\ActionRenderer;
-    use BrickNPC\EloquentTables\Enums\ActionContextType;
     use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
     use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 
@@ -30,7 +29,7 @@
                 <td class="text-end">
                     <div class="btn-group">
                         @foreach($rowActions as $action)
-                            {!! $actionRenderer->render($action, ActionContext::row($request, $row)) !!}
+                            {!! $actionRenderer->render($action, new ActionContext($request, $row)) !!}
                         @endforeach
                     </div>
                 </td>
