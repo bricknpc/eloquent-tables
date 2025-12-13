@@ -19,6 +19,7 @@ use BrickNPC\EloquentTables\Actions\RowAction;
 use BrickNPC\EloquentTables\Actions\MassAction;
 use BrickNPC\EloquentTables\Actions\TableAction;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 
@@ -36,26 +37,21 @@ use BrickNPC\EloquentTables\Services\RouteModelBinder;
 readonly class TableViewBuilder
 {
     /**
-     * @param RowActionViewBuilder<TModel>   $rowActionBuilder
      * @param ColumnLabelViewBuilder<TModel> $columnLabelViewBuilder
      * @param ColumnValueViewBuilder<TModel> $columnValueViewBuilder
      * @param LayoutFinder<TModel>           $layoutFinder
      * @param RowsBuilder<TModel>            $rowsBuilder
-     * @param MassActionViewBuilder<TModel>  $massActionViewBuilder
-     * @param TableActionViewBuilder<TModel> $tableActionViewBuilder
      */
     public function __construct(
         private ColumnLabelViewBuilder $columnLabelViewBuilder,
         private ColumnValueViewBuilder $columnValueViewBuilder,
-        private TableActionViewBuilder $tableActionViewBuilder,
-        private RowActionViewBuilder $rowActionBuilder,
         private Factory $viewFactory,
         private LayoutFinder $layoutFinder,
         private Config $config,
         private RowsBuilder $rowsBuilder,
-        private MassActionViewBuilder $massActionViewBuilder,
         private FilterViewBuilder $filterViewBuilder,
         private RouteModelBinder $methodInvoker,
+        private ActionRenderer $actionRenderer,
     ) {}
 
     /**
@@ -114,29 +110,27 @@ readonly class TableViewBuilder
             'tableStyles'   => collect($table->tableStyles())
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
-            'columns'                 => $columns,
-            'columnLabelViewBuilder'  => $this->columnLabelViewBuilder,
-            'rows'                    => $this->getRows($table, $request),
-            'columnValueViewBuilder'  => $this->columnValueViewBuilder,
-            'links'                   => $this->getLinks($table, $request),
-            'tableActionCount'        => count($tableActions),
-            'tableActions'            => $tableActions,
-            'tableActionViewBuilder'  => $this->tableActionViewBuilder,
-            'showSearchForm'          => $this->hasSearchableColumns($columns),
-            'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
-            'fullUrl'                 => $request->fullUrl(),
-            'searchQuery'             => $request->query($this->config->searchQueryName()),
-            'searchQueryName'         => $this->config->searchQueryName(),
-            'searchIcon'              => $this->config->searchIcon(),
-            'rowActionCount'          => count($rowActions),
-            'rowActions'              => $rowActions,
-            'rowActionBuilder'        => $this->rowActionBuilder,
-            'massActionCount'         => count($massActions),
-            'massActions'             => $massActions,
-            'massActionViewBuilder'   => $this->massActionViewBuilder,
-            'filterCount'             => count($filters),
-            'filters'                 => $filters,
-            'filterViewBuilder'       => $this->filterViewBuilder,
+            'columns'                => $columns,
+            'columnLabelViewBuilder' => $this->columnLabelViewBuilder,
+            'rows'                   => $this->getRows($table, $request),
+            'columnValueViewBuilder' => $this->columnValueViewBuilder,
+            'links'                  => $this->getLinks($table, $request),
+            'tableActionCount'       => count($tableActions),
+            'tableActions'           => $tableActions,
+            'showSearchForm'         => $this->hasSearchableColumns($columns),
+            'tableSearchUrl'         => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
+            'fullUrl'                => $request->fullUrl(),
+            'searchQuery'            => $request->query($this->config->searchQueryName()),
+            'searchQueryName'        => $this->config->searchQueryName(),
+            'searchIcon'             => $this->config->searchIcon(),
+            'rowActionCount'         => count($rowActions),
+            'rowActions'             => $rowActions,
+            'massActionCount'        => count($massActions),
+            'massActions'            => $massActions,
+            'filterCount'            => count($filters),
+            'filters'                => $filters,
+            'filterViewBuilder'      => $this->filterViewBuilder,
+            'actionRenderer'         => $this->actionRenderer,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);

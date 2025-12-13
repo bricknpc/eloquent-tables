@@ -4,43 +4,58 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Support\Htmlable;
-use BrickNPC\EloquentTables\Enums\ButtonStyle;
-use BrickNPC\EloquentTables\Actions\Contracts\Authorizable;
-use BrickNPC\EloquentTables\Actions\Concerns\WithAuthorization;
+use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Enums\ActionContextType;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\Contracts\ActionCapability;
+use BrickNPC\EloquentTables\Actions\Contracts\GuardActionCapability;
+use BrickNPC\EloquentTables\Actions\Contracts\AttributeActionCapability;
 
-/**
- * @template TModel of Model
- *
- * @implements Authorizable<TModel>
- */
-abstract class Action implements Authorizable
+abstract class Action
 {
-    /**
-     * @use WithAuthorization<TModel>
-     */
-    use WithAuthorization;
+    protected ActionDescriptor $descriptor;
+    protected array $capabilities = [];
 
-    /**
-     * @param ButtonStyle[] $styles
-     */
-    public function __construct(
-        public Htmlable|string|\Stringable|null $label = null,
-        public array $styles = [],
-    ) {}
-
-    public function label(Htmlable|string|\Stringable $label): static
+    public function __construct()
     {
-        $this->label = $label;
+        $this->descriptor = new ActionDescriptor();
+    }
+
+    public function label(\Closure|string $label): static
+    {
+        $this->descriptor->label = new LazyValue($label);
 
         return $this;
     }
 
-    public function styles(ButtonStyle ...$styles): static
+    public function as(ActionIntent $intent): static
     {
-        $this->styles = array_merge($this->styles, $styles);
+        $this->descriptor->intent = $intent;
 
         return $this;
     }
+
+    public function with(ActionCapability $capability): static
+    {
+        $this->capabilities[] = $capability;
+
+        return $this;
+    }
+
+    public function descriptor(ActionContext $context): ActionDescriptor
+    {
+        foreach ($this->capabilities as $capability) {
+            if ($capability instanceof GuardActionCapability && !$capability->check($this->descriptor, $context)) {
+                continue;
+            }
+
+            if ($capability instanceof AttributeActionCapability) {
+                $capability->apply($this->descriptor, $context);
+            }
+        }
+
+        return $this->descriptor;
+    }
+
+    abstract public function context(): ActionContextType;
 }
