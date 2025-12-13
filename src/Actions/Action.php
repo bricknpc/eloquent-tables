@@ -7,8 +7,8 @@ namespace BrickNPC\EloquentTables\Actions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
-use BrickNPC\EloquentTables\Actions\Concerns\Authorizable;
-use BrickNPC\EloquentTables\Actions\Contracts\WithAuthorization;
+use BrickNPC\EloquentTables\Actions\Contracts\Authorizable;
+use BrickNPC\EloquentTables\Actions\Concerns\WithAuthorization;
 
 /**
  * @template TModel of Model
