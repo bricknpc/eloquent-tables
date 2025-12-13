@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions;
 
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 
 final class ActionDescriptor
 {
@@ -15,14 +16,17 @@ final class ActionDescriptor
      */
     public array $attributes = [];
 
-    public string $beforeRender       = '';
-    public string $afterRender        = '';
-    public string $attributesRendered = '';
+    public RenderBuffer $beforeRender;
+    public RenderBuffer $afterRender;
+    public RenderBuffer $attributesRender;
 
     public ?ActionIntent $intent = null;
 
     public function __construct()
     {
-        $this->label = new LazyValue('');
+        $this->label            = new LazyValue('');
+        $this->beforeRender     = new RenderBuffer();
+        $this->afterRender      = new RenderBuffer();
+        $this->attributesRender = new RenderBuffer();
     }
 }
