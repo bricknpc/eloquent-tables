@@ -7,7 +7,9 @@ namespace BrickNPC\EloquentTables\Actions\Capabilities;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\Contributions\ConfirmationContribution;
 
 final class Confirmation extends ActionCapability
 {
@@ -18,12 +20,13 @@ final class Confirmation extends ActionCapability
         private readonly \Closure|string|null $inputConfirmationValue = null,
     ) {}
 
-    public function apply(ActionDescriptor $descriptor, ActionContext $context): void
+    public function contribute(ActionDescriptor $descriptor, ActionContext $context): ?CapabilityContribution
     {
-        // Todo this does not work. Needs to be moved to a renderer or something
-        $descriptor->attributes['tooltip']                = new LazyValue($this->text)->resolve($context);
-        $descriptor->attributes['confirmValue']           = new LazyValue($this->confirmValue)->resolve($context);
-        $descriptor->attributes['cancelValue']            = new LazyValue($this->cancelValue)->resolve($context);
-        $descriptor->attributes['inputConfirmationValue'] = new LazyValue($this->inputConfirmationValue)->resolve($context);
+        return new ConfirmationContribution(
+            new LazyValue($this->text)->resolve($context),
+            new LazyValue($this->confirmValue)->resolve($context),
+            new LazyValue($this->cancelValue)->resolve($context),
+            new LazyValue($this->inputConfirmationValue)->resolve($context),
+        );
     }
 }

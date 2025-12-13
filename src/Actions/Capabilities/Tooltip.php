@@ -7,7 +7,9 @@ namespace BrickNPC\EloquentTables\Actions\Capabilities;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\Contributions\TooltipContribution;
 
 final class Tooltip extends ActionCapability
 {
@@ -15,9 +17,8 @@ final class Tooltip extends ActionCapability
         private readonly \Closure|string $text,
     ) {}
 
-    public function apply(ActionDescriptor $descriptor, ActionContext $context): void
+    public function contribute(ActionDescriptor $descriptor, ActionContext $context): ?CapabilityContribution
     {
-        // todo needs to be moved
-        $descriptor->attributes['tooltip'] = new LazyValue($this->text)->resolve($context);
+        return new TooltipContribution(new LazyValue($this->text)->resolve($context));
     }
 }
