@@ -91,13 +91,13 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
-        /** @var Action<TModel>[] $tableActions */
+        /** @var Action[] $tableActions */
         $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
-        /** @var Action<TModel>[] $rowActions */
+        /** @var Action[] $rowActions */
         $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
-        /** @var Action<TModel>[] $massActions */
+        /** @var Action[] $massActions */
         $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
 
         $viewData = [
