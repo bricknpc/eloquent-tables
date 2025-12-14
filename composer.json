@@ -32,6 +32,9 @@
       "BrickNPC\\EloquentTables\\": "src/"
     }
   },
+  "autoload-files": [
+    "src/helpers.php"
+  ],
   "autoload-dev": {
     "psr-4": {
       "BrickNPC\\EloquentTables\\Tests\\": "tests/"
