@@ -6,7 +6,6 @@ namespace BrickNPC\EloquentTables\Actions\Contributions;
 
 use Illuminate\Support\HtmlString;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\CapabilityContribution;
@@ -18,11 +17,6 @@ class TooltipContribution extends CapabilityContribution
         private readonly string $text,
     ) {}
 
-    /**
-     * @template TModel of Model
-     *
-     * @param ActionContext<TModel> $context
-     */
     public function renderAttributes(
         ActionDescriptor $descriptor,
         ActionContext $context,
