@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions;
 
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
@@ -15,11 +14,6 @@ final readonly class ActionRenderer
         private Config $config,
     ) {}
 
-    /**
-     * @template TModel of Model
-     *
-     * @param ActionContext<TModel> $context
-     */
     public function render(Action $action, ActionContext $context): ?View
     {
         $descriptor = $action->descriptor($context);

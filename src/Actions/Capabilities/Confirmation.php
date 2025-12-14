@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions\Capabilities;
 
-use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
@@ -15,12 +14,10 @@ use BrickNPC\EloquentTables\Actions\Contributions\ConfirmationContribution;
 final class Confirmation extends ActionCapability
 {
     /**
-     * @template TModel of Model
-     *
-     * @param \Closure(ActionContext<TModel> $context): string|string      $text
-     * @param null|\Closure(ActionContext<TModel> $context): string|string $confirmValue
-     * @param null|\Closure(ActionContext<TModel> $context): string|string $cancelValue
-     * @param null|\Closure(ActionContext<TModel> $context): string|string $inputConfirmationValue
+     * @param \Closure(ActionContext $context): string|string      $text
+     * @param null|\Closure(ActionContext $context): string|string $confirmValue
+     * @param null|\Closure(ActionContext $context): string|string $cancelValue
+     * @param null|\Closure(ActionContext $context): string|string $inputConfirmationValue
      */
     public function __construct(
         private readonly \Closure|string $text,
@@ -29,11 +26,6 @@ final class Confirmation extends ActionCapability
         private readonly \Closure|string|null $inputConfirmationValue = null,
     ) {}
 
-    /**
-     * @template TModel of Model
-     *
-     * @param ActionContext<TModel> $context
-     */
     public function contribute(ActionDescriptor $descriptor, ActionContext $context): CapabilityContribution
     {
         return new ConfirmationContribution(

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions\Collections;
 
 use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -37,11 +36,6 @@ class ActionCollection extends Collection
         return $clone;
     }
 
-    /**
-     * @template TModel of Model
-     *
-     * @param ActionContext<TModel> $context
-     */
     public function countRenderable(ActionContext $context): int
     {
         return $this->sum(function ($item) use ($context) {
@@ -55,10 +49,6 @@ class ActionCollection extends Collection
 
     /**
      * @todo Don't like this name
-     *
-     * @template TModel of Model
-     *
-     * @param ActionContext<TModel> $context
      */
     public function isRenderable(ActionContext $context): bool
     {
