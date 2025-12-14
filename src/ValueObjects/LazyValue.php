@@ -15,7 +15,7 @@ final readonly class LazyValue
      * @param null|\Closure(ActionContext<TModel> $context): string|string $value
      */
     public function __construct(
-        private \Closure|string|null $value,
+        private \Closure|string|null $value = null,
     ) {}
 
     /**

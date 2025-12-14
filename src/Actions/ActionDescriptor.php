@@ -24,7 +24,7 @@ final class ActionDescriptor
 
     public function __construct()
     {
-        $this->label            = new LazyValue('');
+        $this->label            = new LazyValue();
         $this->beforeRender     = new RenderBuffer();
         $this->afterRender      = new RenderBuffer();
         $this->attributesRender = new RenderBuffer();
