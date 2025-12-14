@@ -129,6 +129,7 @@ readonly class TableViewBuilder
             'filters'                => $filters,
             'filterViewBuilder'      => $this->filterViewBuilder,
             'actionRenderer'         => $this->actionRenderer,
+            'config'                 => $this->config,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
