@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentAlreadySet;
@@ -24,7 +25,9 @@ class Action
     }
 
     /**
-     * @param \Closure(ActionContext $context): string|string $label
+     * @template TModel of Model
+     *
+     * @param \Closure(ActionContext<TModel> $context): string|string $label
      *
      * @return $this
      */
@@ -58,6 +61,11 @@ class Action
         return $this;
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param ActionContext<TModel> $context
+     */
     public function descriptor(ActionContext $context): ?ActionDescriptor
     {
         if (array_any(

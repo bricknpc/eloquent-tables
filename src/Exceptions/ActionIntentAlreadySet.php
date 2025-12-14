@@ -17,7 +17,7 @@ class ActionIntentAlreadySet extends \Exception
     {
         $exception = new self(
             sprintf(
-                'The action %s already has an intent %, new intent %s can not be set',
+                'The action %s already has an intent %s, new intent %s can not be set',
                 get_class($action),
                 get_class($intent),
                 get_class($newIntent),

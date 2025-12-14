@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions\Collections;
 
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
 /**
- * @extends Collection<Action>
+ * @extends Collection<int, Action|ActionCollection>
  */
 class ActionCollection extends Collection
 {
@@ -18,9 +19,12 @@ class ActionCollection extends Collection
         get => $this->type;
     }
 
+    /**
+     * @param array<Action|ActionCollection> $items
+     */
     public function __construct($items = [], ?ActionCollectionType $type = null)
     {
-        parent::__construct($items);
+        parent::__construct($items); // @phpstan-ignore-line
 
         $this->type = $type ?? ActionCollectionType::Normal;
     }
@@ -33,6 +37,11 @@ class ActionCollection extends Collection
         return $clone;
     }
 
+    /**
+     * @template TModel of Model
+     *
+     * @param ActionContext<TModel> $context
+     */
     public function countRenderable(ActionContext $context): int
     {
         return $this->sum(function ($item) use ($context) {
@@ -46,16 +55,20 @@ class ActionCollection extends Collection
 
     /**
      * @todo Don't like this name
+     *
+     * @template TModel of Model
+     *
+     * @param ActionContext<TModel> $context
      */
     public function isRenderable(ActionContext $context): bool
     {
         return $this->countRenderable($context) > 0;
     }
 
-    public function flatten($depth = INF): self
+    public function flatten($depth = PHP_INT_MAX): static
     {
         // Custom flatten that handles nested ActionCollections
-        $result = new static();
+        $result = new static(); // @phpstan-ignore-line
 
         foreach ($this->items as $item) {
             if ($item instanceof ActionCollection) {
@@ -77,11 +90,13 @@ class ActionCollection extends Collection
 
     public function group(Action ...$actions): static
     {
+        /* @var array<int, Action> $actions */
         return $this->nest(new ActionCollection($actions, ActionCollectionType::Grouped));
     }
 
     public function dropdown(Action ...$actions): static
     {
+        /* @var array<int, Action> $actions */
         return $this->nest(new ActionCollection($actions, ActionCollectionType::Dropdown));
     }
 }

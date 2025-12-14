@@ -19,6 +19,12 @@ final class RenderBuffer
 
     public function render(): string
     {
-        return implode('', array_map(fn (Htmlable|string|\Stringable|View|null $chunk) => (string) $chunk, $this->chunks));
+        return implode('', array_map(function (Htmlable|string|\Stringable|View|null $chunk) {
+            return match (true) {
+                $chunk instanceof Htmlable => $chunk->toHtml(),
+                $chunk instanceof View     => $chunk->render(),
+                default                    => (string) $chunk,
+            };
+        }, $this->chunks));
     }
 }
