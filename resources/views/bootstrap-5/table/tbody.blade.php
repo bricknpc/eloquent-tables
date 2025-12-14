@@ -29,7 +29,7 @@
                 <td class="text-end">
                     <div class="btn-group">
                         @foreach($rowActions as $action)
-                            {!! $actionRenderer->render($action, new ActionContext($request, $row)) !!}
+                            {!! $actionRenderer->render($action, new ActionContext($request, $config, $row)) !!}
                         @endforeach
                     </div>
                 </td>

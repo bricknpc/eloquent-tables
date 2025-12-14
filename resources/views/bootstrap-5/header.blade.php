@@ -11,7 +11,7 @@
             <div class="btn-group">
         @endif
         @foreach($tableActions as $tableAction)
-            {!! $actionRenderer->render($tableAction, new ActionContext($request)) !!}
+            {!! $actionRenderer->render($tableAction, new ActionContext($request, $config)) !!}
         @endforeach
         @if($tableActionCount > 1)
             </div>
@@ -38,7 +38,7 @@
         @if($massActionCount > 0)
             <div class="d-flex align-items-center table-mass-actions">
                 @foreach($massActions as $massAction)
-                    {!! $actionRenderer->render($massAction, new ActionContext($request)) !!}
+                    {!! $actionRenderer->render($massAction, new ActionContext($request, $config)) !!}
                 @endforeach
             </div>
         @endif
