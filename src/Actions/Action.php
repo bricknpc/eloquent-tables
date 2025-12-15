@@ -83,4 +83,12 @@ class Action
 
         return $this->descriptor;
     }
+
+    public function hasDescriptor(ActionContext $context): bool
+    {
+        return array_any(
+            $this->capabilities,
+            fn (ActionCapability $capability) => !$capability->check($this->descriptor, $context),
+        );
+    }
 }
