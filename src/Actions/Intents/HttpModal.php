@@ -6,11 +6,11 @@ namespace BrickNPC\EloquentTables\Actions\Intents;
 
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 
-final readonly class HttpModal extends ActionIntent
+final class HttpModal extends ActionIntent
 {
     public function __construct(
-        public \Closure|string $title,
-        public \Closure|string $url,
+        public readonly \Closure|string $title,
+        public readonly \Closure|string $url,
     ) {}
 
     public function view(): string
