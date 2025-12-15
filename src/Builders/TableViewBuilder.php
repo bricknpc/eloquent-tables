@@ -12,13 +12,12 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
+use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
-use BrickNPC\EloquentTables\Actions\RowAction;
-use BrickNPC\EloquentTables\Actions\MassAction;
-use BrickNPC\EloquentTables\Actions\TableAction;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 
@@ -36,7 +35,6 @@ use BrickNPC\EloquentTables\Services\RouteModelBinder;
 readonly class TableViewBuilder
 {
     /**
-     * @param RowActionViewBuilder<TModel>   $rowActionBuilder
      * @param ColumnLabelViewBuilder<TModel> $columnLabelViewBuilder
      * @param ColumnValueViewBuilder<TModel> $columnValueViewBuilder
      * @param LayoutFinder<TModel>           $layoutFinder
@@ -45,15 +43,13 @@ readonly class TableViewBuilder
     public function __construct(
         private ColumnLabelViewBuilder $columnLabelViewBuilder,
         private ColumnValueViewBuilder $columnValueViewBuilder,
-        private TableActionViewBuilder $tableActionViewBuilder,
-        private RowActionViewBuilder $rowActionBuilder,
         private Factory $viewFactory,
         private LayoutFinder $layoutFinder,
         private Config $config,
         private RowsBuilder $rowsBuilder,
-        private MassActionViewBuilder $massActionViewBuilder,
         private FilterViewBuilder $filterViewBuilder,
         private RouteModelBinder $methodInvoker,
+        private ActionRenderer $actionRenderer,
     ) {}
 
     /**
@@ -95,13 +91,13 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
-        /** @var TableAction[] $tableActions */
+        /** @var Action[] $tableActions */
         $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
-        /** @var RowAction<TModel>[] $rowActions */
+        /** @var Action[] $rowActions */
         $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
-        /** @var MassAction[] $massActions */
+        /** @var Action[] $massActions */
         $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
 
         $viewData = [
@@ -112,29 +108,28 @@ readonly class TableViewBuilder
             'tableStyles'   => collect($table->tableStyles())
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
-            'columns'                 => $columns,
-            'columnLabelViewBuilder'  => $this->columnLabelViewBuilder,
-            'rows'                    => $this->getRows($table, $request),
-            'columnValueViewBuilder'  => $this->columnValueViewBuilder,
-            'links'                   => $this->getLinks($table, $request),
-            'tableActionCount'        => count($tableActions),
-            'tableActions'            => $tableActions,
-            'tableActionViewBuilder'  => $this->tableActionViewBuilder,
-            'showSearchForm'          => $this->hasSearchableColumns($columns),
-            'tableSearchUrl'          => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
-            'fullUrl'                 => $request->fullUrl(),
-            'searchQuery'             => $request->query($this->config->searchQueryName()),
-            'searchQueryName'         => $this->config->searchQueryName(),
-            'searchIcon'              => $this->config->searchIcon(),
-            'rowActionCount'          => count($rowActions),
-            'rowActions'              => $rowActions,
-            'rowActionBuilder'        => $this->rowActionBuilder,
-            'massActionCount'         => count($massActions),
-            'massActions'             => $massActions,
-            'massActionViewBuilder'   => $this->massActionViewBuilder,
-            'filterCount'             => count($filters),
-            'filters'                 => $filters,
-            'filterViewBuilder'       => $this->filterViewBuilder,
+            'columns'                => $columns,
+            'columnLabelViewBuilder' => $this->columnLabelViewBuilder,
+            'rows'                   => $this->getRows($table, $request),
+            'columnValueViewBuilder' => $this->columnValueViewBuilder,
+            'links'                  => $this->getLinks($table, $request),
+            'tableActionCount'       => count($tableActions),
+            'tableActions'           => $tableActions,
+            'showSearchForm'         => $this->hasSearchableColumns($columns),
+            'tableSearchUrl'         => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
+            'fullUrl'                => $request->fullUrl(),
+            'searchQuery'            => $request->query($this->config->searchQueryName()),
+            'searchQueryName'        => $this->config->searchQueryName(),
+            'searchIcon'             => $this->config->searchIcon(),
+            'rowActionCount'         => count($rowActions),
+            'rowActions'             => $rowActions,
+            'massActionCount'        => count($massActions),
+            'massActions'            => $massActions,
+            'filterCount'            => count($filters),
+            'filters'                => $filters,
+            'filterViewBuilder'      => $this->filterViewBuilder,
+            'actionRenderer'         => $this->actionRenderer,
+            'config'                 => $this->config,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
