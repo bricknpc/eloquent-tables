@@ -20,17 +20,15 @@ use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
-use BrickNPC\EloquentTables\Builders\RowActionViewBuilder;
-use BrickNPC\EloquentTables\Builders\MassActionViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
 use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
-use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 
 /**
  * @internal
@@ -39,8 +37,6 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[CoversClass(WithPagination::class)]
 #[UsesClass(ColumnLabelViewBuilder::class)]
 #[UsesClass(ColumnValueViewBuilder::class)]
-#[UsesClass(TableActionViewBuilder::class)]
-#[UsesClass(RowActionViewBuilder::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(Table::class)]
@@ -51,10 +47,10 @@ use BrickNPC\EloquentTables\Builders\TableActionViewBuilder;
 #[UsesClass(Theme::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(RowsBuilder::class)]
-#[UsesClass(MassActionViewBuilder::class)]
 #[UsesClass(FilterViewBuilder::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(PageStyle::class)]
+#[UsesClass(ActionRenderer::class)]
 class TableViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
