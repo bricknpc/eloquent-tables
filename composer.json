@@ -30,11 +30,11 @@
   "autoload": {
     "psr-4": {
       "BrickNPC\\EloquentTables\\": "src/"
-    }
+    },
+    "files": [
+      "src/helpers.php"
+    ]
   },
-  "autoload-files": [
-    "src/helpers.php"
-  ],
   "autoload-dev": {
     "psr-4": {
       "BrickNPC\\EloquentTables\\Tests\\": "tests/"
