@@ -38,19 +38,16 @@ class ActionCollection extends Collection
 
     public function countRenderable(ActionContext $context): int
     {
-        return $this->sum(function ($item) use ($context) {
+        return $this->sum(function (Action|ActionCollection $item) use ($context) {
             if ($item instanceof ActionCollection) {
                 return $item->countRenderable($context);
             }
 
-            return $item->descriptor($context) !== null ? 1 : 0; // @todo Calling the entire descriptor is expensive
+            return $item->hasDescriptor($context) ? 1 : 0;
         });
     }
 
-    /**
-     * @todo Don't like this name
-     */
-    public function isRenderable(ActionContext $context): bool
+    public function hasRenderable(ActionContext $context): bool
     {
         return $this->countRenderable($context) > 0;
     }
