@@ -23,7 +23,7 @@
 
         init() {
             this.initSelectAll();
-            this.initMassActionForms();
+            this.initBulkActionForms();
             this.initConfirmElements();
         }
 
@@ -41,7 +41,7 @@
             });
         }
 
-        initMassActionForms() {
+        initBulkActionForms() {
             const buttons = document.querySelectorAll(`[data-${this.dataNamespace}-mass-action-form="true"]`);
 
             buttons.forEach(button => {

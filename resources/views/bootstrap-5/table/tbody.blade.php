@@ -14,7 +14,7 @@
 <tbody>
     @foreach($rows as $row)
         <tr>
-            @if($massActionCount > 0)
+            @if($bulkActionCount > 0)
                 <td class="text-center">
                     <input type="checkbox" name="selected[]" value="{{ $row->getKey() }}" />
                 </td>

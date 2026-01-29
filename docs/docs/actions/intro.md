@@ -69,7 +69,7 @@ of all selected rows (Eloquent Models) and adds them to the request as an array 
 
 You can add as many bulk actions as you want to a table.
 
-You can add bulk table actions by defining a public method called `massActions()` on your table. The `massActions()`
+You can add bulk table actions by defining a public method called `bulkActions()` on your table. The `bulkActions()`
 method may return different things depending on your needs. It can be an array of `BrickNPC\EloquentTables\Actions\Action`
 objects, a single `BrickNPC\EloquentTables\Actions\Action` if you only want to define one action, an array of
 `BrickNPC\EloquentTables\Actions\Collections\ActionCollection` objects or a
@@ -91,7 +91,7 @@ use BrickNPC\EloquentTables\Actions\Action;
 
 class UserTable extends Table
 {
-    public function massActions(): array
+    public function bulkActions(): array
     {
         return [
             new Action(), // Define the action here

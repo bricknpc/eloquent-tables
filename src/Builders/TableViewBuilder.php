@@ -102,10 +102,10 @@ readonly class TableViewBuilder
         /** @var Action[]|ActionCollection[] $rowActions */
         $rowActions = is_array($rowActions) ? $rowActions : [$rowActions];
 
-        $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
+        $bulkActions = method_exists($table, 'bulkActions') ? $this->methodInvoker->call($table, 'bulkActions') : [];
 
-        /** @var Action[]|ActionCollection[] $massActions */
-        $massActions = is_array($massActions) ? $massActions : [$massActions];
+        /** @var Action[]|ActionCollection[] $bulkActions */
+        $bulkActions = is_array($bulkActions) ? $bulkActions : [$bulkActions];
 
         $viewData = [
             'id'            => spl_object_id($table),
@@ -130,8 +130,8 @@ readonly class TableViewBuilder
             'searchIcon'             => $this->config->searchIcon(),
             'rowActionCount'         => count($rowActions),
             'rowActions'             => $rowActions,
-            'massActionCount'        => count($massActions),
-            'massActions'            => $massActions,
+            'bulkActionCount'        => count($bulkActions),
+            'bulkActions'            => $bulkActions,
             'filterCount'            => count($filters),
             'filters'                => $filters,
             'filterViewBuilder'      => $this->filterViewBuilder,

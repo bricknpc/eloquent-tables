@@ -29,7 +29,7 @@ The following methods support dependency injection:
 - `query()`
 - `filters()`
 - `tableActions()`
-- `massActions()`
+- `bulkActions()`
 - `rowActions()`
 - `layout()`
 

@@ -17,7 +17,7 @@
         <div class="d-flex align-items-center table-search">
             <form action="{{ $tableSearchUrl }}" method="get" id="search-form-{{ $id }}">
                 <div class="input-group">
-                    <input type="search" name="{{ $searchQueryName }}" class="form-control border-{{ $mainTableStyle }}" placeholder="{{ __('Search') }}" value="{{ $searchQuery }}" />
+                    <input type="search" name="{{ $searchQueryName }}" class="form-control border-{{ $mainTableStyle }}" placeholder="{{ __('Search') }}" value="{{ $searchQuery }}"/>
                     <button class="btn btn-outline-{{ $mainTableStyle }} d-flex align-items-center" type="submit" form="search-form-{{ $id }}">{{ $searchIcon }}</button>
                 </div>
             </form>
@@ -31,10 +31,10 @@
         </div>
     @endif
     <div class="d-flex align-items-center table-header-end ms-auto">
-        @if($massActionCount > 0)
+        @if($bulkActionCount > 0)
             <div class="d-flex align-items-center table-mass-actions">
-                @foreach($massActions as $massAction)
-                    {!! $actionRenderer->render($massAction, new ActionContext($request, $config)->isBulk()) !!}
+                @foreach($bulkActions as $bulkAction)
+                    {!! $actionRenderer->render($bulkAction, new ActionContext($request, $config)->isBulk()) !!}
                 @endforeach
             </div>
         @endif
