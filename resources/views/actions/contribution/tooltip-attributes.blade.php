@@ -3,4 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.action.row-action')
+@include('eloquent-tables::' . $theme->value . '.actions.contribution.tooltip-attributes')

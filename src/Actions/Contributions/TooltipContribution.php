@@ -11,17 +11,25 @@ use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
-class TooltipContribution extends CapabilityContribution
+final class TooltipContribution extends CapabilityContribution
 {
+    private readonly string $id;
+
     public function __construct(
         private readonly string $text,
-    ) {}
+    ) {
+        $this->id = md5(uniqid(more_entropy: true));
+    }
 
     public function renderAttributes(
         ActionDescriptor $descriptor,
         ActionContext $context,
     ): Htmlable|string|\Stringable|View|null {
-        // todo use Blade view
-        return new HtmlString('data-bs-toggle="tooltip" data-bs-title="' . $this->text . '"');
+        return \view('eloquent-tables::actions.contribution.tooltip-attributes', [
+            'text' => $this->text,
+            'theme' => $context->config->theme(),
+            'id' => $this->id,
+            'dataNamespace' => $context->config->dataNamespace(),
+        ]);
     }
 }
