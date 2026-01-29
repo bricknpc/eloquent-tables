@@ -12,9 +12,9 @@ With Eloquent Tables, you can define sorting, searching, filtering, pagination, 
 
 ## Requirements
 
-- PHP `^8.4`
+- PHP `^8.4|^8.5`
 - Laravel `^12.0`
-- Optional: Bootstrap 5
+- Bootstrap 5
 
 ## Installation
 
