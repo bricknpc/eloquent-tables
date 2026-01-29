@@ -205,5 +205,5 @@ class UserTable extends Table
 ```
 
 Navigating to `http://my-app.test/1/users` will automatically try to load the Team with ID 1 and inject it into the
-`columns` method. If there is no team with the given key, a `404 model not found` exception is thrown just like for
+ method. If there is no team with the given key, a `404 model not found` exception is thrown just like for
 normal route model binding in Laravel.
