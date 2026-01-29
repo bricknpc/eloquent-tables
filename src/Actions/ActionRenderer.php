@@ -63,7 +63,7 @@ final readonly class ActionRenderer
             'afterContent'       => $descriptor->afterRender,
             'renderedAttributes' => $descriptor->attributesRender,
             'intent'             => $descriptor->intent,
-            'id'                 => spl_object_id($action),
+            'id'                 => md5(uniqid(more_entropy: true)),
         ]);
 
         // Call after render hook

@@ -15,10 +15,16 @@ final readonly class ActionContext
         public Config $config,
         public ?Model $model = null,
         public bool $asDropdown = false,
+        public bool $isBulk = false,
     ) {}
 
     public function asDropdown(): self
     {
-        return new self($this->request, $this->config, $this->model, true);
+        return new self($this->request, $this->config, $this->model, true, $this->isBulk);
+    }
+
+    public function isBulk(): self
+    {
+        return new self($this->request, $this->config, $this->model, $this->asDropdown, true);
     }
 }

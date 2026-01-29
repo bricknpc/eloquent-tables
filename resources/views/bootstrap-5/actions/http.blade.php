@@ -24,6 +24,7 @@
             @else
                 class="btn btn-primary"
             @endif
+            {!! $renderedAttributes->render() !!}
             form="{{ $id }}"
     >
         {!! $label !!}

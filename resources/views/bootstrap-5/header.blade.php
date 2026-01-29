@@ -34,7 +34,7 @@
         @if($massActionCount > 0)
             <div class="d-flex align-items-center table-mass-actions">
                 @foreach($massActions as $massAction)
-                    {!! $actionRenderer->render($massAction, new ActionContext($request, $config)) !!}
+                    {!! $actionRenderer->render($massAction, new ActionContext($request, $config)->isBulk()) !!}
                 @endforeach
             </div>
         @endif

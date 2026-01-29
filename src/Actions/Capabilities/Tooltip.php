@@ -22,6 +22,6 @@ final class Tooltip extends ActionCapability
 
     public function contribute(ActionDescriptor $descriptor, ActionContext $context): CapabilityContribution
     {
-        return new TooltipContribution(new LazyValue($this->text)->resolve($context));
+        return new TooltipContribution(new LazyValue($this->text)->resolve($context) ?? '');
     }
 }

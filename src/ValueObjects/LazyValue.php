@@ -15,10 +15,10 @@ final readonly class LazyValue
         private \Closure|string|null $value = null,
     ) {}
 
-    public function resolve(ActionContext $context): string
+    public function resolve(ActionContext $context): ?string
     {
         if ($this->value === null) {
-            return '';
+            return null;
         }
 
         /** @var string $result */

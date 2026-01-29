@@ -29,7 +29,7 @@ final class Confirmation extends ActionCapability
     public function contribute(ActionDescriptor $descriptor, ActionContext $context): CapabilityContribution
     {
         return new ConfirmationContribution(
-            new LazyValue($this->text)->resolve($context),
+            new LazyValue($this->text)->resolve($context) ?? '',
             new LazyValue($this->confirmValue)->resolve($context),
             new LazyValue($this->cancelValue)->resolve($context),
             new LazyValue($this->inputConfirmationValue)->resolve($context),
