@@ -1,4 +1,4 @@
-FROM php:8.4-cli
+FROM php:8.5-cli
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,8 +15,8 @@ RUN pecl install xdebug \
 # Configure Xdebug for code coverage
 RUN echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# Install Composer 2.8
-RUN curl -sS https://getcomposer.org/installer | php -- --version=2.8.6 --install-dir=/usr/local/bin --filename=composer
+# Install Composer 2.9.2
+RUN curl -sS https://getcomposer.org/installer | php -- --version=2.9.2 --install-dir=/usr/local/bin --filename=composer
 
 # Create a user with your host UID/GID
 ARG USER_ID=1000
