@@ -11,7 +11,7 @@
 @endphp
 <thead>
     <tr>
-        @if($massActionCount > 0)
+        @if($bulkActionCount > 0)
             <th class="text-center" style="width: 5%;">
                 <div class="form-check form-switch d-flex justify-content-center">
                     <input

@@ -23,7 +23,7 @@
 
         init() {
             this.initSelectAll();
-            this.initMassActionForms();
+            this.initBulkActionForms();
             this.initConfirmElements();
         }
 
@@ -41,13 +41,14 @@
             });
         }
 
-        initMassActionForms() {
-            const forms = document.querySelectorAll(`[data-${this.dataNamespace}-mass-action-form="true"]`);
+        initBulkActionForms() {
+            const buttons = document.querySelectorAll(`[data-${this.dataNamespace}-mass-action-form="true"]`);
 
-            forms.forEach(form => {
-                form.addEventListener('submit', event => {
+            buttons.forEach(button => {
+                let form = document.getElementById(button.getAttribute('form'));
+                button.addEventListener('click', event => {
                     event.preventDefault();
-                    this.handleFormSubmit(form);
+                    this.handleFormSubmit(form, button);
                 });
             });
         }
@@ -61,10 +62,11 @@
                     return;
                 }
 
-                if (element.tagName === 'FORM') {
-                    element.addEventListener('submit', event => {
+                if (element.tagName === 'BUTTON') {
+                    element.addEventListener('click', event => {
                         event.preventDefault();
-                        this.handleConfirmation(element, () => element.submit());
+                        let formElement = document.getElementById(element.getAttribute('form'));
+                        this.handleConfirmation(element, () => formElement.submit());
                     });
                 } else {
                     element.addEventListener('click', event => {
@@ -79,13 +81,14 @@
 
         /**
          * @param {HTMLFormElement} form
+         * @param {HTMLButtonElement} button
          */
-        handleFormSubmit(form) {
-            if (!form.hasAttribute(`data-${this.dataNamespace}-confirm`)) {
+        handleFormSubmit(form, button) {
+            if (!button.hasAttribute(`data-${this.dataNamespace}-confirm`)) {
                 return;
             }
 
-            this.handleConfirmation(form, () => {
+            this.handleConfirmation(button, () => {
                 document.querySelectorAll('[name="selected[]"]:checked').forEach(selected => {
                     const input = document.createElement('input');
                     input.name = 'keys[]';
@@ -122,14 +125,16 @@
                 return;
             }
 
-            // Use a new event listener to avoid stacking listeners
-            const handleConfirmClick = () => {
+            // Remove any existing listeners by cloning the button
+            const newConfirmButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+
+            // Add the new listener to the cloned button
+            newConfirmButton.addEventListener('click', () => {
                 if (this.validateConfirmValue(element)) {
                     onConfirm();
                 }
-            };
-
-            confirmButton.addEventListener('click', handleConfirmClick);
+            }, { once: true }); // Use once: true to automatically remove after one click
         }
 
         /**

@@ -1,0 +1,1 @@
+data-bs-toggle="tooltip" data-bs-title="{{ $text }}"

@@ -12,7 +12,7 @@
     "Filtering",
     "Sorting"
   ],
-  "version": "1.2.0",
+  "version": "2.0.0-alpha",
   "license": "MIT",
   "require": {
     "php": "^8.4|^8.5",
@@ -30,7 +30,10 @@
   "autoload": {
     "psr-4": {
       "BrickNPC\\EloquentTables\\": "src/"
-    }
+    },
+    "files": [
+      "src/helpers.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

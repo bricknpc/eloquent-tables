@@ -2,16 +2,19 @@
     use Illuminate\Support\Collection;
     use BrickNPC\EloquentTables\Column;
     use Illuminate\Database\Eloquent\Model;
+    use BrickNPC\EloquentTables\Actions\ActionRenderer;
+    use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
     use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 
     /** @var Collection<int, Model> $rows */
     /** @var ColumnValueViewBuilder $columnValueViewBuilder */
     /** @var Column[] $columns */
+    /** @var ActionRenderer $actionRenderer */
 @endphp
 <tbody>
     @foreach($rows as $row)
         <tr>
-            @if($massActionCount > 0)
+            @if($bulkActionCount > 0)
                 <td class="text-center">
                     <input type="checkbox" name="selected[]" value="{{ $row->getKey() }}" />
                 </td>
@@ -26,7 +29,7 @@
                 <td class="text-end">
                     <div class="btn-group">
                         @foreach($rowActions as $action)
-                            {{ $rowActionBuilder->build($action, $request, $row) }}
+                            {!! $actionRenderer->render($action, new ActionContext($request, $config, $row)) !!}
                         @endforeach
                     </div>
                 </td>
