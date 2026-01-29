@@ -60,12 +60,11 @@ class Action
 
     public function descriptor(ActionContext $context): ?ActionDescriptor
     {
-        if (array_any(
-            $this->capabilities,
-            fn (ActionCapability $capability) => !$capability->check($this->descriptor, $context),
-        )) {
+        if (!$this->hasDescriptor($context)) {
             return null;
         }
+
+        $this->descriptor->emptyBuffers();
 
         foreach ($this->capabilities as $capability) {
             $capability->apply($this->descriptor, $context);
@@ -86,9 +85,9 @@ class Action
 
     public function hasDescriptor(ActionContext $context): bool
     {
-        return array_any(
+        return array_all(
             $this->capabilities,
-            fn (ActionCapability $capability) => !$capability->check($this->descriptor, $context),
+            fn (ActionCapability $capability) => $capability->check($this->descriptor, $context),
         );
     }
 }

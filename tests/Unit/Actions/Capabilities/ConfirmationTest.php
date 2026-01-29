@@ -36,9 +36,7 @@ class ConfirmationTest extends TestCase
     {
         parent::setUp();
 
-        // Create real instances - these are final classes
-        // Update with actual constructor parameters as needed
-        $this->descriptor = new ActionDescriptor(/* add required parameters */);
+        $this->descriptor = new ActionDescriptor();
 
         $request = $this->app->make('request');
 

@@ -19,6 +19,6 @@ final class When extends ActionCapability
 
     public function check(ActionDescriptor $descriptor, ActionContext $context): bool
     {
-        return call_user_func($this->condition, $context);
+        return (bool) call_user_func($this->condition, $context);
     }
 }

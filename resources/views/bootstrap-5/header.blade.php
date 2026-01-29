@@ -6,17 +6,13 @@
 @endphp
 
 <div class="d-flex align-items-center">
-    <div class="d-flex align-items-center table-actions me-3">
-        @if($tableActionCount > 1)
-            <div class="btn-group">
-        @endif
-        @foreach($tableActions as $tableAction)
-            {!! $actionRenderer->render($tableAction, new ActionContext($request, $config)) !!}
-        @endforeach
-        @if($tableActionCount > 1)
-            </div>
-        @endif
-    </div>
+    @if($tableActionCount > 0)
+        <div class="d-flex align-items-center table-actions me-3">
+            @foreach($tableActions as $tableAction)
+                {!! $actionRenderer->render($tableAction, new ActionContext($request, $config)) !!}
+            @endforeach
+        </div>
+    @endif
     @if($showSearchForm)
         <div class="d-flex align-items-center table-search">
             <form action="{{ $tableSearchUrl }}" method="get" id="search-form-{{ $id }}">

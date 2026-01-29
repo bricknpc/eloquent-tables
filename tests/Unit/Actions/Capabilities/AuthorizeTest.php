@@ -32,9 +32,7 @@ class AuthorizeTest extends TestCase
     {
         parent::setUp();
 
-        // Create real instances - these are final classes and cannot be mocked
-        // You'll need to update these with the actual constructor parameters
-        $this->descriptor = new ActionDescriptor(/* add required parameters */);
+        $this->descriptor = new ActionDescriptor();
 
         $request = $this->app->make('request');
 

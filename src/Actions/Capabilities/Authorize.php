@@ -19,6 +19,6 @@ final class Authorize extends ActionCapability
 
     public function check(ActionDescriptor $descriptor, ActionContext $context): bool
     {
-        return call_user_func($this->authorize, $context);
+        return (bool) call_user_func($this->authorize, $context);
     }
 }

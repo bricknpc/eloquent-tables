@@ -29,4 +29,11 @@ final class ActionDescriptor
         $this->afterRender      = new RenderBuffer();
         $this->attributesRender = new RenderBuffer();
     }
+
+    public function emptyBuffers(): void
+    {
+        $this->beforeRender     = new RenderBuffer();
+        $this->afterRender      = new RenderBuffer();
+        $this->attributesRender = new RenderBuffer();
+    }
 }

@@ -20,6 +20,7 @@ use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 /**
  * @template TModel of Model
@@ -91,14 +92,20 @@ readonly class TableViewBuilder
         /** @var Filter[] $filters */
         $filters = $table->hasFilters() ? $this->methodInvoker->call($table, 'filters') : [];
 
-        /** @var Action[] $tableActions */
         $tableActions = method_exists($table, 'tableActions') ? $this->methodInvoker->call($table, 'tableActions') : [];
 
-        /** @var Action[] $rowActions */
+        /** @var Action[]|ActionCollection[] $tableActions */
+        $tableActions = is_array($tableActions) ? $tableActions : [$tableActions];
+
         $rowActions = method_exists($table, 'rowActions') ? $this->methodInvoker->call($table, 'rowActions') : [];
 
-        /** @var Action[] $massActions */
+        /** @var Action[]|ActionCollection[] $rowActions */
+        $rowActions = is_array($rowActions) ? $rowActions : [$rowActions];
+
         $massActions = method_exists($table, 'massActions') ? $this->methodInvoker->call($table, 'massActions') : [];
+
+        /** @var Action[]|ActionCollection[] $massActions */
+        $massActions = is_array($massActions) ? $massActions : [$massActions];
 
         $viewData = [
             'id'            => spl_object_id($table),

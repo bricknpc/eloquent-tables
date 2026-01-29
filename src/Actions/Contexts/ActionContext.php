@@ -14,5 +14,11 @@ final readonly class ActionContext
         public Request $request,
         public Config $config,
         public ?Model $model = null,
+        public bool $asDropdown = false,
     ) {}
+
+    public function asDropdown(): self
+    {
+        return new self($this->request, $this->config, $this->model, true);
+    }
 }

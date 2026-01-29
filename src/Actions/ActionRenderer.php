@@ -6,7 +6,9 @@ namespace BrickNPC\EloquentTables\Actions;
 
 use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 final readonly class ActionRenderer
 {
@@ -14,7 +16,33 @@ final readonly class ActionRenderer
         private Config $config,
     ) {}
 
-    public function render(Action $action, ActionContext $context): ?View
+    public function render(Action|ActionCollection $action, ActionContext $context): ?View
+    {
+        return $action instanceof ActionCollection
+            ? $this->renderActionCollection($action, $context)
+            : $this->renderAction($action, $context);
+    }
+
+    public function canRender(Action|ActionCollection $action, ActionContext $context): bool
+    {
+        return $action instanceof ActionCollection
+            ? $action->hasRenderable($context)
+            : $action->hasDescriptor($context);
+    }
+
+    private function renderActionCollection(ActionCollection $collection, ActionContext $context): ?View
+    {
+        return $this->canRender($collection, $context) ? view($collection->type->view(), [
+            'actions'        => $collection,
+            'context'        => $context,
+            'theme'          => $this->config->theme(),
+            'dataNamespace'  => $this->config->dataNamespace(),
+            'label'          => new LazyValue($collection->label)->resolve($context),
+            'actionRenderer' => $this,
+        ]) : null;
+    }
+
+    private function renderAction(Action $action, ActionContext $context): ?View
     {
         $descriptor = $action->descriptor($context);
 
@@ -35,6 +63,7 @@ final readonly class ActionRenderer
             'afterContent'       => $descriptor->afterRender,
             'renderedAttributes' => $descriptor->attributesRender,
             'intent'             => $descriptor->intent,
+            'id'                 => spl_object_id($action),
         ]);
 
         // Call after render hook

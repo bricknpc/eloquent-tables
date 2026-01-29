@@ -22,6 +22,6 @@ class TooltipContribution extends CapabilityContribution
         ActionContext $context,
     ): Htmlable|string|\Stringable|View|null {
         // todo use Blade view
-        return new HtmlString('data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="' . $this->text . '"');
+        return new HtmlString('data-bs-toggle="tooltip" data-bs-title="' . $this->text . '"');
     }
 }

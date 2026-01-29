@@ -19,9 +19,16 @@ class ActionCollection extends Collection
     }
 
     /**
+     * @var null|\Closure(ActionContext): string|string
+     */
+    public protected(set) \Closure|string|null $label = null {
+        get => $this->label;
+    }
+
+    /**
      * @param array<Action|ActionCollection> $items
      */
-    public function __construct($items = [], ?ActionCollectionType $type = null)
+    public function __construct(array $items = [], ?ActionCollectionType $type = null)
     {
         parent::__construct($items); // @phpstan-ignore-line
 
@@ -34,6 +41,16 @@ class ActionCollection extends Collection
         $clone->type = $type;
 
         return $clone;
+    }
+
+    /**
+     * @param \Closure(ActionContext $context): string|string $label
+     */
+    public function label(\Closure|string $label): static
+    {
+        $this->label = $label;
+
+        return $this;
     }
 
     public function countRenderable(ActionContext $context): int
@@ -75,15 +92,21 @@ class ActionCollection extends Collection
         return $this;
     }
 
-    public function group(Action ...$actions): static
+    public function normal(Action ...$actions): ActionCollection
     {
         /* @var array<int, Action> $actions */
-        return $this->nest(new ActionCollection($actions, ActionCollectionType::Grouped));
+        return new ActionCollection($actions, ActionCollectionType::Normal);
     }
 
-    public function dropdown(Action ...$actions): static
+    public function group(Action ...$actions): ActionCollection
     {
         /* @var array<int, Action> $actions */
-        return $this->nest(new ActionCollection($actions, ActionCollectionType::Dropdown));
+        return new ActionCollection($actions, ActionCollectionType::Grouped);
+    }
+
+    public function dropdown(Action ...$actions): ActionCollection
+    {
+        /* @var array<int, Action> $actions */
+        return new ActionCollection($actions, ActionCollectionType::Dropdown);
     }
 }
