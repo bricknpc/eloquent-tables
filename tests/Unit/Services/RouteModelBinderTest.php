@@ -215,4 +215,53 @@ class RouteModelBinderTest extends TestCase
 
         $this->assertSame('result', $result);
     }
+
+    public function test_it_uses_the_model_from_the_route_if_it_is_already_resolved(): void
+    {
+        /** @var Container|Mock $container */
+        $container = $this->mock(Container::class);
+
+        /** @var Mock|Request $request */
+        $request = $this->mock(Request::class);
+
+        // This model is never saved, so it can only be injected when it is taken from the route as is.
+        $model     = new TestModel();
+        $model->id = 99;
+
+        /** @var RouteModelBinder $service */
+        $service = $this->app->make(RouteModelBinder::class, [
+            'container' => $container,
+            'request'   => $request,
+        ]);
+
+        $object = new class($this) {
+            public function __construct(private readonly TestCase $test) {}
+
+            public function method(TestModel $model): string
+            {
+                return 'result';
+            }
+        };
+
+        /** @var Mock|Route $route */
+        $route = $this->mock(Route::class);
+
+        $route->shouldReceive('bindingFields')->andReturn([]);
+
+        $request->shouldReceive('route')->twice()->with('model')->andReturn($model);
+        $request->shouldReceive('route')->with()->once()->andReturn($route);
+
+        $container->shouldReceive('make')->once()->with(TestModel::class)->andReturn(new TestModel());
+        $container->shouldReceive('call')->withArgs(function (array $callable, array $parameters) use ($model) {
+            $this->assertArrayHasKey('model', $parameters);
+            $this->assertSame($model, $parameters['model']);
+            $this->assertFalse($parameters['model']->exists);
+
+            return true;
+        })->andReturn('result');
+
+        $result = $service->call($object, 'method');
+
+        $this->assertSame('result', $result);
+    }
 }

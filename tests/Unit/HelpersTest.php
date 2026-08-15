@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use BrickNPC\EloquentTables\Enums\Theme;
+
+use function BrickNPC\EloquentTables\view;
+
 use BrickNPC\EloquentTables\Actions\Action;
 use PHPUnit\Framework\Attributes\UsesClass;
 
@@ -23,7 +27,9 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[CoversFunction('BrickNPC\EloquentTables\actions')]
 #[CoversFunction('BrickNPC\EloquentTables\dropdownActions')]
 #[CoversFunction('BrickNPC\EloquentTables\groupedActions')]
+#[CoversFunction('BrickNPC\EloquentTables\view')]
 #[UsesClass(ActionCollection::class)]
+#[UsesClass(Theme::class)]
 class HelpersTest extends TestCase
 {
     private Action $action1;
@@ -286,5 +292,23 @@ class HelpersTest extends TestCase
         $result = groupedActions(...$actions);
 
         $this->assertInstanceOf(ActionCollection::class, $result);
+    }
+
+    public function test_view_namespaces_the_view_for_the_given_theme(): void
+    {
+        $this->assertSame('eloquent-tables::bootstrap-5.table', view(Theme::Bootstrap5, 'table'));
+    }
+
+    public function test_view_keeps_the_dots_of_a_nested_view(): void
+    {
+        $this->assertSame(
+            'eloquent-tables::bootstrap-5.actions.collection.dropdown',
+            view(Theme::Bootstrap5, 'actions.collection.dropdown'),
+        );
+    }
+
+    public function test_view_handles_an_empty_view_name(): void
+    {
+        $this->assertSame('eloquent-tables::bootstrap-5.', view(Theme::Bootstrap5, ''));
     }
 }
