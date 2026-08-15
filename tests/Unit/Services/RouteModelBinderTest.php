@@ -224,7 +224,6 @@ class RouteModelBinderTest extends TestCase
         /** @var Mock|Request $request */
         $request = $this->mock(Request::class);
 
-        // This model is never saved, so it can only be injected when it is taken from the route as is.
         $model     = new TestModel();
         $model->id = 99;
 

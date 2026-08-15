@@ -7,6 +7,7 @@ namespace BrickNPC\EloquentTables\Actions;
 use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
@@ -16,6 +17,9 @@ final readonly class ActionRenderer
         private Config $config,
     ) {}
 
+    /**
+     * @throws ActionIntentNotSet
+     */
     public function render(Action|ActionCollection $action, ActionContext $context): ?View
     {
         return $action instanceof ActionCollection
@@ -42,6 +46,9 @@ final readonly class ActionRenderer
         ]) : null;
     }
 
+    /**
+     * @throws ActionIntentNotSet
+     */
     private function renderAction(Action $action, ActionContext $context): ?View
     {
         $descriptor = $action->descriptor($context);
@@ -50,10 +57,16 @@ final readonly class ActionRenderer
             return null;
         }
 
-        // Call before render hook
-        $descriptor->intent?->beforeRender($descriptor, $context);
+        $intent = $descriptor->intent;
 
-        $result = view($descriptor->intent?->view() ?? 'eloquent-tables::actions.default', [
+        if ($intent === null) {
+            throw ActionIntentNotSet::forAction($action);
+        }
+
+        // Call before render hook
+        $intent->beforeRender($descriptor, $context);
+
+        $result = view($intent->view(), [
             'theme'              => $this->config->theme(),
             'dataNamespace'      => $this->config->dataNamespace(),
             'context'            => $context,
@@ -62,12 +75,12 @@ final readonly class ActionRenderer
             'beforeContent'      => $descriptor->beforeRender,
             'afterContent'       => $descriptor->afterRender,
             'renderedAttributes' => $descriptor->attributesRender,
-            'intent'             => $descriptor->intent,
+            'intent'             => $intent,
             'id'                 => md5(uniqid(more_entropy: true)),
         ]);
 
         // Call after render hook
-        $descriptor->intent?->afterRender($descriptor, $context);
+        $intent->afterRender($descriptor, $context);
 
         return $result;
     }

@@ -19,6 +19,7 @@ use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
+use BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
@@ -27,6 +28,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
  * @internal
  */
 #[CoversClass(ActionRenderer::class)]
+#[UsesClass(ActionIntentNotSet::class)]
 #[UsesClass(Action::class)]
 #[UsesClass(ActionCapability::class)]
 #[UsesClass(ActionDescriptor::class)]
@@ -66,11 +68,51 @@ class ActionRendererTest extends TestCase
         $this->assertSame('eloquent-tables::actions.http', $view->name());
     }
 
-    public function test_it_falls_back_to_the_default_view_when_the_action_has_no_intent(): void
+    public function test_it_refuses_to_render_an_action_without_an_intent(): void
     {
-        $view = $this->renderer->render(new Action()->label('Edit'), $this->context);
+        $this->expectException(ActionIntentNotSet::class);
 
-        $this->assertSame('eloquent-tables::actions.default', $view?->name());
+        $this->renderer->render(new Action()->label('Edit'), $this->context);
+    }
+
+    public function test_the_missing_intent_exception_names_the_action_and_the_fix(): void
+    {
+        $action = new Action()->label('Edit');
+
+        try {
+            $this->renderer->render($action, $this->context);
+        } catch (ActionIntentNotSet $exception) {
+            $this->assertStringContainsString(get_class($action), $exception->getMessage());
+            $this->assertStringContainsString('as() method', $exception->getMessage());
+            $this->assertSame($action, $exception->context()['action']);
+
+            return;
+        }
+
+        $this->fail('The renderer did not throw an ActionIntentNotSet exception.');
+    }
+
+    public function test_it_refuses_to_render_a_collection_holding_an_action_without_an_intent(): void
+    {
+        $collection = new ActionCollection([new Action()->label('Edit')]);
+
+        try {
+            $this->renderer->render($collection, $this->context)?->render();
+        } catch (\Throwable $exception) {
+            $this->assertStringContainsString('has no intent and can not be rendered', $exception->getMessage());
+
+            $cause = $exception;
+
+            while ($cause->getPrevious() !== null) {
+                $cause = $cause->getPrevious();
+            }
+
+            $this->assertInstanceOf(ActionIntentNotSet::class, $cause);
+
+            return;
+        }
+
+        $this->fail('The renderer did not throw an ActionIntentNotSet exception.');
     }
 
     public function test_it_does_not_render_an_action_that_is_not_allowed(): void

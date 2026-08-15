@@ -52,6 +52,14 @@ new Action()
     ->as(new Http(route('users.create')));
 ```
 
+:::warning
+
+An intent is required. An action without an intent has no behaviour to render, so rendering one throws a
+`BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet` exception. If none of the built-in intents fit your use-case,
+write a [custom intent](#custom-intents) instead of leaving the intent unset.
+
+:::
+
 ### HTTP intent
 
 The HTTP intent is the most common use for an action. It defines that an action is either an http link that is opened or 
