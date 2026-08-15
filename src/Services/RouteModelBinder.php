@@ -48,7 +48,7 @@ readonly class RouteModelBinder
             } else {
                 $model = $instance
                     ->newQuery()
-                    ->where($bindingField, '=', $this->request->route($parameter->getName()))
+                    ->where($bindingField, '=', $routeValue)
                     ->firstOrFail()
                 ;
             }

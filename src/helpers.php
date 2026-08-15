@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables;
 
+use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
-use BrickNPC\EloquentTables\Enums\Theme;
 
 function actions(Action|ActionCollection ...$items): ActionCollection
 {

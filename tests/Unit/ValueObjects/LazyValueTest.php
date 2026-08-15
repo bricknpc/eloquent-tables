@@ -19,24 +19,24 @@ use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 #[UsesClass(Config::class)]
 class LazyValueTest extends TestCase
 {
-    public function test_resolve_returns_empty_string_when_value_is_null(): void
+    public function test_resolve_returns_null_when_value_is_null(): void
     {
         $lazyValue = new LazyValue(null);
         $context   = $this->createActionContext();
 
         $result = $lazyValue->resolve($context);
 
-        $this->assertSame('', $result);
+        $this->assertNull($result);
     }
 
-    public function test_resolve_returns_empty_string_when_no_value_provided(): void
+    public function test_resolve_returns_null_when_no_value_provided(): void
     {
         $lazyValue = new LazyValue();
         $context   = $this->createActionContext();
 
         $result = $lazyValue->resolve($context);
 
-        $this->assertSame('', $result);
+        $this->assertNull($result);
     }
 
     public function test_resolve_returns_string_when_value_is_string(): void

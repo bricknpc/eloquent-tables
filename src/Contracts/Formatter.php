@@ -13,5 +13,5 @@ interface Formatter
      *
      * @param TModel $model
      */
-    public function format(mixed $value, Model $model): \Stringable|string;
+    public function format(mixed $value, Model $model): string|\Stringable;
 }

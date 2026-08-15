@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions\Contributions;
 
-use Illuminate\Support\HtmlString;
 use Illuminate\Contracts\View\View;
-use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -24,11 +22,11 @@ final class TooltipContribution extends CapabilityContribution
     public function renderAttributes(
         ActionDescriptor $descriptor,
         ActionContext $context,
-    ): Htmlable|string|\Stringable|View|null {
+    ): View {
         return \view('eloquent-tables::actions.contribution.tooltip-attributes', [
-            'text' => $this->text,
-            'theme' => $context->config->theme(),
-            'id' => $this->id,
+            'text'          => $this->text,
+            'theme'         => $context->config->theme(),
+            'id'            => $this->id,
             'dataNamespace' => $context->config->dataNamespace(),
         ]);
     }
