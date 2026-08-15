@@ -23,4 +23,9 @@ final class HttpModal extends ActionIntent
     {
         return new LazyValue($this->url);
     }
+
+    public function title(): LazyValue
+    {
+        return new LazyValue($this->title);
+    }
 }

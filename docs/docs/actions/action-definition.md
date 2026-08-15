@@ -131,8 +131,10 @@ class UserTable extends Table
 
 ### Modal intent
 
-The Modal intent renders a button that opens a Bootstrap modal. Use it when you want to show extra information about a
-row without sending the user to another page.
+The Modal intent renders a button that opens a Bootstrap modal with content that comes from your own application,
+for instance a blade view containing a create or an edit form. The content is rendered together with the table, so it
+is available the moment the modal is opened. To show content from another application, use the
+[HTTP modal intent](#http-modal-intent) instead.
 
 The Modal intent accepts two parameters:
 
@@ -183,9 +185,69 @@ confirmation modal expects to confirm a form that a Modal intent does not have.
 
 ### HTTP modal intent
 
-:::note[todo]
+The HTTP modal intent renders a button that opens a Bootstrap modal containing a page from another application. The
+page is embedded in an iframe, so it keeps its own styling and its own javascript, and it can not touch the page your
+table is on. To show content from your own application, use the [Modal intent](#modal-intent) instead.
 
-todo
+The HTTP modal intent accepts two parameters:
+
+- The title of the modal. This parameter can be a string, or a `\Closure` that receives the `ActionContext`.
+- The URL that is embedded. This parameter can be a string, or a `\Closure` that receives the `ActionContext`.
+
+```php
+<?php
+// app/Tables/UserTable.php
+declare(strict_types=1);
+
+namespace App\Tables;
+
+use App\Models\User;
+use BrickNPC\EloquentTables\Table;
+use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Actions\Intents\HttpModal;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+
+class UserTable extends Table
+{
+    public function rowActions(): array
+    {
+        return [
+            new Action()
+                ->label(__('Invoices'))
+                ->as(new HttpModal(
+                    title: __('Invoices'),
+                    url: fn(ActionContext $context) => 'https://invoices.example.com/customers/' . $context->model->uuid,
+                )),
+        ];
+    }
+}
+```
+
+The URL is only loaded when the modal is opened, so opening a table with a hundred rows does not load a hundred pages.
+While the page is loading a spinner is shown. When the modal is closed the URL is unloaded again, so the page is
+loaded fresh on the next open and never shows stale data.
+
+:::info
+
+Because the page is embedded in an iframe, everything inside it belongs to the other application. Links and forms
+inside the modal navigate inside the iframe, not the page your table is on. Your css does not style it and your
+javascript can not reach it. That also means the other application decides whether it can be embedded at all.
+
+:::
+
+:::warning
+
+An application can refuse to be embedded with the `X-Frame-Options` header or the `frame-ancestors` directive of a
+`Content-Security-Policy` header. If it does, the browser shows its own message inside the modal instead of the page,
+and Eloquent Tables can not detect that or show a friendlier error. Check the headers of the application you want to
+embed before you use this intent.
+
+:::
+
+:::warning
+
+Do not combine the HTTP modal intent with the [Confirmation capability](#confirmation). Both render a modal, and a
+confirmation modal expects to confirm a form that an HTTP modal intent does not have.
 
 :::
 
