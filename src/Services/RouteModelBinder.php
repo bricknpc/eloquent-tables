@@ -40,11 +40,18 @@ readonly class RouteModelBinder
             /** @var string $bindingField */
             $bindingField = $this->request->route()->bindingFields()[$parameter->getName()] ?? $instance->getKeyName();
 
-            $model = $instance
-                ->newQuery()
-                ->where($bindingField, '=', $this->request->route($parameter->getName()))
-                ->firstOrFail()
-            ;
+            /** @var Model|string $routeValue */
+            $routeValue = $this->request->route($parameter->getName());
+
+            if ($routeValue instanceof Model && $routeValue->getKey() !== null) {
+                $model = $routeValue;
+            } else {
+                $model = $instance
+                    ->newQuery()
+                    ->where($bindingField, '=', $this->request->route($parameter->getName()))
+                    ->firstOrFail()
+                ;
+            }
 
             $callParameters[$parameter->getName()] = $model;
         }
