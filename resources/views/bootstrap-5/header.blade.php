@@ -32,7 +32,7 @@
     @endif
     <div class="d-flex align-items-center table-header-end ms-auto">
         @if($bulkActionCount > 0)
-            <div class="d-flex align-items-center table-mass-actions">
+            <div class="d-flex align-items-center table-bulk-actions">
                 @foreach($bulkActions as $bulkAction)
                     {!! $actionRenderer->render($bulkAction, new ActionContext($request, $config)->isBulk()) !!}
                 @endforeach

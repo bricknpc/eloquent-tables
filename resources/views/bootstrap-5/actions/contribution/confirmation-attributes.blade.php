@@ -4,6 +4,3 @@ data-{{ $dataNamespace }}-confirm-target="#confirm-{{ $id }}"
     data-{{ $dataNamespace }}-confirm-value="{{ $understandValue }}"
     data-{{ $dataNamespace }}-confirm-value-input="confirm-value-{{ $id }}"
 @endif
-@if($isBulk)
-    data-{{ $dataNamespace }}-mass-action-form="true"
-@endif

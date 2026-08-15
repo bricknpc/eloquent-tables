@@ -42,7 +42,7 @@
         }
 
         initBulkActionForms() {
-            const buttons = document.querySelectorAll(`[data-${this.dataNamespace}-mass-action-form="true"]`);
+            const buttons = document.querySelectorAll(`[data-${this.dataNamespace}-bulk-action-form="true"]`);
 
             buttons.forEach(button => {
                 let form = document.getElementById(button.getAttribute('form'));
@@ -57,8 +57,8 @@
             const elements = document.querySelectorAll(`[data-${this.dataNamespace}-confirm="true"]`);
 
             elements.forEach(element => {
-                // Skip mass action forms as they're handled separately
-                if (element.hasAttribute(`data-${this.dataNamespace}-mass-action-form`)) {
+                // Skip bulk action forms as they're handled separately
+                if (element.hasAttribute(`data-${this.dataNamespace}-bulk-action-form`)) {
                     return;
                 }
 
@@ -84,10 +84,6 @@
          * @param {HTMLButtonElement} button
          */
         handleFormSubmit(form, button) {
-            if (!button.hasAttribute(`data-${this.dataNamespace}-confirm`)) {
-                return;
-            }
-
             this.handleConfirmation(button, () => {
                 document.querySelectorAll('[name="selected[]"]:checked').forEach(selected => {
                     const input = document.createElement('input');

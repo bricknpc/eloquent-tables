@@ -67,6 +67,15 @@ view files if you wish.
 A simple example of a bulk action could be deleting multiple rows at once. A bulk action automatically grabs the keys 
 of all selected rows (Eloquent Models) and adds them to the request as an array of keys with the `keys` name.
 
+:::info
+
+The keys are collected by the Eloquent Tables javascript and submitted with the form of the action, so this only 
+applies to bulk actions that send a form. An [HTTP intent](action-definition.md#http-intent) using the 
+`BrickNPC\EloquentTables\Enums\Method::Get` method is rendered as a link instead of a form, so it never carries the 
+selected keys.
+
+:::
+
 You can add as many bulk actions as you want to a table.
 
 You can add bulk actions by defining a public method called `bulkActions()` on your table. The `bulkActions()`

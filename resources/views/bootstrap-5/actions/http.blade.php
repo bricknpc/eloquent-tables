@@ -24,6 +24,9 @@
             @else
                 class="btn btn-primary"
             @endif
+            @if($context->isBulk)
+                data-{{ $dataNamespace }}-bulk-action-form="true"
+            @endif
             {!! $renderedAttributes->render() !!}
             form="{{ $id }}"
     >

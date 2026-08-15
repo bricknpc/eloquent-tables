@@ -80,7 +80,7 @@ class UserTable extends Table
         ); // This will create a dropdown menu of the actions
     }
     
-    public function massActions(): ActionCollection
+    public function bulkActions(): ActionCollection
     {
         return new ActionCollection([
             new Action(), // define action here

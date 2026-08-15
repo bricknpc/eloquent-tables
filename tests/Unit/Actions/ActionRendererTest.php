@@ -20,15 +20,21 @@ use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet;
+use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\Capabilities\Confirmation;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
+use BrickNPC\EloquentTables\Actions\Contributions\ConfirmationContribution;
 
 /**
  * @internal
  */
 #[CoversClass(ActionRenderer::class)]
 #[UsesClass(ActionIntentNotSet::class)]
+#[UsesClass(Confirmation::class)]
+#[UsesClass(CapabilityContribution::class)]
+#[UsesClass(ConfirmationContribution::class)]
 #[UsesClass(Action::class)]
 #[UsesClass(ActionCapability::class)]
 #[UsesClass(ActionDescriptor::class)]
@@ -242,6 +248,68 @@ class ActionRendererTest extends TestCase
         $this->assertStringContainsString('<button type="submit"', $rendered);
         $this->assertStringContainsString('action="https://example.com/users/1"', $rendered);
         $this->assertStringContainsString('name="_method" value="DELETE"', $rendered);
+    }
+
+    public function test_it_marks_a_bulk_form_action_so_the_selected_keys_are_collected(): void
+    {
+        $action = new Action()->label('Delete')->as(new Http('https://example.com/users', Method::Delete));
+
+        $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
+
+        $this->assertStringContainsString('data-et-bulk-action-form="true"', $rendered);
+    }
+
+    public function test_it_marks_a_bulk_form_action_without_a_confirmation(): void
+    {
+        $action = new Action()->label('Delete')->as(new Http('https://example.com/users', Method::Delete));
+
+        $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
+
+        $this->assertStringContainsString('data-et-bulk-action-form="true"', $rendered);
+        $this->assertStringNotContainsString('data-et-confirm', $rendered);
+    }
+
+    public function test_it_marks_a_bulk_form_action_that_also_has_a_confirmation(): void
+    {
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users', Method::Delete))
+            ->with(new Confirmation('Are you sure?'))
+        ;
+
+        $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
+
+        $this->assertStringContainsString('data-et-bulk-action-form="true"', $rendered);
+        $this->assertStringContainsString('data-et-confirm="true"', $rendered);
+    }
+
+    public function test_it_uses_the_configured_data_namespace_for_the_bulk_marker(): void
+    {
+        $this->app->make('config')->set('eloquent-tables.data-namespace', 'tables');
+
+        $action = new Action()->label('Delete')->as(new Http('https://example.com/users', Method::Delete));
+
+        $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
+
+        $this->assertStringContainsString('data-tables-bulk-action-form="true"', $rendered);
+    }
+
+    public function test_it_does_not_mark_a_form_action_outside_a_bulk_context(): void
+    {
+        $action = new Action()->label('Delete')->as(new Http('https://example.com/users/1', Method::Delete));
+
+        $rendered = $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertStringNotContainsString('bulk-action-form', $rendered);
+    }
+
+    public function test_it_does_not_mark_a_bulk_action_that_renders_a_link(): void
+    {
+        $action = new Action()->label('Export')->as(new Http('https://example.com/users/export'));
+
+        $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
+
+        $this->assertStringNotContainsString('bulk-action-form', $rendered);
     }
 
     public function test_it_renders_a_collection_with_the_view_of_its_type(): void

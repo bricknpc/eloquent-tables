@@ -18,7 +18,7 @@
                         class="form-check-input"
                         type="checkbox"
                         role="switch"
-                        id="mass-action-switch-{{ $id }}"
+                        id="bulk-action-switch-{{ $id }}"
                         data-{{ $dataNamespace }}-select-all="true"
                         aria-label="{{ __('Select all') }}"
                     >

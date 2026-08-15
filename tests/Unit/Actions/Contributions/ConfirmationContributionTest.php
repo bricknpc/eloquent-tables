@@ -112,22 +112,23 @@ class ConfirmationContributionTest extends TestCase
         $this->assertStringContainsString('data-et-confirm-value-input="confirm-value-', $rendered);
     }
 
-    public function test_render_attributes_omits_the_bulk_attribute_for_a_normal_context(): void
-    {
-        $contribution = new ConfirmationContribution('Are you sure?');
-
-        $rendered = $contribution->renderAttributes($this->descriptor, $this->context)->render();
-
-        $this->assertStringNotContainsString('mass-action-form', $rendered);
-    }
-
-    public function test_render_attributes_adds_the_bulk_attribute_for_a_bulk_context(): void
+    public function test_render_attributes_does_not_mark_the_action_as_a_bulk_form(): void
     {
         $contribution = new ConfirmationContribution('Are you sure?');
 
         $rendered = $contribution->renderAttributes($this->descriptor, $this->context->isBulk())->render();
 
-        $this->assertStringContainsString('data-et-mass-action-form="true"', $rendered);
+        $this->assertStringNotContainsString('bulk-action-form', $rendered);
+    }
+
+    public function test_render_attributes_are_the_same_for_a_bulk_context(): void
+    {
+        $contribution = new ConfirmationContribution('Are you sure?');
+
+        $normal = $contribution->renderAttributes($this->descriptor, $this->context)->render();
+        $bulk   = $contribution->renderAttributes($this->descriptor, $this->context->isBulk())->render();
+
+        $this->assertSame($normal, $bulk);
     }
 
     public function test_render_after_returns_a_view(): void

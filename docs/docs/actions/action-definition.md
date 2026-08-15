@@ -169,6 +169,22 @@ receives the following data:
 | `$intent`             | `BrickNPC\EloquentTables\Actions\ActionIntent`              | The intent object itself.                                                    |
 | `$id`                 | string                                                      | A random and unique string for each rendered action.                         |
 
+:::note[Bulk actions]
+
+If your custom intent renders a form that is also used as a [bulk action](intro.md#bulk-actions), add the
+`data-{namespace}-bulk-action-form="true"` attribute to the element that submits the form, where `{namespace}` is the
+`$dataNamespace` variable. The Eloquent Tables javascript uses that attribute to add the keys of the selected rows to
+the form before it is submitted.
+
+```bladehtml
+<button type="submit"
+        @if($context->isBulk) data-{{ $dataNamespace }}-bulk-action-form="true" @endif
+        form="{{ $id }}"
+>{!! $label !!}</button>
+```
+
+:::
+
 ```php
 <?php
 declare(strict_types=1);
