@@ -170,6 +170,17 @@ php artisan vendor:publish --provider="BrickNPC\EloquentTables\Providers\Eloquen
 
 Then reapply any customisations you had made.
 
+Three of the variables the table views receive were renamed along with their classes. If you customised `thead`,
+`tbody` or `header`, update these:
+
+| 1.x variable              | 2.0 variable            |
+|---------------------------|-------------------------|
+| `$columnLabelViewBuilder` | `$columnLabelRenderer`  |
+| `$columnValueViewBuilder` | `$columnValueRenderer`  |
+| `$filterViewBuilder`      | `$filterRenderer`       |
+
+The method on each is still `build()`, so only the variable name changes.
+
 ## 7. Removed `BrickNPC\EloquentTables\view()`
 
 The `BrickNPC\EloquentTables\view(Theme $theme, string $view)` helper is gone. It built a theme-namespaced view name and
@@ -316,8 +327,20 @@ class UserTable extends Table
 | `BrickNPC\EloquentTables\Builders\TableActionViewBuilder` | `BrickNPC\EloquentTables\Actions\ActionRenderer` |
 | `BrickNPC\EloquentTables\Builders\RowActionViewBuilder`   | `BrickNPC\EloquentTables\Actions\ActionRenderer` |
 | `BrickNPC\EloquentTables\Builders\MassActionViewBuilder`  | `BrickNPC\EloquentTables\Actions\ActionRenderer` |
+| `BrickNPC\EloquentTables\Builders\TableViewBuilder`       | `BrickNPC\EloquentTables\Tables\TableRenderer`   |
+| `BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder` | `BrickNPC\EloquentTables\Columns\ColumnLabelRenderer` |
+| `BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder` | `BrickNPC\EloquentTables\Columns\ColumnValueRenderer` |
+| `BrickNPC\EloquentTables\Builders\FilterViewBuilder`      | `BrickNPC\EloquentTables\Filters\FilterRenderer` |
 | `BrickNPC\EloquentTables\view()`                      | `Theme::view()`                                      |
 | `massActions()` table method                          | `bulkActions()`                                      |
+
+The `Table::$builder` property was renamed to `Table::$renderer` along with them.
+
+`BrickNPC\EloquentTables\Builders\RowsBuilder` keeps its name and location. It builds the row data rather than markup,
+so it is not a renderer.
+
+If you resolve any of these out of the container or typehint them, update the class name. If you only define tables,
+none of this affects you.
 
 ## New in 2.0
 

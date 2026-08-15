@@ -17,18 +17,18 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
+use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
-use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
-use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomData;
@@ -39,15 +39,15 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
  */
 #[CoversClass(Table::class)]
 #[CoversClass(WithPagination::class)]
-#[UsesClass(TableViewBuilder::class)]
-#[UsesClass(ColumnLabelViewBuilder::class)]
-#[UsesClass(ColumnValueViewBuilder::class)]
+#[UsesClass(TableRenderer::class)]
+#[UsesClass(ColumnLabelRenderer::class)]
+#[UsesClass(ColumnValueRenderer::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(TableStyle::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(RowsBuilder::class)]
-#[UsesClass(FilterViewBuilder::class)]
+#[UsesClass(FilterRenderer::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(MissingMethodException::class)]
 #[UsesClass(PageStyle::class)]

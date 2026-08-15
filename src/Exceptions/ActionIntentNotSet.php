@@ -8,7 +8,7 @@ use BrickNPC\EloquentTables\Actions\Action;
 
 class ActionIntentNotSet extends \Exception
 {
-    private Action $action;
+    private ?Action $action = null;
 
     public static function forAction(Action $action): self
     {
@@ -25,7 +25,7 @@ class ActionIntentNotSet extends \Exception
     }
 
     /**
-     * @return array<string, Action>
+     * @return array<string, null|Action>
      */
     public function context(): array
     {

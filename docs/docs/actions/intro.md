@@ -109,6 +109,31 @@ class UserTable extends Table
 }
 ```
 
+### The checkbox column width
+
+The column holding the select boxes is 5% wide by default. Override `bulkActionColumnWidth()` on your table to change
+it, or return `null` to drop the inline style entirely and size the column from your own stylesheet.
+
+```php
+<?php
+// app/Tables/UserTable.php
+declare(strict_types=1);
+
+namespace App\Tables;
+
+use BrickNPC\EloquentTables\Table;
+
+class UserTable extends Table
+{
+    public function bulkActionColumnWidth(): ?string
+    {
+        return '3rem';
+    }
+}
+```
+
+The value is used as a CSS length, so any valid unit works.
+
 ## Row actions
 
 A row action is an action that affects exactly one row in the table. If you add at least one row action to your table, 

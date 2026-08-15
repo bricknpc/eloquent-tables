@@ -26,7 +26,7 @@
     @if($filterCount > 0)
         <div class="d-flex align-items-center table-filters ms-3">
             @foreach($filters as $filter)
-                {!! $filterViewBuilder->build($filter, $request) !!}
+                {!! $filterRenderer->build($filter, $request) !!}
             @endforeach
         </div>
     @endif

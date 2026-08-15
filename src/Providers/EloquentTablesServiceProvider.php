@@ -12,8 +12,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Translation\Translator;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
@@ -51,9 +51,9 @@ class EloquentTablesServiceProvider extends ServiceProvider
     {
         $this->app->resolving(Table::class, function (Table $table, Application $app) {
             $table->setLogger($this->getLogger());
-            $table->request = $this->getRequest();
-            $table->trans   = $this->getTranslator();
-            $table->builder = $this->getConcrete(TableViewBuilder::class);
+            $table->request  = $this->getRequest();
+            $table->trans    = $this->getTranslator();
+            $table->renderer = $this->getConcrete(TableRenderer::class);
         });
 
         $this->registerFormatters();

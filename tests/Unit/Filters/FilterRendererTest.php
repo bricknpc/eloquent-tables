@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Tests\Unit\Builders;
+namespace BrickNPC\EloquentTables\Tests\Unit\Filters;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Enums\Theme;
@@ -11,20 +11,20 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
-use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
+use BrickNPC\EloquentTables\Filters\FilterRenderer;
 
 /**
  * @internal
  */
-#[CoversClass(FilterViewBuilder::class)]
+#[CoversClass(FilterRenderer::class)]
 #[UsesClass(Filter::class)]
 #[UsesClass(Config::class)]
-class FilterViewBuilderTest extends TestCase
+class FilterRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
     {
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 
@@ -40,8 +40,8 @@ class FilterViewBuilderTest extends TestCase
     {
         config()->set('eloquent-tables.theme', Theme::Bootstrap5);
 
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 
@@ -56,8 +56,8 @@ class FilterViewBuilderTest extends TestCase
 
     public function test_it_renders_the_options(): void
     {
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 
@@ -72,8 +72,8 @@ class FilterViewBuilderTest extends TestCase
 
     public function test_it_renders_the_name(): void
     {
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 
@@ -90,8 +90,8 @@ class FilterViewBuilderTest extends TestCase
     {
         config()->set('eloquent-tables.filtering.query_name', 'test');
 
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 
@@ -106,8 +106,8 @@ class FilterViewBuilderTest extends TestCase
 
     public function test_it_renders_the_value(): void
     {
-        /** @var FilterViewBuilder $builder */
-        $builder = $this->app->make(FilterViewBuilder::class);
+        /** @var FilterRenderer $builder */
+        $builder = $this->app->make(FilterRenderer::class);
 
         $filter = new Filter('name', []);
 

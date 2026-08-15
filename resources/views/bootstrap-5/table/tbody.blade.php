@@ -4,10 +4,10 @@
     use Illuminate\Database\Eloquent\Model;
     use BrickNPC\EloquentTables\Actions\ActionRenderer;
     use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
-    use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+    use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 
     /** @var Collection<int, Model> $rows */
-    /** @var ColumnValueViewBuilder $columnValueViewBuilder */
+    /** @var ColumnValueRenderer $columnValueRenderer */
     /** @var Column[] $columns */
     /** @var ActionRenderer $actionRenderer */
 @endphp
@@ -23,7 +23,7 @@
                 @php
                     /** @var Model $row */
                 @endphp
-                {{ $columnValueViewBuilder->build($request, $column, $row) }}
+                {{ $columnValueRenderer->build($request, $column, $row) }}
             @endforeach
             @if($rowActionCount > 0)
                 <td class="text-end">

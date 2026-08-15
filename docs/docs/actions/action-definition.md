@@ -335,6 +335,56 @@ class UserTable extends Table
 }
 ```
 
+#### Render hooks
+
+Every intent, custom or built-in, has two optional hooks that run around the render. Both are set with a closure that
+receives the action's descriptor and the current context, and both are optional — an intent that sets neither renders
+exactly as before.
+
+| Method                | Runs                                                                       |
+|-----------------------|----------------------------------------------------------------------------|
+| `before(\Closure)`    | after every capability has been applied, before the view receives its data |
+| `after(\Closure)`     | after the view has been created                                            |
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Tables\Intents;
+
+use BrickNPC\EloquentTables\Actions\ActionIntent;
+use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+
+class MyIntent extends ActionIntent
+{
+    public function __construct()
+    {
+        $this->before(function (ActionDescriptor $descriptor, ActionContext $context): void {
+            $descriptor->attributes['data-row'] = (string) $context->model?->getKey();
+        });
+    }
+
+    public function view(): string
+    {
+        return 'tables.intents.my-intent';
+    }
+}
+```
+
+Because the hooks run on the descriptor, they can do anything a [capability](#capabilities) can do. Prefer a capability
+when the behaviour is reusable across intents, and a hook when it is inherent to one intent.
+
+:::warning
+
+Use `before()` for anything that must show up in the output. By the time `after()` runs, `$descriptor->attributes` has
+already been copied into the view's data, so changes made there are lost. Blade renders lazily, so writes to the render
+buffers (`beforeRender`, `afterRender`, `attributesRender`) do still land in the output because those are objects —
+which makes `after()` inconsistent about what it can affect. Treat it as a place to clean up or record state, not to
+influence the markup.
+
+:::
+
 ## Label
 
 The label is just the text that is displayed on the link or button that triggers the action. Like with intents, the 

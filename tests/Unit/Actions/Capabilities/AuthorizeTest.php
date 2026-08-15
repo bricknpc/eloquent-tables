@@ -192,18 +192,31 @@ class AuthorizeTest extends TestCase
         $this->assertSame($context2, $receivedContexts[1]);
     }
 
-    public function test_check_with_different_descriptors(): void
+    public function test_check_ignores_the_descriptor_and_passes_only_the_context(): void
     {
-        $descriptor1 = new ActionDescriptor(/* add required parameters */);
-        $descriptor2 = new ActionDescriptor(/* add required parameters */);
+        $bare = new ActionDescriptor();
 
-        $authorize = new Authorize(fn (ActionContext $context): bool => true);
+        $populated                      = new ActionDescriptor();
+        $populated->attributes['class'] = 'btn-danger';
 
-        $result1 = $authorize->check($descriptor1, $this->context);
-        $result2 = $authorize->check($descriptor2, $this->context);
+        $received = [];
 
-        $this->assertTrue($result1);
-        $this->assertTrue($result2);
+        $authorize = new Authorize(function (ActionContext $context) use (&$received): bool {
+            $received[] = func_get_args();
+
+            return true;
+        });
+
+        $this->assertTrue($authorize->check($bare, $this->context));
+        $this->assertTrue($authorize->check($populated, $this->context));
+
+        // The closure is handed the context and nothing else, whatever the descriptor holds.
+        $this->assertCount(2, $received);
+        $this->assertSame([$this->context], $received[0]);
+        $this->assertSame([$this->context], $received[1]);
+
+        $this->assertSame([], $bare->attributes);
+        $this->assertSame(['class' => 'btn-danger'], $populated->attributes);
     }
 
     public function test_check_closure_with_complex_authorization_logic(): void

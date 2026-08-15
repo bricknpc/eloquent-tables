@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Tests\Unit\Builders;
+namespace BrickNPC\EloquentTables\Tests\Unit\Tables;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
@@ -10,6 +10,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Theme;
+use BrickNPC\EloquentTables\Enums\Method;
+use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\PageStyle;
@@ -18,25 +20,31 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Actions\ActionIntent;
+use BrickNPC\EloquentTables\Actions\Intents\Http;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
+use BrickNPC\EloquentTables\Filters\FilterRenderer;
+use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
+use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
-use BrickNPC\EloquentTables\Builders\FilterViewBuilder;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
-use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
-use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 
 /**
  * @internal
  */
-#[CoversClass(TableViewBuilder::class)]
+#[CoversClass(TableRenderer::class)]
 #[CoversClass(WithPagination::class)]
-#[UsesClass(ColumnLabelViewBuilder::class)]
-#[UsesClass(ColumnValueViewBuilder::class)]
+#[UsesClass(ColumnLabelRenderer::class)]
+#[UsesClass(ColumnValueRenderer::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(Table::class)]
@@ -47,16 +55,23 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(Theme::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(RowsBuilder::class)]
-#[UsesClass(FilterViewBuilder::class)]
+#[UsesClass(FilterRenderer::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(PageStyle::class)]
 #[UsesClass(ActionRenderer::class)]
-class TableViewBuilderTest extends TestCase
+#[UsesClass(Action::class)]
+#[UsesClass(ActionDescriptor::class)]
+#[UsesClass(ActionIntent::class)]
+#[UsesClass(ActionContext::class)]
+#[UsesClass(Http::class)]
+#[UsesClass(RenderBuffer::class)]
+#[UsesClass(LazyValue::class)]
+class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -79,8 +94,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_returns_the_correct_view_when_a_layout_is_specified_via_attribute(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -103,8 +118,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_returns_the_correct_view_when_a_layout_is_specified_via_method(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -132,8 +147,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_builds_table_styles_correctly(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -158,8 +173,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_gets_all_results_without_pagination(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -198,8 +213,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_gets_paginated_results_with_pagination(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -240,8 +255,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_sets_pagination_options_when_using_pagination(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -281,8 +296,8 @@ class TableViewBuilderTest extends TestCase
 
     public function test_it_shows_search_form_when_there_are_searchable_columns(): void
     {
-        /** @var TableViewBuilder $builder */
-        $builder = $this->app->make(TableViewBuilder::class);
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -310,5 +325,69 @@ class TableViewBuilderTest extends TestCase
         $this->assertArrayHasKey('tableSearchUrl', $viewData);
         $this->assertArrayHasKey('searchQuery', $viewData);
         $this->assertArrayHasKey('searchQueryName', $viewData);
+    }
+
+    public function test_the_bulk_action_column_uses_the_default_width(): void
+    {
+        $html = $this->renderTableWithBulkActions();
+
+        $this->assertStringContainsString('style="width: 5%;"', $html);
+    }
+
+    public function test_the_bulk_action_column_width_can_be_overridden_per_table(): void
+    {
+        $html = $this->renderTableWithBulkActions('12rem');
+
+        $this->assertStringContainsString('style="width: 12rem;"', $html);
+        $this->assertStringNotContainsString('width: 5%', $html);
+    }
+
+    public function test_a_null_bulk_action_column_width_omits_the_inline_style(): void
+    {
+        $html = $this->renderTableWithBulkActions(null, true);
+
+        $this->assertStringNotContainsString('style="width:', $html);
+    }
+
+    private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
+    {
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $table = new class($width, $overrideWithNull) extends Table {
+            public function __construct(
+                private readonly ?string $width,
+                private readonly bool $overrideWithNull,
+            ) {}
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function bulkActions(): array
+            {
+                return [new Action()->label('Delete')->as(new Http('https://example.test', Method::Delete))];
+            }
+
+            public function bulkActionColumnWidth(): ?string
+            {
+                if ($this->overrideWithNull) {
+                    return null;
+                }
+
+                return $this->width ?? parent::bulkActionColumnWidth();
+            }
+        };
+
+        return $builder->build($table, $request)->render();
     }
 }

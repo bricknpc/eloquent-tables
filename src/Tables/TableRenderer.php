@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Builders;
+namespace BrickNPC\EloquentTables\Tables;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
@@ -16,10 +16,14 @@ use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
+use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 /**
@@ -33,22 +37,22 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
  * If a better solution exists or is implemented in the future, feel free to open a PR.
  * </todo>
  */
-readonly class TableViewBuilder
+readonly class TableRenderer
 {
     /**
-     * @param ColumnLabelViewBuilder<TModel> $columnLabelViewBuilder
-     * @param ColumnValueViewBuilder<TModel> $columnValueViewBuilder
-     * @param LayoutFinder<TModel>           $layoutFinder
-     * @param RowsBuilder<TModel>            $rowsBuilder
+     * @param ColumnLabelRenderer<TModel> $columnLabelRenderer
+     * @param ColumnValueRenderer<TModel> $columnValueRenderer
+     * @param LayoutFinder<TModel>        $layoutFinder
+     * @param RowsBuilder<TModel>         $rowsBuilder
      */
     public function __construct(
-        private ColumnLabelViewBuilder $columnLabelViewBuilder,
-        private ColumnValueViewBuilder $columnValueViewBuilder,
+        private ColumnLabelRenderer $columnLabelRenderer,
+        private ColumnValueRenderer $columnValueRenderer,
         private Factory $viewFactory,
         private LayoutFinder $layoutFinder,
         private Config $config,
         private RowsBuilder $rowsBuilder,
-        private FilterViewBuilder $filterViewBuilder,
+        private FilterRenderer $filterRenderer,
         private RouteModelBinder $methodInvoker,
         private ActionRenderer $actionRenderer,
     ) {}
@@ -116,9 +120,9 @@ readonly class TableViewBuilder
                 ->map(fn (TableStyle $style) => $style->toCssClass($theme))
                 ->implode(' '),
             'columns'                => $columns,
-            'columnLabelViewBuilder' => $this->columnLabelViewBuilder,
+            'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $this->getRows($table, $request),
-            'columnValueViewBuilder' => $this->columnValueViewBuilder,
+            'columnValueRenderer'    => $this->columnValueRenderer,
             'links'                  => $this->getLinks($table, $request),
             'tableActionCount'       => count($tableActions),
             'tableActions'           => $tableActions,
@@ -132,9 +136,10 @@ readonly class TableViewBuilder
             'rowActions'             => $rowActions,
             'bulkActionCount'        => count($bulkActions),
             'bulkActions'            => $bulkActions,
+            'bulkActionColumnWidth'  => $table->bulkActionColumnWidth(),
             'filterCount'            => count($filters),
             'filters'                => $filters,
-            'filterViewBuilder'      => $this->filterViewBuilder,
+            'filterRenderer'         => $this->filterRenderer,
             'actionRenderer'         => $this->actionRenderer,
             'config'                 => $this->config,
         ];

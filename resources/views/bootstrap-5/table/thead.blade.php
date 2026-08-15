@@ -1,18 +1,19 @@
 @php
     use Illuminate\Http\Request;
     use BrickNPC\EloquentTables\Column;
-    use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
-    use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+    use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+    use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 
     /** @var Request $request */
     /** @var Column[] $columns */
-    /** @var ColumnLabelViewBuilder $columnLabelViewBuilder */
-    /** @var ColumnValueViewBuilder $columnValueViewBuilder */
+    /** @var ColumnLabelRenderer $columnLabelRenderer */
+    /** @var ColumnValueRenderer $columnValueRenderer */
+    /** @var ?string $bulkActionColumnWidth */
 @endphp
 <thead>
     <tr>
         @if($bulkActionCount > 0)
-            <th class="text-center" style="width: 5%;">
+            <th class="text-center" @if($bulkActionColumnWidth !== null) style="width: {{ $bulkActionColumnWidth }};" @endif>
                 <div class="form-check form-switch d-flex justify-content-center">
                     <input
                         class="form-check-input"
@@ -26,7 +27,7 @@
             </th>
         @endif
         @foreach($columns as $column)
-            {{ $columnLabelViewBuilder->build($request, $column) }}
+            {{ $columnLabelRenderer->build($request, $column) }}
         @endforeach
         @if($rowActionCount > 0)
             <th>&nbsp;</th>

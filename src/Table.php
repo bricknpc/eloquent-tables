@@ -13,8 +13,8 @@ use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 
@@ -38,11 +38,11 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * @var TableViewBuilder<TModel>
+     * @var TableRenderer<TModel>
      */
-    public TableViewBuilder $builder {
-        set(TableViewBuilder $value) {
-            $this->builder = $value;
+    public TableRenderer $renderer {
+        set(TableRenderer $value) {
+            $this->renderer = $value;
         }
     }
 
@@ -82,7 +82,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
             $this->unauthorized();
         }
 
-        return $this->builder->build($this, $this->request);
+        return $this->renderer->build($this, $this->request);
     }
 
     public function withPagination(): bool
@@ -108,6 +108,16 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     public function pageStyle(): PageStyle
     {
         return PageStyle::Primary;
+    }
+
+    /**
+     * The width of the leading column holding the bulk action checkboxes, as a CSS length.
+     *
+     * Return null to omit the inline width entirely and size the column from your own stylesheet.
+     */
+    public function bulkActionColumnWidth(): ?string
+    {
+        return '5%';
     }
 
     /**

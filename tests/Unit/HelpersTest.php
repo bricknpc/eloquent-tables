@@ -10,11 +10,9 @@ use PHPUnit\Framework\Attributes\UsesClass;
 
 use function BrickNPC\EloquentTables\actions;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversFunction;
-
-use function BrickNPC\EloquentTables\groupedActions;
-use function BrickNPC\EloquentTables\dropdownActions;
-
+use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 /**
@@ -24,6 +22,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[CoversFunction('BrickNPC\EloquentTables\dropdownActions')]
 #[CoversFunction('BrickNPC\EloquentTables\groupedActions')]
 #[UsesClass(ActionCollection::class)]
+#[UsesClass(ActionCollectionType::class)]
 class HelpersTest extends TestCase
 {
     private Action $action1;
@@ -39,252 +38,88 @@ class HelpersTest extends TestCase
         $this->action3 = $this->createMock(Action::class);
     }
 
-    public function test_actions_returns_action_collection(): void
+    /**
+     * The only thing that distinguishes the three helpers is the type of the collection they build.
+     *
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_it_builds_a_collection_of_the_matching_type(string $helper, ActionCollectionType $expected): void
     {
-        $result = actions($this->action1);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $this->assertSame($expected, $helper($this->action1)->type);
     }
 
-    public function test_actions_accepts_single_action(): void
+    /**
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_it_collects_every_action_in_order(string $helper, ActionCollectionType $expected): void
     {
-        $result = actions($this->action1);
+        $result = $helper($this->action1, $this->action2, $this->action3);
 
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $this->assertCount(3, $result);
+        $this->assertSame([$this->action1, $this->action2, $this->action3], $result->all());
     }
 
-    public function test_actions_accepts_multiple_actions(): void
+    /**
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_it_builds_an_empty_collection_without_arguments(string $helper, ActionCollectionType $expected): void
     {
-        $result = actions($this->action1, $this->action2, $this->action3);
+        $result = $helper();
 
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $this->assertCount(0, $result);
+        $this->assertSame($expected, $result->type);
     }
 
-    public function test_actions_accepts_no_arguments(): void
+    /**
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_it_accepts_collections_alongside_actions(string $helper, ActionCollectionType $expected): void
     {
-        $result = actions();
+        $nested = new ActionCollection([$this->action1]);
 
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $result = $helper($this->action2, $nested, $this->action3);
+
+        $this->assertCount(3, $result);
+        $this->assertSame($nested, $result->all()[1]);
     }
 
-    public function test_actions_accepts_action_collection(): void
+    /**
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_it_returns_a_new_collection_on_every_call(string $helper, ActionCollectionType $expected): void
     {
-        $collection = new ActionCollection([$this->action1]);
-
-        $result = actions($collection);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $this->assertNotSame($helper($this->action1), $helper($this->action1));
     }
 
-    public function test_actions_accepts_mixed_actions_and_collections(): void
+    /**
+     * @param callable-string $helper
+     */
+    #[DataProvider('helperProvider')]
+    public function test_a_nested_collection_keeps_its_own_type(string $helper, ActionCollectionType $expected): void
     {
-        $collection = new ActionCollection([$this->action1]);
+        $outer = actions($helper($this->action1), $this->action2);
 
-        $result = actions($this->action2, $collection, $this->action3);
+        /** @var ActionCollection $inner */
+        $inner = $outer->all()[0];
 
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        $this->assertSame(ActionCollectionType::Normal, $outer->type);
+        $this->assertSame($expected, $inner->type);
     }
 
-    public function test_dropdown_actions_returns_action_collection(): void
+    /**
+     * @return \Generator<string, array{callable-string, ActionCollectionType}>
+     */
+    public static function helperProvider(): \Generator
     {
-        $result = dropdownActions($this->action1);
+        yield 'actions' => ['BrickNPC\EloquentTables\actions', ActionCollectionType::Normal];
 
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
+        yield 'dropdownActions' => ['BrickNPC\EloquentTables\dropdownActions', ActionCollectionType::Dropdown];
 
-    public function test_dropdown_actions_accepts_single_action(): void
-    {
-        $result = dropdownActions($this->action1);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_accepts_multiple_actions(): void
-    {
-        $result = dropdownActions($this->action1, $this->action2, $this->action3);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_accepts_no_arguments(): void
-    {
-        $result = dropdownActions();
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_accepts_action_collection(): void
-    {
-        $collection = new ActionCollection([$this->action1]);
-
-        $result = dropdownActions($collection);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_accepts_mixed_actions_and_collections(): void
-    {
-        $collection = new ActionCollection([$this->action1]);
-
-        $result = dropdownActions($this->action2, $collection, $this->action3);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_returns_action_collection(): void
-    {
-        $result = groupedActions($this->action1);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_accepts_single_action(): void
-    {
-        $result = groupedActions($this->action1);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_accepts_multiple_actions(): void
-    {
-        $result = groupedActions($this->action1, $this->action2, $this->action3);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_accepts_no_arguments(): void
-    {
-        $result = groupedActions();
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_accepts_action_collection(): void
-    {
-        $collection = new ActionCollection([$this->action1]);
-
-        $result = groupedActions($collection);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_accepts_mixed_actions_and_collections(): void
-    {
-        $collection = new ActionCollection([$this->action1]);
-
-        $result = groupedActions($this->action2, $collection, $this->action3);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_actions_creates_collection_with_default_type(): void
-    {
-        $result = actions($this->action1);
-
-        // Assuming ActionCollection has a way to check its type
-        // You may need to adjust this based on ActionCollection's API
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_creates_collection_with_dropdown_type(): void
-    {
-        $result = dropdownActions($this->action1);
-
-        // Assuming ActionCollection exposes its type somehow
-        // You may need to add a getter method to ActionCollection to properly test this
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_creates_collection_with_grouped_type(): void
-    {
-        $result = groupedActions($this->action1);
-
-        // Assuming ActionCollection exposes its type somehow
-        // You may need to add a getter method to ActionCollection to properly test this
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_multiple_helper_functions_return_different_instances(): void
-    {
-        $result1 = actions($this->action1);
-        $result2 = actions($this->action1);
-
-        $this->assertNotSame($result1, $result2);
-    }
-
-    public function test_dropdown_actions_returns_different_instances(): void
-    {
-        $result1 = dropdownActions($this->action1);
-        $result2 = dropdownActions($this->action1);
-
-        $this->assertNotSame($result1, $result2);
-    }
-
-    public function test_grouped_actions_returns_different_instances(): void
-    {
-        $result1 = groupedActions($this->action1);
-        $result2 = groupedActions($this->action1);
-
-        $this->assertNotSame($result1, $result2);
-    }
-
-    public function test_helpers_can_be_nested(): void
-    {
-        $innerCollection = actions($this->action1);
-        $outerCollection = actions($innerCollection, $this->action2);
-
-        $this->assertInstanceOf(ActionCollection::class, $outerCollection);
-    }
-
-    public function test_dropdown_actions_can_be_nested(): void
-    {
-        $innerCollection = dropdownActions($this->action1);
-        $outerCollection = dropdownActions($innerCollection, $this->action2);
-
-        $this->assertInstanceOf(ActionCollection::class, $outerCollection);
-    }
-
-    public function test_grouped_actions_can_be_nested(): void
-    {
-        $innerCollection = groupedActions($this->action1);
-        $outerCollection = groupedActions($innerCollection, $this->action2);
-
-        $this->assertInstanceOf(ActionCollection::class, $outerCollection);
-    }
-
-    public function test_helpers_can_be_mixed_in_nesting(): void
-    {
-        $dropdownCollection = dropdownActions($this->action1);
-        $groupedCollection  = groupedActions($this->action2);
-        $result             = actions($dropdownCollection, $groupedCollection, $this->action3);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_actions_with_large_number_of_items(): void
-    {
-        $actions = array_fill(0, 100, $this->action1);
-
-        $result = actions(...$actions);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_dropdown_actions_with_large_number_of_items(): void
-    {
-        $actions = array_fill(0, 100, $this->action1);
-
-        $result = dropdownActions(...$actions);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
-    }
-
-    public function test_grouped_actions_with_large_number_of_items(): void
-    {
-        $actions = array_fill(0, 100, $this->action1);
-
-        $result = groupedActions(...$actions);
-
-        $this->assertInstanceOf(ActionCollection::class, $result);
+        yield 'groupedActions' => ['BrickNPC\EloquentTables\groupedActions', ActionCollectionType::Grouped];
     }
 }

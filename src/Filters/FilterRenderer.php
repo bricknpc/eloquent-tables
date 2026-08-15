@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Builders;
+namespace BrickNPC\EloquentTables\Filters;
 
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
@@ -10,7 +10,7 @@ use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 
-readonly class FilterViewBuilder
+readonly class FilterRenderer
 {
     public function __construct(
         private Factory $viewFactory,

@@ -69,29 +69,6 @@ class ActionCollection extends Collection
         return $this->countRenderable($context) > 0;
     }
 
-    public function flatten($depth = PHP_INT_MAX): static
-    {
-        // Custom flatten that handles nested ActionCollections
-        $result = new static(); // @phpstan-ignore-line
-
-        foreach ($this->items as $item) {
-            if ($item instanceof ActionCollection) {
-                $result = $result->merge($item->flatten($depth));
-            } else {
-                $result->push($item);
-            }
-        }
-
-        return $result;
-    }
-
-    public function nest(ActionCollection $collection): static
-    {
-        $this->push($collection);
-
-        return $this;
-    }
-
     public function normal(Action ...$actions): ActionCollection
     {
         /* @var array<int, Action> $actions */

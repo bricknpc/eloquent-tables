@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Tests\Unit\Builders;
+namespace BrickNPC\EloquentTables\Tests\Unit\Columns;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
@@ -14,21 +14,21 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
-use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
+use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 
 /**
  * @internal
  */
-#[CoversClass(ColumnLabelViewBuilder::class)]
+#[CoversClass(ColumnLabelRenderer::class)]
 #[UsesClass(Column::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(ColumnType::class)]
-class ColumnLabelViewBuilderTest extends TestCase
+class ColumnLabelRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
     {
-        /** @var ColumnLabelViewBuilder $builder */
-        $builder = $this->app->make(ColumnLabelViewBuilder::class);
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -42,8 +42,8 @@ class ColumnLabelViewBuilderTest extends TestCase
     #[DataProvider('sortOrderProvider')]
     public function test_it_builds_the_correct_sort_url(?Sort $currentOrder, ?Sort $nextOrder): void
     {
-        /** @var ColumnLabelViewBuilder $builder */
-        $builder = $this->app->make(ColumnLabelViewBuilder::class);
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -86,8 +86,8 @@ class ColumnLabelViewBuilderTest extends TestCase
     {
         config()->set('eloquent-tables.theme', Theme::Bootstrap5);
 
-        /** @var ColumnLabelViewBuilder $builder */
-        $builder = $this->app->make(ColumnLabelViewBuilder::class);
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -106,8 +106,8 @@ class ColumnLabelViewBuilderTest extends TestCase
     {
         config()->set('eloquent-tables.theme', Theme::Bootstrap5);
 
-        /** @var ColumnLabelViewBuilder $builder */
-        $builder = $this->app->make(ColumnLabelViewBuilder::class);
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');

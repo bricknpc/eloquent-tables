@@ -211,4 +211,14 @@ class ActionIntentAlreadySetTest extends TestCase
         $this->assertInstanceOf(ActionIntent::class, $context['newIntent']);
         $this->assertInstanceOf(Action::class, $context['action']);
     }
+
+    public function test_context_is_safe_when_the_exception_is_constructed_directly(): void
+    {
+        $exception = new ActionIntentAlreadySet('Something went wrong');
+
+        $this->assertSame(
+            ['intent' => null, 'newIntent' => null, 'action' => null],
+            $exception->context(),
+        );
+    }
 }

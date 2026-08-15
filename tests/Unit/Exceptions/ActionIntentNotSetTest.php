@@ -84,4 +84,11 @@ class ActionIntentNotSetTest extends TestCase
 
         throw ActionIntentNotSet::forAction($this->createMock(Action::class));
     }
+
+    public function test_context_is_safe_when_the_exception_is_constructed_directly(): void
+    {
+        $exception = new ActionIntentNotSet('Something went wrong');
+
+        $this->assertSame(['action' => null], $exception->context());
+    }
 }

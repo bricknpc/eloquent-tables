@@ -17,7 +17,7 @@ By default, you have access to the following dependencies in your Table:
 | `Illuminate\Http\Request`                           | `$this->request` |                                                                                       |
 | `Illuminate\Contracts\Translation\Translator`       | `$this->trans`   |                                                                                       |
 | `Psr\Log\LoggerInterface`                           | `$this->logger`  |                                                                                       |
-| `BrickNPC\EloquentTables\Builders\TableViewBuilder` | `$this->builder` | This should be treated as private for your Table, though technically it is available. |
+| `BrickNPC\EloquentTables\Tables\TableRenderer`      | `$this->renderer` | This should be treated as private for your Table, though technically it is available. |
 
 Other dependencies can be injected into your Table by typehinting them in your method signature.
 

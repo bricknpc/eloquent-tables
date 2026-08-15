@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Tests\Unit\Builders;
+namespace BrickNPC\EloquentTables\Tests\Unit\Columns;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
@@ -16,13 +16,13 @@ use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
-use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 
 /**
  * @internal
  */
-#[CoversClass(ColumnValueViewBuilder::class)]
+#[CoversClass(ColumnValueRenderer::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(Column::class)]
 #[UsesClass(Config::class)]
@@ -30,12 +30,12 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(TableStyle::class)]
 #[UsesClass(CellStyle::class)]
 #[UsesClass(Theme::class)]
-class ColumnValueViewBuilderTest extends TestCase
+class ColumnValueRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -49,8 +49,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_builds_and_uses_formatter(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -65,8 +65,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_uses_formatter(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -83,8 +83,8 @@ class ColumnValueViewBuilderTest extends TestCase
     {
         config()->set('eloquent-tables.theme', Theme::Bootstrap5);
 
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -100,8 +100,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_renders_the_correct_styles(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -117,8 +117,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_renders_the_correct_cell_styles(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -136,8 +136,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_renders_the_correct_type(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -153,8 +153,8 @@ class ColumnValueViewBuilderTest extends TestCase
 
     public function test_it_renders_the_correct_icons(): void
     {
-        /** @var ColumnValueViewBuilder $builder */
-        $builder = $this->app->make(ColumnValueViewBuilder::class);
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
 
         /** @var Request $request */
         $request = $this->app->make('request');

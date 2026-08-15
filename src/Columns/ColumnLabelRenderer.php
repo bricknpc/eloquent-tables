@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace BrickNPC\EloquentTables\Builders;
+namespace BrickNPC\EloquentTables\Columns;
 
 use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
@@ -16,7 +16,7 @@ use BrickNPC\EloquentTables\Services\Config;
 /**
  * @template TModel of Model
  */
-readonly class ColumnLabelViewBuilder
+readonly class ColumnLabelRenderer
 {
     public function __construct(
         private Factory $viewFactory,

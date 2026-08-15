@@ -9,9 +9,9 @@ use BrickNPC\EloquentTables\Actions\ActionIntent;
 
 class ActionIntentAlreadySet extends \Exception
 {
-    private ActionIntent $intent;
-    private ActionIntent $newIntent;
-    private Action $action;
+    private ?ActionIntent $intent    = null;
+    private ?ActionIntent $newIntent = null;
+    private ?Action $action          = null;
 
     public static function forIntent(ActionIntent $intent, ActionIntent $newIntent, Action $action): self
     {
@@ -32,7 +32,7 @@ class ActionIntentAlreadySet extends \Exception
     }
 
     /**
-     * @return array<string, Action|ActionIntent>
+     * @return array<string, null|Action|ActionIntent>
      */
     public function context(): array
     {

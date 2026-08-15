@@ -294,19 +294,26 @@ class ConfirmationTest extends TestCase
         $this->assertNotSame($result1, $result2);
     }
 
-    public function test_contribute_with_different_descriptors(): void
+    public function test_contribute_ignores_the_descriptor_and_leaves_it_untouched(): void
     {
-        $descriptor1 = new ActionDescriptor(/* add required parameters */);
-        $descriptor2 = new ActionDescriptor(/* add required parameters */);
+        $bare = new ActionDescriptor();
+
+        $populated                      = new ActionDescriptor();
+        $populated->attributes['class'] = 'btn-danger';
+        $populated->label               = new LazyValue('Delete');
 
         $confirmation = new Confirmation('Confirm action?');
 
-        $result1 = $confirmation->contribute($descriptor1, $this->context);
-        $result2 = $confirmation->contribute($descriptor2, $this->context);
+        $fromBare      = $confirmation->contribute($bare, $this->context);
+        $fromPopulated = $confirmation->contribute($populated, $this->context);
 
-        $this->assertInstanceOf(ConfirmationContribution::class, $result1);
-        $this->assertInstanceOf(ConfirmationContribution::class, $result2);
-        $this->assertNotSame($result1, $result2);
+        $this->assertInstanceOf(ConfirmationContribution::class, $fromBare);
+        $this->assertInstanceOf(ConfirmationContribution::class, $fromPopulated);
+        $this->assertNotSame($fromBare, $fromPopulated);
+
+        // Confirmation only contributes markup, so it must not write to the descriptor it is handed.
+        $this->assertSame([], $bare->attributes);
+        $this->assertSame(['class' => 'btn-danger'], $populated->attributes);
     }
 
     public function test_multiple_confirmation_instances_are_independent(): void
