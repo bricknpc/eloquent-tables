@@ -3,4 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.actions.contribution.tooltip-attributes')
+@include($theme->view('actions.contribution.tooltip-attributes'))

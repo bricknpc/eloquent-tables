@@ -3,4 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.actions.contribution.confirmation-modal')
+@include($theme->view('actions.contribution.confirmation-modal'))

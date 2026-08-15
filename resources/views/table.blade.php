@@ -3,5 +3,5 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.table')
+@include($theme->view('table'))
 @include('eloquent-tables::js')

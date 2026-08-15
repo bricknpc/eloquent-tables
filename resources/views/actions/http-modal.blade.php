@@ -3,4 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.actions.http-modal')
+@include($theme->view('actions.http-modal'))

@@ -3,4 +3,4 @@
 
     /** @var Theme $theme */
 @endphp
-@include('eloquent-tables::' . $theme->value . '.actions.collection.dropdown')
+@include($theme->view('actions.collection.dropdown'))

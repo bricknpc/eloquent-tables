@@ -29,6 +29,7 @@ use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
 #[UsesClass(ColumnType::class)]
 #[UsesClass(TableStyle::class)]
 #[UsesClass(CellStyle::class)]
+#[UsesClass(Theme::class)]
 class ColumnValueViewBuilderTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
