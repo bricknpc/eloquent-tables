@@ -131,9 +131,53 @@ class UserTable extends Table
 
 ### Modal intent
 
-:::note[todo]
+The Modal intent renders a button that opens a Bootstrap modal. Use it when you want to show extra information about a
+row without sending the user to another page.
 
-todo
+The Modal intent accepts two parameters:
+
+- The title of the modal. This parameter can be a string, or a `\Closure` that receives the `ActionContext`.
+- The content of the modal. This parameter is optional and can be a string, or a `\Closure` that receives the `ActionContext`.
+
+Both the title and the content are rendered as HTML, so you can pass markup for a richer modal. Because of that, never
+pass unescaped user input into a modal. Use `e()` or a Blade view to escape it first.
+
+```php
+<?php
+// app/Tables/UserTable.php
+declare(strict_types=1);
+
+namespace App\Tables;
+
+use App\Models\User;
+use BrickNPC\EloquentTables\Table;
+use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Actions\Intents\Modal;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+
+class UserTable extends Table
+{
+    public function rowActions(): array
+    {
+        return [
+            new Action()
+                ->label(__('Details'))
+                ->as(new Modal(
+                    title: fn(ActionContext $context) => $context->model->name,
+                    content: fn(ActionContext $context) => \view('users.details', ['user' => $context->model])->render(),
+                )),
+        ];
+    }
+}
+```
+
+The modal is rendered with a close button in the header and in the footer. If you need other buttons in the modal, or
+a modal that loads its content over http, use the [HTTP modal intent](#http-modal-intent).
+
+:::warning
+
+Do not combine the Modal intent with the [Confirmation capability](#confirmation). Both render a modal, and a
+confirmation modal expects to confirm a form that a Modal intent does not have.
 
 :::
 
