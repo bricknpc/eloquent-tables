@@ -174,6 +174,56 @@ class ActionRendererTest extends TestCase
         $this->assertSame(['class' => 'btn-danger'], $data['attributes']);
     }
 
+    public function test_it_renders_the_attributes_set_by_a_capability(): void
+    {
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users/1/delete'))
+            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+                $descriptor->attributes['title']     = 'Delete this user';
+                $descriptor->attributes['data-test'] = 'yes';
+            }))
+        ;
+
+        $rendered = $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertStringContainsString('title="Delete this user"', $rendered);
+        $this->assertStringContainsString('data-test="yes"', $rendered);
+    }
+
+    public function test_it_escapes_the_attributes_set_by_a_capability(): void
+    {
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users/1/delete'))
+            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+                $descriptor->attributes['title'] = 'Delete "this" & that';
+            }))
+        ;
+
+        $rendered = $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertStringContainsString('&quot;', $rendered);
+        $this->assertStringContainsString('&amp;', $rendered);
+        $this->assertStringNotContainsString('title="Delete "this"', $rendered);
+    }
+
+    public function test_it_does_not_render_the_class_attribute_twice(): void
+    {
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users/1/delete'))
+            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+                $descriptor->attributes['class'] = 'btn-danger';
+            }))
+        ;
+
+        $rendered = (string) $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertSame(1, substr_count($rendered, 'class='));
+        $this->assertStringContainsString('class="btn btn-danger"', $rendered);
+    }
+
     public function test_it_gives_every_rendered_action_a_unique_id(): void
     {
         $action = new Action()->label('Edit')->as($this->createIntent());

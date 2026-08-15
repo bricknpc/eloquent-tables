@@ -375,11 +375,12 @@ Capabilities define what the action is capable of. This can be any combination o
 - **Apply**. A capability can apply something to an action, for instance styling.
 - **Contribute**. A capability can contribute to the rendering of the action, for instance adding a tooltip to a button.
 
-The Eloquent Tables package provides four built-in capabilities that should cover most use-cases, though you are of course 
+The Eloquent Tables package provides five built-in capabilities that should cover most use-cases, though you are of course 
 free to create and add your own capabilities:
 
 - **Authorize**. Used to check if the user has permission to see the action.
 - **Confirmation**. Used to add a confirmation modal to the action.
+- **Style**. Used to style the button or the link of the action.
 - **Tooltip**. Used to add a tooltip to the action.
 - **When**. Used to determine whether the action should be rendered. Similar to authorize.
 
@@ -454,6 +455,24 @@ new Confirmation(
     'DELETE',
 );
 ```
+
+### Style
+
+The Style capability expects one or more `BrickNPC\EloquentTables\Enums\ButtonStyle` enum cases that define what the
+button or the link of the action looks like. Without it, an action is rendered with the `btn-primary` class of the
+theme.
+
+```php
+<?php
+
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Actions\Capabilities\Style;
+
+new Style(ButtonStyle::DangerOutline);
+```
+
+See the [action styling](../styling/action-styling.md) documentation for all available styles and for how a style is
+rendered inside a dropdown.
 
 ### Tooltip
 

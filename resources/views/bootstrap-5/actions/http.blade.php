@@ -11,22 +11,24 @@
 @if ($intent->method === Method::Get)
     <a href="{{ $intent->url()->resolve($context) }}"
        @if($context->asDropdown)
-           class="dropdown-item"
+           class="{{ trim('dropdown-item ' . ($attributes['class'] ?? '')) }}"
        @else
-           class="btn btn-primary"
+           class="{{ trim('btn ' . ($attributes['class'] ?? 'btn-primary')) }}"
             @endif
+            @include('eloquent-tables::actions.attributes')
             {!! $renderedAttributes->render() !!}
     >{!! $label !!}</a>
 @else
     <button type="submit"
             @if($context->asDropdown)
-                class="dropdown-item"
+                class="{{ trim('dropdown-item ' . ($attributes['class'] ?? '')) }}"
             @else
-                class="btn btn-primary"
+                class="{{ trim('btn ' . ($attributes['class'] ?? 'btn-primary')) }}"
             @endif
             @if($context->isBulk)
                 data-{{ $dataNamespace }}-bulk-action-form="true"
             @endif
+            @include('eloquent-tables::actions.attributes')
             {!! $renderedAttributes->render() !!}
             form="{{ $id }}"
     >
