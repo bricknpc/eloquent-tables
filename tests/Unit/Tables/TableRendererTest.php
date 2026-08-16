@@ -50,6 +50,7 @@ use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
@@ -98,6 +99,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(RowStyle::class)]
 #[UsesClass(RowContext::class)]
 #[UsesClass(StyleSet::class)]
+#[UsesClass(TableContext::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -629,6 +631,32 @@ class TableRendererTest extends TestCase
         $this->assertSame(['A', 'B'], $seen);
     }
 
+    public function test_a_declared_table_style_reaches_the_table_element(): void
+    {
+        $html = $this->renderStyledTable(new StyleSet(TableStyle::Striped, TableStyle::Hover));
+
+        $this->assertStringContainsString('<table class="table table-striped table-hover">', $html);
+    }
+
+    public function test_a_table_declaring_nothing_keeps_its_default_appearance(): void
+    {
+        $this->assertStringContainsString('<table class="table ">', $this->renderStyledTable(null));
+    }
+
+    public function test_a_conditional_table_style_resolves_against_the_table_context(): void
+    {
+        $seen = null;
+
+        $html = $this->renderStyledTable(new StyleSet(function (TableContext $context) use (&$seen) {
+            $seen = $context;
+
+            return TableStyle::Bordered;
+        }));
+
+        $this->assertInstanceOf(TableContext::class, $seen);
+        $this->assertStringContainsString('table-bordered', $html);
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -667,6 +695,36 @@ class TableRendererTest extends TestCase
                 return $this->width ?? parent::bulkActionColumnWidth();
             }
         };
+
+        return $builder->build($table, $request)->render();
+    }
+
+    private function renderStyledTable(?StyleSet $style): string
+    {
+        $table = new class($style) extends Table {
+            public function __construct(private readonly ?StyleSet $tableStyle) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            public function style(): ?StyleSet
+            {
+                return $this->tableStyle;
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
 
         return $builder->build($table, $request)->render();
     }

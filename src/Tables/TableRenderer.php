@@ -16,7 +16,6 @@ use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
-use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
@@ -30,6 +29,7 @@ use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
@@ -138,9 +138,9 @@ readonly class TableRenderer
             'theme'         => $theme,
             'dataNamespace' => $this->config->dataNamespace(),
             'request'       => $request,
-            'tableStyles'   => collect($table->tableStyles())
-                ->map(fn (TableStyle $style) => $style->toCssClass($theme))
-                ->implode(' '),
+            'tableStyles'   => $this->styleResolver->classes(
+                $table->style()?->resolve(new TableContext($request)) ?? [],
+            ),
             'columns'                => $columns,
             'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $rows,
