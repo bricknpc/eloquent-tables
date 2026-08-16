@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Actions\Capabilities;
 
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
@@ -26,8 +27,10 @@ final class Style extends ActionCapability
             fn (mixed $style) => $style instanceof ButtonStyle,
         );
 
+        $region = $context->asDropdown ? ActionRegion::DropdownItem : ActionRegion::Button;
+
         $classes = array_filter(array_map(
-            fn (ButtonStyle $style) => $style->toCssClass($context->config->theme(), $context->asDropdown),
+            fn (ButtonStyle $style) => $style->toCssClass($context->config->theme(), $region),
             $styles,
         ));
 
