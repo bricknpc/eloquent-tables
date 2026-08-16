@@ -14,10 +14,12 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
@@ -39,6 +41,7 @@ use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(StyleSet::class)]
 class StyleTest extends TestCase
 {
     private ActionDescriptor $descriptor;
@@ -129,6 +132,104 @@ class StyleTest extends TestCase
         new Style(ButtonStyle::Danger)->apply($this->descriptor, $this->context);
 
         $this->assertSame(['title' => 'Delete', 'class' => 'btn-danger'], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_adds_its_style_to_the_static_ones(): void
+    {
+        // Covers AE1.
+        new Style(ButtonStyle::Danger, fn () => ButtonStyle::Link)->apply($this->descriptor, $this->context);
+
+        $this->assertSame(['class' => 'btn-danger btn-link'], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_may_be_declared_before_the_static_styles(): void
+    {
+        // Covers AE3.
+        new Style(fn () => ButtonStyle::Link, ButtonStyle::Danger)->apply($this->descriptor, $this->context);
+
+        $this->assertSame(['class' => 'btn-danger btn-link'], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_returning_several_styles_adds_all_of_them(): void
+    {
+        new Style(fn () => [ButtonStyle::Danger, ButtonStyle::Link])->apply($this->descriptor, $this->context);
+
+        $this->assertSame(['class' => 'btn-danger btn-link'], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_returning_nothing_leaves_the_static_styles_alone(): void
+    {
+        new Style(ButtonStyle::Danger, fn () => null)->apply($this->descriptor, $this->context);
+
+        $this->assertSame(['class' => 'btn-danger'], $this->descriptor->attributes);
+    }
+
+    public function test_the_closure_receives_the_action_context(): void
+    {
+        // Covers AE2.
+        $received = null;
+
+        new Style(function ($given) use (&$received) {
+            $received = $given;
+
+            return null;
+        })->apply($this->descriptor, $this->context);
+
+        $this->assertSame($this->context, $received);
+        $this->assertNull($received->model);
+    }
+
+    public function test_the_closure_receives_the_model_of_a_row_action(): void
+    {
+        $model    = new TestModel();
+        $received = null;
+
+        $context = new ActionContext($this->context->request, $this->context->config, $model);
+
+        new Style(function ($given) use (&$received) {
+            $received = $given;
+
+            return null;
+        })->apply($this->descriptor, $context);
+
+        $this->assertSame($model, $received->model);
+    }
+
+    public function test_a_closure_supplied_style_uses_the_dropdown_variant_inside_a_dropdown(): void
+    {
+        // Covers AE4.
+        new Style(fn () => ButtonStyle::Danger)->apply($this->descriptor, $this->context->asDropdown());
+
+        $this->assertSame(['class' => 'text-danger'], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_returning_only_the_default_style_leaves_the_descriptor_untouched(): void
+    {
+        new Style(fn () => ButtonStyle::Default)->apply($this->descriptor, $this->context);
+
+        $this->assertSame([], $this->descriptor->attributes);
+    }
+
+    public function test_a_closure_may_decide_the_style_from_the_context(): void
+    {
+        $style = new Style(fn (ActionContext $context) => $context->isBulk ? ButtonStyle::Danger : ButtonStyle::Link);
+
+        $style->apply($this->descriptor, $this->context->isBulk());
+
+        $this->assertSame(['class' => 'btn-danger'], $this->descriptor->attributes);
+
+        $descriptor = new ActionDescriptor();
+
+        $style->apply($descriptor, $this->context);
+
+        $this->assertSame(['class' => 'btn-link'], $descriptor->attributes);
+    }
+
+    public function test_it_styles_a_rendered_action_from_a_closure(): void
+    {
+        $rendered = $this->render(new Style(fn () => ButtonStyle::DangerOutline));
+
+        $this->assertStringContainsString('class="btn btn-outline-danger"', $rendered);
     }
 
     public function test_check_returns_true(): void
