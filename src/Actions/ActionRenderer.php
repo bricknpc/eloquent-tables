@@ -34,6 +34,17 @@ final readonly class ActionRenderer
             : $action->hasDescriptor($context);
     }
 
+    /**
+     * @param array<Action|ActionCollection> $actions
+     */
+    public function countRenderable(array $actions, ActionContext $context): int
+    {
+        return count(array_filter(
+            $actions,
+            fn (Action|ActionCollection $action) => $this->canRender($action, $context),
+        ));
+    }
+
     private function renderActionCollection(ActionCollection $collection, ActionContext $context): ?View
     {
         return $this->canRender($collection, $context) ? view($collection->type->view(), [
