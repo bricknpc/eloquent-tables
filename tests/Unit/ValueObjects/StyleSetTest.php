@@ -9,14 +9,15 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestStyle;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 
 /**
  * @internal
  */
 #[CoversClass(StyleSet::class)]
-#[UsesClass(TableContext::class)]
+#[UsesClass(RowContext::class)]
 class StyleSetTest extends TestCase
 {
     public function test_static_styles_resolve_to_themselves(): void
@@ -108,11 +109,11 @@ class StyleSetTest extends TestCase
         );
     }
 
-    private function context(): TableContext
+    private function context(): RowContext
     {
         /** @var Request $request */
         $request = $this->app->make('request');
 
-        return new TableContext($request);
+        return new RowContext($request, new TestModel());
     }
 }

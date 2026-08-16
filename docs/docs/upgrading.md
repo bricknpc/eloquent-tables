@@ -316,8 +316,8 @@ The closure is new: it receives a `CellContext` and can style a cell by its valu
 Table-level styling takes the same shape as everything else.
 
 ```php
-public function tableStyles(): array { return [TableStyle::Striped]; }              // 1.x
-public function style(): ?StyleSet { return new StyleSet(TableStyle::Striped); }    // 2.0
+public function tableStyles(): array { return [TableStyle::Striped]; }  // 1.x
+public function style(): array      { return [TableStyle::Striped]; }  // 2.0
 ```
 
 ## 14. `pageStyle()` becomes `accentStyle()`
@@ -326,11 +326,12 @@ It never governed a page — it governs the table's own controls, so it is named
 `AccentStyle`, with the same cases.
 
 ```php
-public function pageStyle(): PageStyle { return PageStyle::Primary; }                  // 1.x
-public function accentStyle(): ?StyleSet { return new StyleSet(AccentStyle::Primary); } // 2.0
+public function pageStyle(): PageStyle       { return PageStyle::Primary; }     // 1.x
+public function accentStyle(): AccentStyle   { return AccentStyle::Primary; }   // 2.0
 ```
 
-If you declare more than one accent, the last wins — it is a single colour, not a set.
+The accent is a single colour, so the method returns one case. Anything conditional goes in the method body, which
+already has the request.
 
 ## Full example
 

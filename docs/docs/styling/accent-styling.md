@@ -9,7 +9,7 @@ the colour those controls are drawn in, so they sit together with the table rath
 
 It affects the search box, the filter dropdowns, the per-page dropdown and the pagination links.
 
-Declare it with `accentStyle()`, returning a `StyleSet` over `BrickNPC\EloquentTables\Enums\AccentStyle`:
+Declare it with `accentStyle()`, returning a `BrickNPC\EloquentTables\Enums\AccentStyle` case:
 
 ```php
 <?php
@@ -20,38 +20,31 @@ declare(strict_types=1);
 namespace App\Tables;
 
 use BrickNPC\EloquentTables\Table;
-use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Enums\AccentStyle;
 
 class UserTable extends Table
 {
     //... Other methods
 
-    public function accentStyle(): ?StyleSet
+    public function accentStyle(): AccentStyle
     {
-        return new StyleSet(AccentStyle::Success);
+        return AccentStyle::Success;
     }
 }
 ```
 
 The default is `AccentStyle::Primary`.
 
-## One accent, not a set
+## Varying it per request
 
-Every other styling level can carry several styles at once. The accent cannot — it is a single colour, used to build
-several classes. If you declare more than one, the last wins:
-
-```php
-new StyleSet(AccentStyle::Danger, AccentStyle::Success); // success
-```
-
-A closure works the same way as it does elsewhere, and receives a
-`BrickNPC\EloquentTables\Styles\Contexts\TableContext`:
+The accent is a single colour, so the method returns one case rather than a set. A table already has the request
+injected, so anything conditional belongs in the method body:
 
 ```php
-new StyleSet(fn (TableContext $context) => $context->request->user()?->prefersDarkMode
-    ? AccentStyle::Dark
-    : AccentStyle::Primary);
+public function accentStyle(): AccentStyle
+{
+    return $this->request->user()?->prefersDarkMode ? AccentStyle::Dark : AccentStyle::Primary;
+}
 ```
 
 :::note

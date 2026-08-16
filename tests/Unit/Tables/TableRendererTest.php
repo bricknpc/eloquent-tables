@@ -50,7 +50,6 @@ use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
@@ -98,7 +97,6 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(RowStyle::class)]
 #[UsesClass(RowContext::class)]
 #[UsesClass(StyleSet::class)]
-#[UsesClass(TableContext::class)]
 #[UsesClass(AccentStyle::class)]
 class TableRendererTest extends TestCase
 {
@@ -633,33 +631,19 @@ class TableRendererTest extends TestCase
 
     public function test_a_declared_table_style_reaches_the_table_element(): void
     {
-        $html = $this->renderStyledTable(new StyleSet(TableStyle::Striped, TableStyle::Hover));
+        $html = $this->renderStyledTable([TableStyle::Striped, TableStyle::Hover]);
 
         $this->assertStringContainsString('<table class="table table-striped table-hover">', $html);
     }
 
     public function test_a_table_declaring_nothing_keeps_its_default_appearance(): void
     {
-        $this->assertStringContainsString('<table class="table ">', $this->renderStyledTable(null));
-    }
-
-    public function test_a_conditional_table_style_resolves_against_the_table_context(): void
-    {
-        $seen = null;
-
-        $html = $this->renderStyledTable(new StyleSet(function (TableContext $context) use (&$seen) {
-            $seen = $context;
-
-            return TableStyle::Bordered;
-        }));
-
-        $this->assertInstanceOf(TableContext::class, $seen);
-        $this->assertStringContainsString('table-bordered', $html);
+        $this->assertStringContainsString('<table class="table ">', $this->renderStyledTable([TableStyle::Default]));
     }
 
     public function test_a_declared_accent_reaches_every_control(): void
     {
-        $html = $this->renderAccentedTable(new StyleSet(AccentStyle::Danger));
+        $html = $this->renderAccentedTable(AccentStyle::Danger);
 
         $this->assertStringContainsString('border-danger', $html);
         $this->assertStringContainsString('text-danger', $html);
@@ -667,20 +651,12 @@ class TableRendererTest extends TestCase
 
     public function test_a_table_declaring_nothing_keeps_the_default_accent(): void
     {
-        $this->assertStringContainsString('border-primary', $this->renderAccentedTable(null));
-    }
-
-    public function test_the_last_declared_accent_wins(): void
-    {
-        $html = $this->renderAccentedTable(new StyleSet(AccentStyle::Danger, AccentStyle::Success));
-
-        $this->assertStringContainsString('border-success', $html);
-        $this->assertStringNotContainsString('border-danger', $html);
+        $this->assertStringContainsString('border-primary', $this->renderAccentedTable(AccentStyle::Primary));
     }
 
     public function test_the_accent_still_derives_its_disabled_and_active_variants(): void
     {
-        $data = $this->accentedViewData(new StyleSet(AccentStyle::Danger));
+        $data = $this->accentedViewData(AccentStyle::Danger);
 
         $this->assertSame('danger', $data['mainTableStyle']);
         $this->assertSame('dark', $data['disabledStyle']);
@@ -729,7 +705,7 @@ class TableRendererTest extends TestCase
         return $builder->build($table, $request)->render();
     }
 
-    private function renderAccentedTable(?StyleSet $accent): string
+    private function renderAccentedTable(AccentStyle $accent): string
     {
         return $this->accentedView($accent)->render();
     }
@@ -737,12 +713,12 @@ class TableRendererTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    private function accentedViewData(?StyleSet $accent): array
+    private function accentedViewData(AccentStyle $accent): array
     {
         return $this->accentedView($accent)->getData();
     }
 
-    private function accentedView(?StyleSet $accent): View
+    private function accentedView(AccentStyle $accent): View
     {
         DB::table('test_models')->insert(
             collect(range(1, 20))
@@ -758,7 +734,7 @@ class TableRendererTest extends TestCase
         $table = new class($accent) extends Table {
             use WithPagination;
 
-            public function __construct(private readonly ?StyleSet $accent) {}
+            public function __construct(private readonly AccentStyle $accent) {}
 
             public function query(): Builder
             {
@@ -775,7 +751,7 @@ class TableRendererTest extends TestCase
                 return [new Filter('name', [])];
             }
 
-            public function accentStyle(): ?StyleSet
+            public function accentStyle(): AccentStyle
             {
                 return $this->accent;
             }
@@ -790,10 +766,16 @@ class TableRendererTest extends TestCase
         return $builder->build($table, $request);
     }
 
-    private function renderStyledTable(?StyleSet $style): string
+    /**
+     * @param TableStyle[] $style
+     */
+    private function renderStyledTable(array $style): string
     {
         $table = new class($style) extends Table {
-            public function __construct(private readonly ?StyleSet $tableStyle) {}
+            /**
+             * @param TableStyle[] $tableStyle
+             */
+            public function __construct(private readonly array $tableStyle) {}
 
             public function query(): Builder
             {
@@ -805,7 +787,10 @@ class TableRendererTest extends TestCase
                 return [new Column('name')];
             }
 
-            public function style(): ?StyleSet
+            /**
+             * @return TableStyle[]
+             */
+            public function style(): array
             {
                 return $this->tableStyle;
             }

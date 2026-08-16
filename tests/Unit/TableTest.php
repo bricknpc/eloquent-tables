@@ -34,7 +34,6 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
@@ -68,7 +67,6 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(CellStyle::class)]
 #[UsesClass(StyleTarget::class)]
 #[UsesClass(StyleFamily::class)]
-#[UsesClass(TableContext::class)]
 #[UsesClass(StyleSet::class)]
 #[UsesClass(AccentStyle::class)]
 class TableTest extends TestCase

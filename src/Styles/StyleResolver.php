@@ -7,7 +7,6 @@ namespace BrickNPC\EloquentTables\Styles;
 use BrickNPC\EloquentTables\Contracts\Style;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
-use BrickNPC\EloquentTables\Enums\AccentStyle;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 
 readonly class StyleResolver
@@ -39,22 +38,6 @@ readonly class StyleResolver
         }
 
         return $styles;
-    }
-
-    /**
-     * @param Style[] $styles
-     */
-    public function accent(array $styles): AccentStyle
-    {
-        $accent = AccentStyle::Primary;
-
-        foreach ($styles as $style) {
-            if ($style instanceof AccentStyle) {
-                $accent = $style;
-            }
-        }
-
-        return $accent;
     }
 
     /**

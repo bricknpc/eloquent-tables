@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Table Styling
 
-Table styles control the visual appearance of your tables and columns. They apply directly to the generated HTML 
-table markup and integrate with your chosen theme (currently only Bootstrap 5).
+Table styles control the visual appearance of the table itself. They apply directly to the generated HTML table markup
+and integrate with your chosen theme (currently only Bootstrap 5).
 
-You can set table styles by implementing the `style()` method on your table. It returns a `StyleSet`, the same shape
-every other styling level uses.
+You can set table styles by implementing the `style()` method on your table, returning the
+`BrickNPC\EloquentTables\Enums\TableStyle` cases you want.
 
 ```php
 <?php
@@ -18,27 +18,24 @@ declare(strict_types=1);
 
 namespace App\Tables;
 
-use App\Models\User;
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 
 class UserTable extends Table
 {
     //... Other methods
-    
+
     /**
      * @return TableStyle[]
      */
-    public function tableStyles(): array
+    public function style(): array
     {
-        return [
-            TableStyle::Bordered,
-        ];
+        return [TableStyle::Bordered];
     }
 }
 ```
 
-See the [columns](../columns.md#styles) documentation for more details about styles on columns.
+Columns are styled separately, with their own vocabulary — see [cell styling](cell-styling.md).
 
 ## Styling a row
 

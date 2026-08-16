@@ -12,9 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableParameter;
-use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Services\TableParameters;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 
 /**
  * @template TModel of Model
@@ -28,7 +26,6 @@ readonly class FilterRenderer
         private Factory $viewFactory,
         private Config $config,
         private TableParameters $parameters,
-        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -44,9 +41,7 @@ readonly class FilterRenderer
             'theme'     => $theme,
             // The view is rendered on its own rather than included, so it inherits nothing from the
             // table's scope and needs the style passed explicitly.
-            'mainTableStyle' => $this->styleResolver->accent(
-                $table->accentStyle()?->resolve(new TableContext($request)) ?? [],
-            )->toCssClass($theme),
+            'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
             'options'        => $filter->options(),
             'name'           => $filter->name,
             'value'          => $values[$filter->name] ?? null,

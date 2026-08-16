@@ -107,6 +107,30 @@ return [
 ];
 ```
 
+### Pagination
+
+The names of the page and per-page query parameters. Both are nested under the
+[table's name](table-names.md), so these set the sub-key rather than the whole parameter.
+
+```php
+'pagination' => [
+    'page_query_name'     => 'page',
+    'per_page_query_name' => 'per_page',
+],
+```
+
+### Preferences
+
+Whether a table remembers the per-page value and sort a visitor chose, and the cookie it stores them in. Enabled by
+default. See [Saved preferences](preferences.md).
+
+```php
+'preferences' => [
+    'enabled'     => true,
+    'cookie_name' => 'eloquent_tables_preferences',
+],
+```
+
 ### Icons
 
 The Eloquent Tables package uses icons in a few places. To keep the icons consistent with your own style and icon 
@@ -184,28 +208,3 @@ This option is not a default Laravel configuration option, so you should add it 
 uses this option to format currency. It is not required to add this option, but it is recommended to do so. 
 Add a `currency` option to the `app.php` config file and set it to the currency you want to use when formatting 
 numbers as currency. The value should be a 3-letter ISO 4217 currency code indicating the currency to use.
-
-## Pagination
-
-The names of the page and per-page query parameters. Both are nested under the
-[table's name](table-names.md), so these set the sub-key rather than the whole parameter.
-
-```php
-'pagination' => [
-    'page_query_name'     => 'page',
-    'per_page_query_name' => 'per_page',
-],
-```
-
-## Preferences
-
-Whether a table remembers the per-page value and sort a visitor chose, and the cookie it stores them in. Enabled by
-default. See [Saved preferences](preferences.md).
-
-```php
-'preferences' => [
-    'enabled'     => true,
-    'cookie_name' => 'eloquent_tables_preferences',
-],
-```
-

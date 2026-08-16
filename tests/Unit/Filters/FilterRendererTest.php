@@ -19,7 +19,6 @@ use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 
 /**
  * @internal
@@ -34,7 +33,6 @@ use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 #[UsesClass(StyleResolver::class)]
 #[UsesClass(AccentStyle::class)]
 #[UsesClass(StyleSet::class)]
-#[UsesClass(TableContext::class)]
 class FilterRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

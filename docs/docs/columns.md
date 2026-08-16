@@ -429,37 +429,6 @@ new Column(name: 'name')->checkbox();
 
 ### Styles
 
-To style a cell, you can use two types of styles: Table styles and Cell styles. Table styles add styling to the 
-`td` element, while Cell styles are added to a `div` (or similar element) inside both the `th` and `td` element.
-
-You can use the `styles` option for the Table styles. The `styles` option expects an array of 
-`BrickNPC\EloquentTable\Enums\TableStyle` enum cases, and can be set through the constructor or through the fluent 
-`styles` method.
-
-```php
-<?php
-
-use Illuminate\Http\Request;
-use BrickNPC\EloquentTables\Column;
-use BrickNPC\EloquentTables\Enums\TableStyle;
-use lluminate\Contracts\Database\Query\Builder;
-
-new Column(name: 'name', styles: [TableStyle::Active, TableStyle::Success]);
-// Or
-new Column(name: 'name')->styles(TableStyle::Active, TableStyle::Success);
-```
-
-Setting this option will do nothing to the header of the column but will render the cell of the column as such (assuming 
-the Bootstrap 5 theme):
-
-```html
-<td class="table-active table-success">
-    ...
-</td>
-```
-
-### Styles
-
 A column's styling is declared with `style()`. It takes any number of `BrickNPC\EloquentTables\Enums\CellStyle`
 cases, plus an optional closure that decides per cell from context.
 

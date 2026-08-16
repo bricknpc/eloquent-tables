@@ -122,14 +122,17 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return null;
     }
 
-    public function style(): ?StyleSet
+    /**
+     * @return TableStyle[]
+     */
+    public function style(): array
     {
-        return new StyleSet(TableStyle::Default);
+        return [TableStyle::Default];
     }
 
-    public function accentStyle(): ?StyleSet
+    public function accentStyle(): AccentStyle
     {
-        return new StyleSet(AccentStyle::Primary);
+        return AccentStyle::Primary;
     }
 
     /**

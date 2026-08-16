@@ -16,7 +16,6 @@ use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
-use BrickNPC\EloquentTables\Enums\AccentStyle;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
@@ -30,7 +29,6 @@ use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
-use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
@@ -136,12 +134,10 @@ readonly class TableRenderer
                 'perPageKey' => $this->parameters->key($table, TableParameter::PerPage),
                 'sortKey'    => $this->parameters->key($table, TableParameter::Sort),
             ] : null,
-            'theme'         => $theme,
-            'dataNamespace' => $this->config->dataNamespace(),
-            'request'       => $request,
-            'tableStyles'   => $this->styleResolver->classes(
-                $table->style()?->resolve(new TableContext($request)) ?? [],
-            ),
+            'theme'                  => $theme,
+            'dataNamespace'          => $this->config->dataNamespace(),
+            'request'                => $request,
+            'tableStyles'            => $this->styleResolver->classes($table->style()),
             'columns'                => $columns,
             'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $rows,
@@ -180,7 +176,7 @@ readonly class TableRenderer
             $viewData['layout'] = $layout;
         }
 
-        $accent = $this->accent($table, $request);
+        $accent = $table->accentStyle();
 
         $viewData['mainTableStyle'] = $accent->toCssClass($theme);
         $viewData['disabledStyle']  = $accent->toCssDisabledClass($theme);
@@ -199,16 +195,6 @@ readonly class TableRenderer
         }
 
         return $viewData;
-    }
-
-    /**
-     * @param Table<TModel> $table
-     */
-    private function accent(Table $table, Request $request): AccentStyle
-    {
-        return $this->styleResolver->accent(
-            $table->accentStyle()?->resolve(new TableContext($request)) ?? [],
-        );
     }
 
     /**
@@ -277,9 +263,9 @@ readonly class TableRenderer
         $theme = $this->config->theme();
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
-            'mainTableStyle' => $this->accent($table, $request)->toCssClass($theme),
-            'disabledStyle'  => $this->accent($table, $request)->toCssDisabledClass($theme),
-            'activeStyle'    => $this->accent($table, $request)->toCssActiveClass($theme),
+            'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
+            'disabledStyle'  => $table->accentStyle()->toCssDisabledClass($theme),
+            'activeStyle'    => $table->accentStyle()->toCssActiveClass($theme),
         ]);
     }
 
