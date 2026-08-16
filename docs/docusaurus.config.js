@@ -32,6 +32,16 @@ const config = {
 
   onBrokenLinks: 'throw',
 
+  markdown: {
+    mermaid: true,
+    // `.md` is parsed as CommonMark and only `.mdx` gets MDX. Agent plans are written
+    // by a tool and routinely contain angle brackets and braces outside code fences,
+    // which MDX would try to parse as JSX and fail the build on.
+    format: 'detect',
+  },
+
+  themes: ['@docusaurus/theme-mermaid'],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -102,6 +112,13 @@ const config = {
           {to: '/blog', label: 'Blog', position: 'left'},
           {to: '/showcase', label: 'Community Showcase', position: 'left'},
           {
+            type: 'docSidebar',
+            sidebarId: 'plansSidebar',
+            docsPluginId: 'plans',
+            position: 'left',
+            label: 'Agent Plans',
+          },
+          {
             href: 'https://github.com/bricknpc/eloquent-tables',
             label: 'GitHub',
             position: 'right',
@@ -141,6 +158,10 @@ const config = {
                 to: '/blog',
               },
               {
+                label: 'Agent Plans',
+                to: '/plans',
+              },
+              {
                 label: 'GitHub',
                 href: 'https://github.com/bricknpc/eloquent-tables',
               },
@@ -156,6 +177,18 @@ const config = {
       },
     }),
     plugins: [
+      [
+        '@docusaurus/plugin-content-docs',
+        /** @type {import('@docusaurus/plugin-content-docs').Options} */
+        ({
+          id: 'plans',
+          path: 'plans',
+          routeBasePath: 'plans',
+          sidebarPath: './sidebarsPlans.js',
+          editUrl:
+            'https://github.com/bricknpc/eloquent-tables/tree/main/docs/',
+        }),
+      ],
       [
         '@docusaurus/plugin-ideal-image',
         {
