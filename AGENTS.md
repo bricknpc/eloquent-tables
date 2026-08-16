@@ -75,6 +75,22 @@ All four must hold before work is considered done. CI runs the first three on PH
 - A risky test's coverage is not credited, so undeclared classes show up as a coverage *drop* too. If coverage
   falls unexpectedly, check the risky list first — it is usually the same root cause.
 
+### The gate does not check the JavaScript
+
+`resources/views/js.blade.php` is shipped, browser-facing code, and nothing in the four gates parses it. A syntax
+error there breaks every table's JavaScript silently while the suite stays green — this has already happened once.
+After touching it, strip the Blade echoes and parse the result:
+
+```bash
+python3 -c "import re; s=re.sub(r'\{\{[^}]*\}\}','et',open('resources/views/js.blade.php').read()); \
+s=re.sub(r'@if\(.*?\)|@endif','',s); open('docs/et-check.js','w').write(s.replace('<script>','').replace('</script>',''))"
+docker compose run --rm -T -w /app docs node --check et-check.js && rm docs/et-check.js
+```
+
+Substring assertions on the rendered markup also hit this file: it names every `data-{namespace}-*` attribute it
+reads, so `assertStringNotContainsString('data-et-preferences-cookie', $html)` matches the script rather than the
+markup. Assert on the attribute form (`data-et-preferences-cookie="`) instead.
+
 ### `composer cs` rewrites your code
 
 It is a fixer, not a checker, and it runs with `--allow-risky=yes`. It will reformat what you just wrote — most

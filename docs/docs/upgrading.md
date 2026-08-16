@@ -7,7 +7,7 @@ sidebar_position: 16
 Version 2.0 rewrites the actions system and changes the query parameters every table reads.
 
 **Every 2.0 upgrade needs at least one change.** Tables now namespace their query parameters under a table name, so
-`?sort[name]=asc` becomes `?users[sort][name]=asc`. Any URL you have hard-coded, linked to, bookmarked or documented
+`?sort[name]=asc` becomes `?user[sort][name]=asc`. Any URL you have hard-coded, linked to, bookmarked or documented
 needs updating, and the `pageName` and `perPageName` properties are gone. If your tables also define `tableActions()`,
 `rowActions()` or `massActions()`, every one of those definitions needs to be rewritten as well.
 
@@ -210,11 +210,11 @@ values. In 1.x they shared `?search=`, `?sort[...]` and `?filter[...]`, which me
 
 | Concern  | 1.x                  | 2.0                          |
 |----------|----------------------|------------------------------|
-| Search   | `?search=ada`        | `?users[search]=ada`         |
-| Sort     | `?sort[email]=asc`   | `?users[sort][email]=asc`    |
-| Filter   | `?filter[active]=1`  | `?users[filter][active]=1`   |
-| Per page | `?per_page=50`       | `?users[per_page]=50`        |
-| Page     | `?page=3`            | `?users[page]=3`             |
+| Search   | `?search=ada`        | `?user[search]=ada`          |
+| Sort     | `?sort[email]=asc`   | `?user[sort][email]=asc`     |
+| Filter   | `?filter[active]=1`  | `?user[filter][active]=1`    |
+| Per page | `?per_page=50`       | `?user[per_page]=50`         |
+| Page     | `?page=3`            | `?user[page]=3`              |
 
 The name comes from `Table::name()`, which defaults to the class name with a trailing `Table` removed and the rest
 snake-cased, so `UserTable` becomes `user` and `ArchivedUserTable` becomes `archived_user`. Override it to choose your
@@ -276,7 +276,7 @@ headers in. Clicking email and then name produced the same ordering as clicking 
 2.0 applies the sort in the order it was built up. If you relied on column order to fix the precedence, sort in your
 `query()` instead, or give the column a default sort.
 
-An unrecognised sort direction is now ignored rather than throwing, so a hand-edited `?users[sort][name]=sideways` no
+An unrecognised sort direction is now ignored rather than throwing, so a hand-edited `?user[sort][name]=sideways` no
 longer returns a 500.
 
 ## 11. Republish the views if you have published them
