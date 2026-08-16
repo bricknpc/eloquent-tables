@@ -10,6 +10,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
@@ -250,6 +251,76 @@ class ActionCollectionTest extends TestCase
 
         $this->assertSame(ActionCollectionType::Dropdown, $collection->type);
         $this->assertCount(1, $collection);
+    }
+
+    /**
+     * @param non-empty-string $method
+     */
+    #[DataProvider('typeMethodProvider')]
+    public function test_it_keeps_the_existing_actions_when_no_arguments_are_given(string $method, ActionCollectionType $expected): void
+    {
+        $first  = new Action();
+        $second = new Action();
+
+        $collection = new ActionCollection([$first, $second])->{$method}();
+
+        $this->assertSame($expected, $collection->type);
+        $this->assertCount(2, $collection);
+        $this->assertSame([$first, $second], $collection->all());
+    }
+
+    /**
+     * @param non-empty-string $method
+     */
+    #[DataProvider('typeMethodProvider')]
+    public function test_it_appends_the_given_actions_to_the_existing_ones(string $method, ActionCollectionType $expected): void
+    {
+        $existing = new Action();
+        $added    = new Action();
+
+        $collection = new ActionCollection([$existing])->{$method}($added);
+
+        $this->assertSame($expected, $collection->type);
+        $this->assertSame([$existing, $added], $collection->all());
+    }
+
+    /**
+     * @param non-empty-string $method
+     */
+    #[DataProvider('typeMethodProvider')]
+    public function test_it_leaves_the_original_collection_untouched(string $method, ActionCollectionType $expected): void
+    {
+        $original = new ActionCollection([new Action()]);
+
+        $result = $original->{$method}(new Action());
+
+        $this->assertNotSame($original, $result);
+        $this->assertCount(1, $original);
+        $this->assertSame(ActionCollectionType::Normal, $original->type);
+        $this->assertCount(2, $result);
+    }
+
+    /**
+     * @param non-empty-string $method
+     */
+    #[DataProvider('typeMethodProvider')]
+    public function test_it_keeps_the_label(string $method, ActionCollectionType $expected): void
+    {
+        $collection = new ActionCollection([new Action()])->label('Open')->{$method}();
+
+        $this->assertSame('Open', $collection->label);
+    }
+
+    /**
+     * @return \Generator<string, array{non-empty-string, ActionCollectionType}>
+     */
+    public static function typeMethodProvider(): \Generator
+    {
+        yield 'normal' => ['normal', ActionCollectionType::Normal];
+
+        yield 'group' => ['group', ActionCollectionType::Grouped];
+
+        yield 'dropdown' => ['dropdown', ActionCollectionType::Dropdown];
     }
 
     private function createCapability(bool|\Closure $check): ActionCapability

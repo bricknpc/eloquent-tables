@@ -91,6 +91,23 @@ class UserTable extends Table
 }
 ```
 
+The `normal()`, `group()` and `dropdown()` methods keep any actions the collection already holds and append the ones you
+pass, so you can build the collection first and set its type afterwards. All three return a new collection and leave the
+original untouched.
+
+```php
+<?php
+
+use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
+
+$actions = new ActionCollection([new Action(), new Action()]);
+
+$actions->dropdown();              // a dropdown holding both actions
+$actions->dropdown(new Action());  // a dropdown holding all three
+$actions;                          // still a normal collection of two
+```
+
 ## Label
 
 An action collection can have a label. This is especially useful for dropdown collections, as all the actions are rendered 

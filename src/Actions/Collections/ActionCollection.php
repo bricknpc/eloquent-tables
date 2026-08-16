@@ -71,19 +71,36 @@ class ActionCollection extends Collection
 
     public function normal(Action ...$actions): ActionCollection
     {
-        /* @var array<int, Action> $actions */
-        return new ActionCollection($actions, ActionCollectionType::Normal);
+        return $this->asType(ActionCollectionType::Normal, $actions);
     }
 
     public function group(Action ...$actions): ActionCollection
     {
-        /* @var array<int, Action> $actions */
-        return new ActionCollection($actions, ActionCollectionType::Grouped);
+        return $this->asType(ActionCollectionType::Grouped, $actions);
     }
 
     public function dropdown(Action ...$actions): ActionCollection
     {
-        /* @var array<int, Action> $actions */
-        return new ActionCollection($actions, ActionCollectionType::Dropdown);
+        return $this->asType(ActionCollectionType::Dropdown, $actions);
+    }
+
+    /**
+     * Returns a copy of this collection under the given type, with the given actions appended.
+     *
+     * The actions already in the collection are kept, so `new ActionCollection([$a])->dropdown()` turns that
+     * collection into a dropdown instead of silently replacing it with an empty one.
+     *
+     * @param array<array-key, Action> $actions
+     */
+    private function asType(ActionCollectionType $type, array $actions): static
+    {
+        $clone       = clone $this;
+        $clone->type = $type;
+
+        foreach ($actions as $action) {
+            $clone->push($action);
+        }
+
+        return $clone;
     }
 }
