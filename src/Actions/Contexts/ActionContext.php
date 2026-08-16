@@ -7,8 +7,9 @@ namespace BrickNPC\EloquentTables\Actions\Contexts;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Contracts\StyleContext;
 
-final readonly class ActionContext
+final readonly class ActionContext implements StyleContext
 {
     public function __construct(
         public Request $request,
