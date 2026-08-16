@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Columns;
 
 use Illuminate\Http\Request;
+use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
@@ -12,24 +13,31 @@ use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Enums\TableParameter;
+use BrickNPC\EloquentTables\Services\TableParameters;
 
 /**
  * @template TModel of Model
  */
 readonly class ColumnLabelRenderer
 {
+    /**
+     * @param TableParameters<TModel> $parameters
+     */
     public function __construct(
         private Factory $viewFactory,
         private Config $config,
+        private TableParameters $parameters,
     ) {}
 
     /**
+     * @param Table<TModel>  $table
      * @param Column<TModel> $column
      */
-    public function build(Request $request, Column $column): View
+    public function build(Request $request, Table $table, Column $column): View
     {
         $theme             = $this->config->theme();
-        $sortDirection     = $this->sortDirectionForColumn($request, $column);
+        $sortDirection     = $this->sortDirectionForColumn($request, $table, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
 
         return $this->viewFactory->make('eloquent-tables::table.th', [
@@ -39,7 +47,7 @@ readonly class ColumnLabelRenderer
             'searchable'     => $column->searchable,
             'isSorted'       => $sortDirection !== null,
             'sortDirection'  => $sortDirection,
-            'href'           => $request->fullUrlWithQuery([$this->config->sortQueryName() => $this->getSortArray($request, $column->name, $nextSortDirection)]),
+            'href'           => $this->sortUrl($request, $table, $column->name, $nextSortDirection),
             'iconNone'       => $this->config->sortNoneIcon(),
             'iconAsc'        => $this->config->sortAscIcon(),
             'iconDesc'       => $this->config->sortDescIcon(),
@@ -58,18 +66,14 @@ readonly class ColumnLabelRenderer
     }
 
     /**
+     * @param Table<TModel>  $table
      * @param Column<TModel> $column
      */
-    private function sortDirectionForColumn(Request $request, Column $column): ?Sort
+    private function sortDirectionForColumn(Request $request, Table $table, Column $column): ?Sort
     {
-        /** @var array<string, string>|string $sort */
-        $sort = $request->query($this->config->sortQueryName(), []);
+        $sort = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
-        if (is_array($sort) && array_key_exists($column->name, $sort)) {
-            return Sort::from($sort[$column->name]);
-        }
-
-        return null;
+        return array_key_exists($column->name, $sort) ? Sort::from($sort[$column->name]) : null;
     }
 
     private function getNextSortDirection(?Sort $currentSortDirection): ?Sort
@@ -82,19 +86,24 @@ readonly class ColumnLabelRenderer
     }
 
     /**
-     * @return array<string, string>
+     * @param Table<TModel> $table
      */
-    private function getSortArray(Request $request, string $name, ?Sort $direction): array
+    private function sortUrl(Request $request, Table $table, string $name, ?Sort $direction): string
     {
-        /** @var array<string, string> $currentSort */
-        $currentSort = is_array($request->query($this->config->sortQueryName(), [])) ? $request->query($this->config->sortQueryName(), []) : [];
+        $namespace = $request->query($table->name());
+        $namespace = is_array($namespace) ? $namespace : [];
 
-        unset($currentSort[$name]);
+        $sort = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
-        if ($direction === null) {
-            return $currentSort;
+        // Re-appending puts the column last, so the sort array records the order of the clicks.
+        unset($sort[$name]);
+
+        if ($direction !== null) {
+            $sort[$name] = $direction->value;
         }
 
-        return array_merge($currentSort, [$name => $direction->value]);
+        $namespace[$this->config->sortQueryName()] = $sort === [] ? '' : $sort;
+
+        return $request->fullUrlWithQuery([$table->name() => $namespace]);
     }
 }

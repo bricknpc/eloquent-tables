@@ -247,9 +247,152 @@
                 console.warn('Eloquent Tables: Bootstrap JS is not loaded. Refer to the installation instructions on how to load the Bootstrap JS. Without it, javascript functions that depend on Bootstrap, like confirmation modals, will not work.');
             }
 
+            warnAboutDuplicateNames(tables);
+
             tables.forEach(table => {
+                storePreferences(table);
                 new EloquentTables(table, '{{ $dataNamespace }}').init();
             });
         });
+
+        // Well under the 4KB a browser allows one cookie, leaving room for the rest of the value.
+        const PREFERENCE_BYTE_BUDGET = 3500;
+
+        /**
+         * Persist what the current URL says about this table.
+         *
+         * The URL is the source of truth: opening any link that carries a table's per-page value or
+         * sort makes that the visitor's stored choice, whether they clicked a control or followed a
+         * link someone sent them.
+         *
+         * @param {HTMLElement} table
+         */
+        function storePreferences(table) {
+            const cookieName = table.getAttribute('data-{{ $dataNamespace }}-preferences-cookie');
+            const name = table.getAttribute('data-{{ $dataNamespace }}-table-name');
+
+            // Absent when preferences are switched off in config, in which case nothing is stored.
+            if (!cookieName || !name) {
+                return;
+            }
+
+            const perPageKey = table.getAttribute('data-{{ $dataNamespace }}-preferences-per-page-key');
+            const sortKey = table.getAttribute('data-{{ $dataNamespace }}-preferences-sort-key');
+            const params = new URLSearchParams(window.location.search);
+
+            const preference = {};
+            let touched = false;
+
+            if (perPageKey && params.has(perPageKey)) {
+                preference.per_page = params.get(perPageKey);
+                touched = true;
+            }
+
+            if (sortKey) {
+                const sort = {};
+                let sorted = false;
+
+                params.forEach((value, key) => {
+                    // Matches sortKey[column]; an exact sortKey means the sort was cleared.
+                    if (key.startsWith(sortKey + '[') && key.endsWith(']')) {
+                        sort[key.slice(sortKey.length + 1, -1)] = value;
+                        sorted = true;
+                    }
+                });
+
+                if (sorted || params.has(sortKey)) {
+                    preference.sort = sort;
+                    touched = true;
+                }
+            }
+
+            if (!touched) {
+                return;
+            }
+
+            const all = readPreferences(cookieName);
+
+            // Merge rather than replace: the URL may speak to only one of the two.
+            all[name] = Object.assign({}, all[name], preference);
+
+            writePreferences(cookieName, all);
+        }
+
+        /**
+         * @param {string} cookieName
+         *
+         * @returns {Object}
+         */
+        function readPreferences(cookieName) {
+            const match = document.cookie
+                .split('; ')
+                .find(row => row.startsWith(cookieName + '='));
+
+            if (!match) {
+                return {};
+            }
+
+            try {
+                const parsed = JSON.parse(decodeURIComponent(match.slice(cookieName.length + 1)));
+
+                return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+            } catch (error) {
+                // A hand-edited or truncated cookie is replaced rather than allowed to break the page.
+                return {};
+            }
+        }
+
+        /**
+         * @param {string} cookieName
+         * @param {Object} all
+         */
+        function writePreferences(cookieName, all) {
+            let value = encodeURIComponent(JSON.stringify(all));
+
+            // A browser silently truncates an oversized cookie, which would corrupt every table's
+            // preferences at once. Drop the oldest entries instead until the value fits.
+            const names = Object.keys(all);
+
+            while (value.length > PREFERENCE_BYTE_BUDGET && names.length > 1) {
+                delete all[names.shift()];
+                value = encodeURIComponent(JSON.stringify(all));
+            }
+
+            const expires = new Date();
+            expires.setFullYear(expires.getFullYear() + 1);
+
+            document.cookie = cookieName + '=' + value
+                + '; path=/; expires=' + expires.toUTCString()
+                + '; SameSite=Lax';
+        }
+
+        /**
+         * Two tables sharing a name share one query namespace and one stored preference, so sorting
+         * one sorts both. That is legitimate when deliberate, and a mistake the rest of the time, so
+         * it is reported rather than prevented.
+         *
+         * @param {NodeListOf<HTMLElement>} tables
+         */
+        function warnAboutDuplicateNames(tables) {
+            const counts = new Map();
+
+            tables.forEach(table => {
+                const name = table.getAttribute('data-{{ $dataNamespace }}-table-name');
+
+                if (name) {
+                    counts.set(name, (counts.get(name) || 0) + 1);
+                }
+            });
+
+            counts.forEach((count, name) => {
+                if (count > 1) {
+                    console.warn(
+                        'Eloquent Tables: ' + count + ' tables on this page are named "' + name + '", so they ' +
+                        'share their query parameters and their stored preferences. Override name() on one of ' +
+                        'them to keep them independent.'
+                    );
+                }
+            });
+        }
     })();
 </script>

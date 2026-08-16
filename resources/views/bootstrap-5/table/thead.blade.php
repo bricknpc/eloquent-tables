@@ -5,6 +5,7 @@
     use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 
     /** @var Request $request */
+    /** @var \BrickNPC\EloquentTables\Table $table */
     /** @var Column[] $columns */
     /** @var ColumnLabelRenderer $columnLabelRenderer */
     /** @var ColumnValueRenderer $columnValueRenderer */
@@ -27,7 +28,7 @@
             </th>
         @endif
         @foreach($columns as $column)
-            {{ $columnLabelRenderer->build($request, $column) }}
+            {{ $columnLabelRenderer->build($request, $table, $column) }}
         @endforeach
         @if($rowActionCount > 0)
             <th>&nbsp;</th>

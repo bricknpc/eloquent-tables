@@ -14,7 +14,6 @@ use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
@@ -22,7 +21,9 @@ use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
@@ -31,6 +32,7 @@ use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
+use BrickNPC\EloquentTables\Tests\Resources\ArchivedTestTable;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomData;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCallback;
@@ -47,6 +49,8 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(LayoutFinder::class)]
 #[UsesClass(TableStyle::class)]
 #[UsesClass(Config::class)]
+#[UsesClass(TableParameters::class)]
+#[UsesClass(TablePreferences::class)]
 #[UsesClass(RowsBuilder::class)]
 #[UsesClass(FilterRenderer::class)]
 #[UsesClass(RouteModelBinder::class)]
@@ -123,6 +127,45 @@ class TableTest extends TestCase
         $table->render();
     }
 
+    public function test_table_name_defaults_to_the_class_name_without_the_table_suffix(): void
+    {
+        $this->assertSame('test', new TestTable()->name());
+    }
+
+    public function test_table_name_snake_cases_a_multi_word_class_name(): void
+    {
+        $this->assertSame('archived_test', new ArchivedTestTable()->name());
+    }
+
+    public function test_table_name_keeps_the_whole_class_name_when_it_does_not_end_in_table(): void
+    {
+        $this->assertSame(
+            'test_table_authorisation_fails',
+            new TestTableAuthorisationFails()->name(),
+        );
+    }
+
+    public function test_table_name_falls_back_when_stripping_the_suffix_leaves_nothing(): void
+    {
+        // An anonymous table is named "<parent>@anonymous<NUL><file>:<line>$<hash>" by PHP, so the
+        // derivation resolves it to the parent, Table, which is entirely suffix.
+        $table = new class extends Table {};
+
+        $this->assertSame('table', $table->name());
+    }
+
+    public function test_table_name_can_be_overridden(): void
+    {
+        $table = new class extends Table {
+            public function name(): string
+            {
+                return 'archived_users';
+            }
+        };
+
+        $this->assertSame('archived_users', $table->name());
+    }
+
     public function test_table_can_check_for_pagination(): void
     {
         $withPagination    = $this->getTableWithPagination();
@@ -143,48 +186,60 @@ class TableTest extends TestCase
         $this->assertSame(15, $table->perPage($request));
     }
 
-    public function test_table_with_pagination_returns_per_page_in_request(): void
+    public function test_table_with_pagination_returns_a_declared_per_page(): void
     {
-        /** @var Table&WithPagination $table */
-        $table = $this->getTableWithPagination();
+        $table = new class extends Table {
+            use WithPagination;
+
+            protected int $perPage = 25;
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('per_page', 10);
 
-        $this->assertSame(10, $table->perPage($request));
+        $this->assertSame(25, $table->perPage($request));
     }
 
-    #[DataProvider('invalidPerPageValues')]
-    public function test_table_with_pagination_returns_default_per_page_for_invalid_request(string $invalidValue): void
+    public function test_a_non_positive_declared_per_page_falls_back_to_the_default(): void
     {
-        /** @var Table&WithPagination $table */
-        $table = $this->getTableWithPagination();
+        $table = new class extends Table {
+            use WithPagination;
+
+            protected int $perPage = 0;
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [];
+            }
+        };
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('per_page', $invalidValue);
 
         $this->assertSame(15, $table->perPage($request));
     }
 
-    public static function invalidPerPageValues(): \Generator
+    public function test_table_with_pagination_returns_the_default_per_page_options(): void
     {
-        yield [
-            'true',
-        ];
+        /** @var Table&WithPagination $table */
+        $table = $this->getTableWithPagination();
 
-        yield [
-            'false',
-        ];
-
-        yield [
-            'string',
-        ];
-
-        yield [
-            'array',
-        ];
+        $this->assertSame([10, 15, 25, 50, 100], $table->perPageOptions());
     }
 
     private function getTableWithPagination(): Table

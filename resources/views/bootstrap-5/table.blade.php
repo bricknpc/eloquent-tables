@@ -3,7 +3,13 @@
         @include('eloquent-tables::bootstrap-5.errors')
     </section>
 @endif
-<section data-{{ $dataNamespace }}-table="{{ $id }}">
+<section data-{{ $dataNamespace }}-table="{{ $id }}" data-{{ $dataNamespace }}-table-name="{{ $tableName }}"
+    @if($preferences !== null)
+        data-{{ $dataNamespace }}-preferences-cookie="{{ $preferences['cookie'] }}"
+        data-{{ $dataNamespace }}-preferences-per-page-key="{{ $preferences['perPageKey'] }}"
+        data-{{ $dataNamespace }}-preferences-sort-key="{{ $preferences['sortKey'] }}"
+    @endif
+>
     <div class="card mb-3">
         <div class="card-body">
             @include('eloquent-tables::bootstrap-5.header')

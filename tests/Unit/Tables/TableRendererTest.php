@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\PageStyle;
@@ -33,9 +34,12 @@ use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Actions\Capabilities\When;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
+use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
@@ -60,8 +64,11 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(WithPagination::class)]
 #[UsesClass(Theme::class)]
 #[UsesClass(Config::class)]
+#[UsesClass(TableParameters::class)]
+#[UsesClass(TablePreferences::class)]
 #[UsesClass(RowsBuilder::class)]
 #[UsesClass(FilterRenderer::class)]
+#[UsesClass(Filter::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(PageStyle::class)]
 #[UsesClass(ActionRenderer::class)]
@@ -299,10 +306,140 @@ class TableRendererTest extends TestCase
         $this->assertSame(25, $viewData['perPage']);
 
         $this->assertArrayHasKey('perPageName', $viewData);
-        $this->assertSame('per_page', $viewData['perPageName']);
+        $this->assertSame('table[per_page]', $viewData['perPageName']);
 
         $this->assertArrayHasKey('perPageOptions', $viewData);
         $this->assertSame([10, 25, 50], $viewData['perPageOptions']);
+    }
+
+    public function test_the_per_page_control_keeps_the_rest_of_the_table_state(): void
+    {
+        // Covers AE6.
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        $table = new class extends Table {
+            use WithPagination;
+
+            protected array $perPageOptions = [10, 25];
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable()->searchable(),
+                ];
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('name', []),
+                ];
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', [
+            'search' => 'ada',
+            'sort'   => ['name' => 'asc'],
+            'filter' => ['name' => 'Test Model 01'],
+            'page'   => '3',
+        ]);
+        $request->query->set('orders', ['sort' => ['total' => 'desc']]);
+
+        $html = $builder->build($table, $request)->render();
+
+        $this->assertStringContainsString('<input type="hidden" name="table[search]" value="ada"/>', $html);
+        $this->assertStringContainsString('<input type="hidden" name="table[sort][name]" value="asc"/>', $html);
+        $this->assertStringContainsString('<input type="hidden" name="table[filter][name]" value="Test Model 01"/>', $html);
+        $this->assertStringContainsString('<input type="hidden" name="orders[sort][total]" value="desc"/>', $html);
+
+        // The page is deliberately dropped so a new page size starts from the first page.
+        $this->assertStringNotContainsString('name="table[page]"', $html);
+    }
+
+    public function test_the_table_publishes_its_name_to_the_browser(): void
+    {
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $html = $builder->build(new TestTable(), $request)->render();
+
+        $this->assertStringContainsString('data-et-table-name="test"', $html);
+        // The existing hook keeps carrying the per-render id; it is a published contract.
+        $this->assertStringContainsString('data-et-table="', $html);
+    }
+
+    public function test_it_warns_the_browser_about_duplicate_table_names(): void
+    {
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $html = $builder->build(new TestTable(), $request)->render();
+
+        $this->assertStringContainsString('data-et-table-name', $html);
+        $this->assertStringContainsString('are named', $html);
+    }
+
+    public function test_it_publishes_the_preference_hooks_to_the_browser(): void
+    {
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $html = $builder->build(new TestTable(), $request)->render();
+
+        $this->assertStringContainsString('data-et-preferences-cookie="eloquent_tables_preferences"', $html);
+        $this->assertStringContainsString('data-et-preferences-per-page-key="test[per_page]"', $html);
+        $this->assertStringContainsString('data-et-preferences-sort-key="test[sort]"', $html);
+    }
+
+    public function test_it_publishes_no_preference_hooks_when_preferences_are_disabled(): void
+    {
+        // Covers AE8: with preferences off, nothing is written to the visitor's device.
+        config()->set('eloquent-tables.preferences.enabled', false);
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $html = $builder->build(new TestTable(), $request)->render();
+
+        // The bundled script always renders and names these attributes, so assert on the attribute
+        // form rather than the bare name.
+        $this->assertStringNotContainsString('data-et-preferences-cookie="', $html);
+        $this->assertStringNotContainsString('data-et-preferences-sort-key="', $html);
+    }
+
+    public function test_it_uses_the_configured_preferences_cookie_name(): void
+    {
+        config()->set('eloquent-tables.preferences.cookie_name', 'prefs');
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $html = $builder->build(new TestTable(), $request)->render();
+
+        $this->assertStringContainsString('data-et-preferences-cookie="prefs"', $html);
     }
 
     public function test_it_shows_search_form_when_there_are_searchable_columns(): void

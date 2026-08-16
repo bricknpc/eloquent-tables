@@ -4,9 +4,15 @@ sidebar_position: 16
 
 # Upgrading to 2.0
 
-Version 2.0 rewrites the actions system. If your tables only use columns, formatting, searching, sorting, filters or
-pagination, there is nothing to do: those APIs are unchanged. If your tables define `tableActions()`, `rowActions()` or
-`massActions()`, every one of those definitions needs to be rewritten.
+Version 2.0 rewrites the actions system and changes the query parameters every table reads.
+
+**Every 2.0 upgrade needs at least one change.** Tables now namespace their query parameters under a table name, so
+`?sort[name]=asc` becomes `?user[sort][name]=asc`. Any URL you have hard-coded, linked to, bookmarked or documented
+needs updating, and the `pageName` and `perPageName` properties are gone. If your tables also define `tableActions()`,
+`rowActions()` or `massActions()`, every one of those definitions needs to be rewritten as well.
+
+Sorting behaviour changed too: a multi-column sort now applies in the order the visitor clicked the headers rather than
+the order the columns are declared.
 
 The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5.
 
@@ -197,6 +203,95 @@ $theme->view('actions.modal');
 This only affects you if you wrote custom theme views that called the helper. The `actions()`, `dropdownActions()` and
 `groupedActions()` helpers are unchanged.
 
+## 8. Query parameters are namespaced per table
+
+Every parameter a table reads now lives under the table's name, so two tables on one page no longer read each other's
+values. In 1.x they shared `?search=`, `?sort[...]` and `?filter[...]`, which meant sorting one sorted both.
+
+| Concern  | 1.x                  | 2.0                          |
+|----------|----------------------|------------------------------|
+| Search   | `?search=ada`        | `?user[search]=ada`          |
+| Sort     | `?sort[email]=asc`   | `?user[sort][email]=asc`     |
+| Filter   | `?filter[active]=1`  | `?user[filter][active]=1`    |
+| Per page | `?per_page=50`       | `?user[per_page]=50`         |
+| Page     | `?page=3`            | `?user[page]=3`              |
+
+The name comes from `Table::name()`, which defaults to the class name with a trailing `Table` removed and the rest
+snake-cased, so `UserTable` becomes `user` and `ArchivedUserTable` becomes `archived_user`. Override it to choose your
+own:
+
+```php
+<?php
+
+class UserTable extends Table
+{
+    public function name(): string
+    {
+        return 'users';
+    }
+}
+```
+
+:::warning
+Two tables of the same class on one page share a name, and therefore share both their query parameters and their
+stored preferences. Give at least one of them its own `name()`. The browser console warns when it spots a duplicate.
+:::
+
+Update any hard-coded link, bookmark or test that builds a table URL by hand.
+
+## 9. `pageName` and `perPageName` are gone
+
+Both properties are removed. The table name already separates one table's parameters from another's, so a second
+identifier is no longer needed. The sub-key names moved to config, alongside the search, sorting and filtering names
+that were already there:
+
+```php
+// config/eloquent-tables.php
+'pagination' => [
+    'page_query_name'     => 'page',
+    'per_page_query_name' => 'per_page',
+],
+```
+
+```php
+<?php
+
+class UserTable extends Table
+{
+    use WithPagination;
+
+    // Both of these are removed in 2.0 — delete them.
+    protected string $pageName    = 'users-page';
+    protected string $perPageName = 'items';
+}
+```
+
+`perPage`, `perPageOptions` and `perPage(Request $request)` are unchanged.
+
+## 10. Multi-column sort follows the click order
+
+In 1.x the sort was applied in the order the columns were declared on the table, whatever order the visitor clicked the
+headers in. Clicking email and then name produced the same ordering as clicking name and then email.
+
+2.0 applies the sort in the order it was built up. If you relied on column order to fix the precedence, sort in your
+`query()` instead, or give the column a default sort.
+
+An unrecognised sort direction is now ignored rather than throwing, so a hand-edited `?user[sort][name]=sideways` no
+longer returns a 500.
+
+## 11. Republish the views if you have published them
+
+The search, per-page and filter controls now carry hidden inputs so that using one no longer discards the rest of the
+table's state, and the table element carries the table name for the JavaScript. A published copy from 1.x keeps the old
+markup and will silently lose that behaviour.
+
+```bash
+php artisan vendor:publish --tag=views --force
+```
+
+`ColumnLabelRenderer::build()` and `FilterRenderer::build()` both take the table as an argument now, and
+`RowsBuilder`'s constructor no longer takes `Config`. This only matters if you resolve or subclass them yourself.
+
 ## Full example
 
 A 1.x table with all three action types:
@@ -333,6 +428,8 @@ class UserTable extends Table
 | `BrickNPC\EloquentTables\Builders\FilterViewBuilder`      | `BrickNPC\EloquentTables\Filters\FilterRenderer` |
 | `BrickNPC\EloquentTables\view()`                      | `Theme::view()`                                      |
 | `massActions()` table method                          | `bulkActions()`                                      |
+| `pageName` table property                             | `eloquent-tables.pagination.page_query_name` config  |
+| `perPageName` table property                          | `eloquent-tables.pagination.per_page_query_name` config |
 
 The `Table::$builder` property was renamed to `Table::$renderer` along with them.
 
@@ -351,3 +448,5 @@ Things that have no 1.x equivalent, and that you may want once you have upgraded
 - [Custom intents](actions/action-definition.md#custom-intents) and
   [custom capabilities](actions/action-definition.md#custom-capabilities)
 - The [`When` capability](actions/action-definition.md#when), previously available only on row actions
+- [Table names](table-names.md) — a stable identity per table, so two tables on a page stay independent
+- [Saved preferences](preferences.md) — a visitor's per-page choice and multi-column sort survive navigating away and back
