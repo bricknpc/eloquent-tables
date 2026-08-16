@@ -26,12 +26,17 @@
                 {{ $columnValueRenderer->build($request, $column, $row) }}
             @endforeach
             @if($rowActionCount > 0)
+                @php
+                    $rowContext = new ActionContext($request, $config, $row);
+                @endphp
                 <td class="text-end">
-                    <div class="btn-group">
-                        @foreach($rowActions as $action)
-                            {!! $actionRenderer->render($action, new ActionContext($request, $config, $row)) !!}
-                        @endforeach
-                    </div>
+                    @if($actionRenderer->countRenderable($rowActions, $rowContext) > 0)
+                        <div class="btn-group">
+                            @foreach($rowActions as $action)
+                                {!! $actionRenderer->render($action, $rowContext) !!}
+                            @endforeach
+                        </div>
+                    @endif
                 </td>
             @endif
         </tr>

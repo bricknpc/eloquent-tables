@@ -24,6 +24,7 @@ use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 /**
@@ -111,6 +112,10 @@ readonly class TableRenderer
         /** @var Action[]|ActionCollection[] $bulkActions */
         $bulkActions = is_array($bulkActions) ? $bulkActions : [$bulkActions];
 
+        $rows = $this->getRows($table, $request);
+
+        $context = new ActionContext($request, $this->config);
+
         $viewData = [
             'id'            => spl_object_id($table),
             'theme'         => $theme,
@@ -121,10 +126,10 @@ readonly class TableRenderer
                 ->implode(' '),
             'columns'                => $columns,
             'columnLabelRenderer'    => $this->columnLabelRenderer,
-            'rows'                   => $this->getRows($table, $request),
+            'rows'                   => $rows,
             'columnValueRenderer'    => $this->columnValueRenderer,
             'links'                  => $this->getLinks($table, $request),
-            'tableActionCount'       => count($tableActions),
+            'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),
             'tableActions'           => $tableActions,
             'showSearchForm'         => $this->hasSearchableColumns($columns),
             'tableSearchUrl'         => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
@@ -132,9 +137,9 @@ readonly class TableRenderer
             'searchQuery'            => $request->query($this->config->searchQueryName()),
             'searchQueryName'        => $this->config->searchQueryName(),
             'searchIcon'             => $this->config->searchIcon(),
-            'rowActionCount'         => count($rowActions),
+            'rowActionCount'         => $this->countRenderableRowActions($rowActions, $rows, $request),
             'rowActions'             => $rowActions,
-            'bulkActionCount'        => count($bulkActions),
+            'bulkActionCount'        => $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()),
             'bulkActions'            => $bulkActions,
             'bulkActionColumnWidth'  => $table->bulkActionColumnWidth(),
             'filterCount'            => count($filters),
@@ -161,6 +166,27 @@ readonly class TableRenderer
         }
 
         return $viewData;
+    }
+
+    /**
+     * @param array<Action|ActionCollection> $rowActions
+     * @param Collection<int, Model>         $rows
+     */
+    private function countRenderableRowActions(array $rowActions, Collection $rows, Request $request): int
+    {
+        $count = 0;
+
+        foreach ($rowActions as $action) {
+            foreach ($rows as $row) {
+                if ($this->actionRenderer->canRender($action, new ActionContext($request, $this->config, $row))) {
+                    ++$count;
+
+                    break;
+                }
+            }
+        }
+
+        return $count;
     }
 
     /**

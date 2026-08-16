@@ -498,6 +498,39 @@ class ActionRendererTest extends TestCase
         $this->assertTrue($this->renderer->canRender($collection, $this->context));
     }
 
+    public function test_count_renderable_counts_only_the_actions_that_will_render(): void
+    {
+        $actions = [
+            new Action(),
+            new Action()->with($this->createCapability(false)),
+            new Action(),
+        ];
+
+        $this->assertSame(2, $this->renderer->countRenderable($actions, $this->context));
+    }
+
+    public function test_count_renderable_of_an_empty_list_is_zero(): void
+    {
+        $this->assertSame(0, $this->renderer->countRenderable([], $this->context));
+    }
+
+    public function test_count_renderable_counts_a_collection_as_one(): void
+    {
+        $actions = [new ActionCollection([new Action(), new Action(), new Action()])];
+
+        $this->assertSame(1, $this->renderer->countRenderable($actions, $this->context));
+    }
+
+    public function test_count_renderable_skips_a_collection_with_nothing_to_render(): void
+    {
+        $actions = [
+            new ActionCollection([new Action()->with($this->createCapability(false))]),
+            new ActionCollection(),
+        ];
+
+        $this->assertSame(0, $this->renderer->countRenderable($actions, $this->context));
+    }
+
     public function test_can_render_is_evaluated_per_context(): void
     {
         $action = new Action()->with($this->createCapability(

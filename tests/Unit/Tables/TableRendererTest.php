@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Table;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use BrickNPC\EloquentTables\Column;
+use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
@@ -16,6 +17,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
@@ -29,14 +31,18 @@ use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Actions\Capabilities\When;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
+use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
 /**
  * @internal
@@ -66,6 +72,11 @@ use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 #[UsesClass(Http::class)]
 #[UsesClass(RenderBuffer::class)]
 #[UsesClass(LazyValue::class)]
+#[UsesClass(Authorize::class)]
+#[UsesClass(When::class)]
+#[UsesClass(ActionCapability::class)]
+#[UsesClass(ColumnType::class)]
+#[UsesClass(ActionCollection::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -349,6 +360,72 @@ class TableRendererTest extends TestCase
         $this->assertStringNotContainsString('style="width:', $html);
     }
 
+    public function test_actions_that_can_not_render_are_not_counted(): void
+    {
+        $view = $this->buildActionTable(allow: false);
+
+        $data = $view->getData();
+
+        $this->assertSame(0, $data['tableActionCount']);
+        $this->assertSame(0, $data['rowActionCount']);
+        $this->assertSame(0, $data['bulkActionCount']);
+    }
+
+    public function test_nothing_is_rendered_around_actions_that_can_not_render(): void
+    {
+        $html = $this->buildActionTable(allow: false)->render();
+
+        $this->assertStringNotContainsString('table-actions me-3', $html);
+        $this->assertStringNotContainsString('table-bulk-actions', $html);
+        $this->assertStringNotContainsString('<th>&nbsp;</th>', $html);
+        $this->assertStringNotContainsString('<div class="btn-group">', $html);
+        $this->assertStringNotContainsString('type="checkbox" name="selected[]"', $html);
+    }
+
+    public function test_actions_that_can_render_are_counted_and_rendered(): void
+    {
+        $view = $this->buildActionTable(allow: true);
+
+        $data = $view->getData();
+        $html = $view->render();
+
+        $this->assertSame(1, $data['tableActionCount']);
+        $this->assertSame(1, $data['rowActionCount']);
+        $this->assertSame(1, $data['bulkActionCount']);
+
+        $this->assertStringContainsString('table-actions me-3', $html);
+        $this->assertStringContainsString('table-bulk-actions', $html);
+        $this->assertStringContainsString('<th>&nbsp;</th>', $html);
+
+        // One button group per row.
+        $this->assertSame(2, substr_count($html, '<div class="btn-group">'));
+    }
+
+    public function test_the_row_action_column_survives_rows_that_have_no_renderable_action(): void
+    {
+        $view = $this->buildActionTable(
+            allow: true,
+            rowCondition: fn (ActionContext $context) => $context->model->name === 'A',
+        );
+
+        $html = $view->render();
+
+        // The column stays, because row A needs it...
+        $this->assertSame(1, $view->getData()['rowActionCount']);
+        $this->assertStringContainsString('<th>&nbsp;</th>', $html);
+
+        // ...but only row A gets a button group. Row B keeps an empty cell so the table stays aligned.
+        $this->assertSame(1, substr_count($html, '<div class="btn-group">'));
+        $this->assertSame(2, substr_count($html, '<td class="text-end">'));
+    }
+
+    public function test_a_collection_counts_as_a_single_action(): void
+    {
+        $view = $this->buildActionTable(allow: true, groupRowActions: true);
+
+        $this->assertSame(1, $view->getData()['rowActionCount']);
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -389,5 +466,69 @@ class TableRendererTest extends TestCase
         };
 
         return $builder->build($table, $request)->render();
+    }
+
+    private function buildActionTable(bool $allow, ?\Closure $rowCondition = null, bool $groupRowActions = false): View
+    {
+        DB::table('test_models')->insert([
+            ['name' => 'A', 'email' => 'a@test.com', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'B', 'email' => 'b@test.com', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $table = new class($allow, $rowCondition, $groupRowActions) extends Table {
+            public function __construct(
+                private readonly bool $allow,
+                private readonly ?\Closure $rowCondition,
+                private readonly bool $groupRowActions,
+            ) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            public function tableActions(): array
+            {
+                return [$this->action('T')];
+            }
+
+            public function rowActions(): array
+            {
+                $action = $this->rowCondition !== null
+                    ? new Action()->label('R')->as(new Http('https://example.test'))->with(new When($this->rowCondition))
+                    : $this->action('R');
+
+                return $this->groupRowActions
+                    ? [new ActionCollection()->group($action, $this->action('R2'))]
+                    : [$action];
+            }
+
+            public function bulkActions(): array
+            {
+                return [$this->action('B')];
+            }
+
+            private function action(string $label): Action
+            {
+                return new Action()
+                    ->label($label)
+                    ->as(new Http('https://example.test'))
+                    ->with(new Authorize(fn () => $this->allow))
+                ;
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return $builder->build($table, $request);
     }
 }
