@@ -422,17 +422,19 @@ class UserTable extends Table
 Capabilities define what the action is capable of. This can be any combination of these three things:
 
 - **Check**. A capability can check whether it should be displayed, for instance an `auth` check.
-- **Apply**. A capability can apply something to an action, for instance styling.
+- **Apply**. A capability can change the action before it renders, for instance setting an attribute on it.
 - **Contribute**. A capability can contribute to the rendering of the action, for instance adding a tooltip to a button.
 
-The Eloquent Tables package provides five built-in capabilities that should cover most use-cases, though you are of course 
+The Eloquent Tables package provides four built-in capabilities that should cover most use-cases, though you are of course 
 free to create and add your own capabilities:
 
 - **Authorize**. Used to check if the user has permission to see the action.
 - **Confirmation**. Used to add a confirmation modal to the action.
-- **Style**. Used to style the button or the link of the action.
 - **Tooltip**. Used to add a tooltip to the action.
 - **When**. Used to determine whether the action should be rendered. Similar to authorize.
+
+Styling is not a capability. It is a method on the action itself, like `label()`. See
+[action styling](../styling/action-styling.md).
 
 You can add capabilities by calling the `with` method on an action and adding the capability object. You can add as 
 many capabilities as you need.
@@ -506,24 +508,6 @@ new Confirmation(
 );
 ```
 
-### Style
-
-The Style capability expects one or more `BrickNPC\EloquentTables\Enums\ButtonStyle` enum cases that define what the
-button or the link of the action looks like. Without it, an action is rendered with the `btn-primary` class of the
-theme.
-
-```php
-<?php
-
-use BrickNPC\EloquentTables\Enums\ButtonStyle;
-use BrickNPC\EloquentTables\Actions\Capabilities\Style;
-
-new Style(ButtonStyle::DangerOutline);
-```
-
-See the [action styling](../styling/action-styling.md) documentation for all available styles and for how a style is
-rendered inside a dropdown.
-
 ### Tooltip
 
 The Tooltip capability expects a string or `\Closure` that should return the text for the tooltip. The closure receives 
@@ -594,13 +578,8 @@ class MyCapability extends ActionCapability
 
 #### Apply capability
 
-A capability that applies something to the action should overwrite the `apply` method.
-
-:::warning[Warning]
-
-This type of capability is not yet supported. The option to create these types is already present, but nothing is done with the result.
-
-:::
+A capability that changes the action before it renders should overwrite the `apply` method. It receives the descriptor
+of the action and may change anything on it.
 
 ```php
 <?php
@@ -609,15 +588,28 @@ declare(strict_types=1);
 namespace App\Tables\Capabilities;
 
 use BrickNPC\EloquentTables\Actions\ActionCapability;
+use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
-class MyCapability extends ActionCapability
+class TestAttribute extends ActionCapability
 {
     public function apply(ActionDescriptor $descriptor, ActionContext $context): void
     {
-        // ...
+        $descriptor->attributes['data-test'] = 'user-action';
     }
 }
 ```
+
+:::warning[Warning]
+
+Do not set the `class` attribute this way. The class of an action is rendered from its style set, so a `class` in the
+attributes bag is emitted a second time and the browser ignores it. Add to `$descriptor->style` instead:
+
+```php
+$descriptor->style = $descriptor->style?->with(ButtonStyle::Danger) ?? new StyleSet(ButtonStyle::Danger);
+```
+
+:::
 
 #### Contribute capability
 

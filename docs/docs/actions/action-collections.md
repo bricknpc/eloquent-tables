@@ -167,3 +167,8 @@ class UserTable extends Table
     }
 }
 ```
+
+## Styling
+
+A dropdown collection renders a toggle button, and `style()` decides what it looks like. See
+[action styling](../styling/action-styling.md#styling-a-dropdown).

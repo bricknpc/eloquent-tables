@@ -38,13 +38,12 @@ be used as a table action, a row action or a bulk action.
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
-use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
 new Action()
     ->label(__('Delete'))
     ->as(new Http(fn (ActionContext $context) => route('users.destroy', $context->model), Method::Delete))
-    ->with(new Style(ButtonStyle::Danger));
+    ->style(ButtonStyle::Danger);
 ```
 
 See [Action definition](actions/action-definition.md) for the full reference.
@@ -81,7 +80,7 @@ names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespa
 | `method: Method::Delete`                | second argument of `Http`                                       |
 | `label: $label`                         | `->label($label)` (unchanged)                                   |
 | `tooltip: $text`                        | `->with(new Tooltip($text))`                                    |
-| `styles: [ButtonStyle::Danger]`         | `->with(new Style(ButtonStyle::Danger))` (variadic, no array)   |
+| `styles: [ButtonStyle::Danger]`         | `->style(ButtonStyle::Danger)` (variadic, no array)             |
 | `authorize: $closure`                   | `->with(new Authorize($closure))`                               |
 | `when: $closure`                        | `->with(new When($closure))`                                    |
 | `confirm: $text`                        | `->with(new Confirmation($text))`                               |
@@ -90,8 +89,8 @@ names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespa
 
 Two details are easy to miss:
 
-**`Style` is variadic.** In 1.x styles were an array; in 2.0 they are separate arguments:
-`new Style(ButtonStyle::Danger, ButtonStyle::Link)`.
+**`style()` is variadic.** In 1.x styles were an array; in 2.0 they are separate arguments:
+`->style(ButtonStyle::Danger, ButtonStyle::Link)`.
 
 **Every action needs an intent.** An `Action` without `->as()` throws `ActionIntentNotSet` when it renders, and calling
 `->as()` twice on the same action throws `ActionIntentAlreadySet`. In 1.x the URL was a constructor argument, so this
@@ -333,6 +332,23 @@ public function accentStyle(): AccentStyle   { return AccentStyle::Primary; }   
 The accent is a single colour, so the method returns one case. Anything conditional goes in the method body, which
 already has the request.
 
+## 15. Action styling is a method, not a capability
+
+The `Style` capability is gone. Actions and action collections style themselves with `style()`, the same method columns
+use.
+
+```php
+new RowAction(action: $url, styles: [ButtonStyle::Danger]);   // 1.x
+new Action()->as(new Http($url))->style(ButtonStyle::Danger); // 2.0
+```
+
+Two behaviours changed with it. Repeated declarations now merge instead of the last one winning, so
+`->style(A)->style(B)` renders both. And a custom capability can no longer style an action by writing
+`$descriptor->attributes['class']`; add to `$descriptor->style` instead.
+
+The upside is that a dropdown's toggle button can be styled at all now, which the capability could never reach. See
+[action styling](styling/action-styling.md#styling-a-dropdown).
+
 ## Full example
 
 A 1.x table with all three action types:
@@ -402,7 +418,6 @@ use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
-use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Capabilities\Tooltip;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
@@ -430,7 +445,7 @@ class UserTable extends Table
             new Action()
                 ->label(__('Delete'))
                 ->as(new Http(route('users.destroy'), Method::Delete))
-                ->with(new Style(ButtonStyle::Danger))
+                ->style(ButtonStyle::Danger)
                 ->with(new Authorize(
                     fn (ActionContext $context) => $context->request->user()->can('delete', $context->model),
                 ))
@@ -469,6 +484,7 @@ class UserTable extends Table
 | `BrickNPC\EloquentTables\Builders\FilterViewBuilder`      | `BrickNPC\EloquentTables\Filters\FilterRenderer` |
 | `BrickNPC\EloquentTables\view()`                      | `Theme::view()`                                      |
 | `massActions()` table method                          | `bulkActions()`                                      |
+| `BrickNPC\EloquentTables\Actions\Capabilities\Style` | `Action::style()` and `ActionCollection::style()`   |
 | `pageName` table property                             | `eloquent-tables.pagination.page_query_name` config  |
 | `perPageName` table property                          | `eloquent-tables.pagination.per_page_query_name` config |
 | `Column::styles()` and the `styles` argument          | `Column::style()`                                    |
