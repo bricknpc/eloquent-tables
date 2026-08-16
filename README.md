@@ -18,7 +18,7 @@
 Install the package using composer.
 
 ```bash
-composer require bricknpc/eloquent-tables
+composer require bricknpc/eloquent-tables 
 ```
 
 ### Requirements

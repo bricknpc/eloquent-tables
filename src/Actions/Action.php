@@ -4,30 +4,90 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
-use Illuminate\Contracts\Support\Htmlable;
-use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\Exceptions\ActionIntentAlreadySet;
+use BrickNPC\EloquentTables\Actions\Contracts\ActionCapability;
 
-abstract class Action
+class Action
 {
-    /**
-     * @param ButtonStyle[] $styles
-     */
-    public function __construct(
-        public Htmlable|string|\Stringable|null $label = null,
-        public array $styles = [],
-    ) {}
+    protected ActionDescriptor $descriptor;
 
-    public function label(Htmlable|string|\Stringable $label): static
+    /**
+     * @var ActionCapability[]
+     */
+    protected array $capabilities = [];
+
+    public function __construct()
     {
-        $this->label = $label;
+        $this->descriptor = new ActionDescriptor();
+    }
+
+    /**
+     * @param \Closure(ActionContext $context): string|string $label
+     *
+     * @return $this
+     */
+    public function label(\Closure|string $label): static
+    {
+        $this->descriptor->label = new LazyValue($label);
 
         return $this;
     }
 
-    public function styles(ButtonStyle ...$styles): static
+    /**
+     * @return $this
+     *
+     * @throws ActionIntentAlreadySet
+     */
+    public function as(ActionIntent $intent): static
     {
-        $this->styles = array_merge($this->styles, $styles);
+        if ($this->descriptor->intent !== null) {
+            throw ActionIntentAlreadySet::forIntent($this->descriptor->intent, $intent, $this);
+        }
+
+        $this->descriptor->intent = $intent;
 
         return $this;
+    }
+
+    public function with(ActionCapability $capability): static
+    {
+        $this->capabilities[] = $capability;
+
+        return $this;
+    }
+
+    public function descriptor(ActionContext $context): ?ActionDescriptor
+    {
+        if (!$this->hasDescriptor($context)) {
+            return null;
+        }
+
+        $this->descriptor->emptyBuffers();
+
+        foreach ($this->capabilities as $capability) {
+            $capability->apply($this->descriptor, $context);
+
+            $contribution = $capability->contribute($this->descriptor, $context);
+
+            if ($contribution === null) {
+                continue;
+            }
+
+            $this->descriptor->beforeRender->add($contribution->renderBefore($this->descriptor, $context));
+            $this->descriptor->attributesRender->add($contribution->renderAttributes($this->descriptor, $context));
+            $this->descriptor->afterRender->add($contribution->renderAfter($this->descriptor, $context));
+        }
+
+        return $this->descriptor;
+    }
+
+    public function hasDescriptor(ActionContext $context): bool
+    {
+        return array_all(
+            $this->capabilities,
+            fn (ActionCapability $capability) => $capability->check($this->descriptor, $context),
+        );
     }
 }

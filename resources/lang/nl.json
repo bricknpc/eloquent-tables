@@ -1,3 +1,18 @@
 {
-  "You are not authorized to view this table.": "U bent niet bevoegd om deze tabel te bekijken."
+  "Cancel": "Annuleren",
+  "Close": "Sluiten",
+  "Filter on :name": "Filter op :name",
+  "Loading": "Bezig met laden",
+  "Search": "Zoeken",
+  "Select all": "Alles selecteren",
+  "Showing": "Toont",
+  "The content of this modal could not be loaded.": "De inhoud van dit venster kon niet worden geladen.",
+  "The value :value is not a valid value for formatting.": "De waarde :value is geen geldige waarde om te formatteren.",
+  "To confirm this action, please type the text <code>:confirmValue</code> into the textbox below.": "Typ de tekst <code>:confirmValue</code> in het onderstaande tekstveld om deze actie te bevestigen.",
+  "We encountered the following errors:": "De volgende fouten zijn opgetreden:",
+  "Yes, confirm": "Ja, bevestigen",
+  "You are not authorized to view this table.": "U bent niet bevoegd om deze tabel te bekijken.",
+  "of": "van",
+  "results": "resultaten",
+  "to": "tot"
 }

@@ -3,7 +3,7 @@
         @include('eloquent-tables::bootstrap-5.errors')
     </section>
 @endif
-<section>
+<section data-{{ $dataNamespace }}-table="{{ $id }}">
     <div class="card mb-3">
         <div class="card-body">
             @include('eloquent-tables::bootstrap-5.header')

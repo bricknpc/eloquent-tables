@@ -158,4 +158,61 @@ class ButtonStyleTest extends TestCase
             'btn-outline-dark',
         ];
     }
+
+    #[DataProvider('dropdownButtonStyleProvider')]
+    public function test_it_returns_the_correct_css_class_inside_a_dropdown(
+        Theme $theme,
+        ButtonStyle $style,
+        string $expected,
+    ): void {
+        $result = $style->toCssClass($theme, true);
+
+        $this->assertSame($expected, $result);
+    }
+
+    public static function dropdownButtonStyleProvider(): \Generator
+    {
+        yield [
+            Theme::Bootstrap5,
+            ButtonStyle::Default,
+            '',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            ButtonStyle::Primary,
+            'text-primary',
+        ];
+
+        yield 'an outlined style has no outline inside a dropdown' => [
+            Theme::Bootstrap5,
+            ButtonStyle::PrimaryOutline,
+            'text-primary',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            ButtonStyle::Danger,
+            'text-danger',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            ButtonStyle::DangerOutline,
+            'text-danger',
+        ];
+
+        yield [
+            Theme::Bootstrap5,
+            ButtonStyle::Link,
+            'text-link',
+        ];
+    }
+
+    public function test_every_style_has_a_dropdown_variant_without_a_button_class(): void
+    {
+        foreach (ButtonStyle::cases() as $style) {
+            $this->assertStringNotContainsString('btn', $style->toCssClass(Theme::Bootstrap5, true));
+        }
+    }
 }
