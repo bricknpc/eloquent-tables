@@ -56,6 +56,7 @@ final readonly class ActionRenderer
             'theme'          => $this->config->theme(),
             'dataNamespace'  => $this->config->dataNamespace(),
             'label'          => new LazyValue($collection->label)->resolve($context),
+            'toggleClasses'  => $this->styles->classes($collection->style, $context, ActionRegion::DropdownToggle),
             'actionRenderer' => $this,
         ]) : null;
     }

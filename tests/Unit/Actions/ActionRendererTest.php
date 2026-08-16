@@ -617,6 +617,105 @@ class ActionRendererTest extends TestCase
         $this->assertSame('btn btn-danger', $data['classes']);
     }
 
+    public function test_it_styles_the_toggle_of_a_dropdown_collection(): void
+    {
+        // Covers AE8.
+        $rendered = $this->renderDropdown(ButtonStyle::Danger);
+
+        $this->assertStringContainsString('class="btn dropdown-toggle btn-danger"', $rendered);
+    }
+
+    public function test_an_unstyled_dropdown_toggle_keeps_the_default_style(): void
+    {
+        // Covers AE9.
+        $rendered = $this->renderDropdown();
+
+        $this->assertStringContainsString('class="btn dropdown-toggle btn-primary"', $rendered);
+    }
+
+    public function test_the_toggle_uses_the_button_variant_not_the_dropdown_variant(): void
+    {
+        $rendered = $this->renderDropdown(ButtonStyle::Danger);
+
+        $this->assertStringNotContainsString('class="btn dropdown-toggle text-danger"', $rendered);
+    }
+
+    public function test_the_style_of_a_collection_does_not_reach_the_actions_inside_it(): void
+    {
+        $rendered = $this->renderDropdown(ButtonStyle::Danger);
+
+        $this->assertStringContainsString('class="dropdown-item"', $rendered);
+    }
+
+    public function test_an_action_inside_a_dropdown_keeps_its_own_style(): void
+    {
+        $collection = new ActionCollection([
+            new Action()
+                ->label('Delete')
+                ->as(new Http('https://example.com/users/1/delete'))
+                ->style(ButtonStyle::Warning),
+        ])->dropdown()->style(ButtonStyle::Danger);
+
+        $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
+
+        $this->assertStringContainsString('class="btn dropdown-toggle btn-danger"', $rendered);
+        $this->assertStringContainsString('class="dropdown-item text-warning"', $rendered);
+    }
+
+    public function test_a_closure_styles_the_toggle_from_the_context(): void
+    {
+        $collection = new ActionCollection([$this->deleteAction()])
+            ->dropdown()
+            ->style(fn (ActionContext $context) => $context->isBulk ? ButtonStyle::Danger : ButtonStyle::Link)
+        ;
+
+        $rendered = (string) $this->renderer->render($collection, $this->context->isBulk())?->render();
+
+        $this->assertStringContainsString('class="btn dropdown-toggle btn-danger"', $rendered);
+    }
+
+    public function test_a_style_on_a_grouped_collection_changes_nothing(): void
+    {
+        // Covers AE10.
+        $collection = new ActionCollection([$this->deleteAction()])
+            ->group()
+            ->style(ButtonStyle::Danger)
+        ;
+
+        $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
+
+        $this->assertStringContainsString('class="btn-group"', $rendered);
+        $this->assertStringNotContainsString('btn-danger', $rendered);
+    }
+
+    public function test_a_style_on_a_normal_collection_changes_nothing(): void
+    {
+        // Covers AE10.
+        $collection = new ActionCollection([$this->deleteAction()])
+            ->style(ButtonStyle::Danger)
+        ;
+
+        $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
+
+        $this->assertStringNotContainsString('btn-danger', $rendered);
+    }
+
+    private function deleteAction(): Action
+    {
+        return new Action()->label('Delete')->as(new Http('https://example.com/users/1/delete'));
+    }
+
+    private function renderDropdown(?ButtonStyle $style = null): string
+    {
+        $collection = new ActionCollection([$this->deleteAction()])->dropdown();
+
+        if ($style !== null) {
+            $collection->style($style);
+        }
+
+        return (string) $this->renderer->render($collection, $this->context)?->render();
+    }
+
     private function renderStyled(ButtonStyle|\Closure|null $style = null, ?ActionContext $context = null): string
     {
         $action = new Action()->label('Delete')->as(new Http('https://example.com/users/1/delete'));
