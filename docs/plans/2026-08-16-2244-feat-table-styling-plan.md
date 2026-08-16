@@ -62,7 +62,7 @@ Nothing at any level can vary by value. A column that should show negative amoun
 **Uniform styling shape**
 
 - R1. Table, row, column, cell and accent styling are each declarable, and each is covered by this work.
-- R2. Every level accepts static styles and an optional closure, in the same shape.
+- R2. A level whose styling depends on context the declaring method cannot see — a cell's model, a row's model — accepts static styles plus an optional closure, in the same shape. Table-level styling returns its cases directly. See [Changes during implementation](#changes-during-implementation).
 - R3. Every level has its own style vocabulary, and a case belonging to one level cannot be given to another.
 - R4. Static styles and closure-returned styles merge. The package emits both and resolves no conflict between them.
 
@@ -83,8 +83,8 @@ Nothing at any level can vary by value. A column that should show negative amoun
 
 **Table and accent styling**
 
-- R14. Table-level styling takes the uniform shape.
-- R15. The table's accent — today `pageStyle()` — takes the uniform shape, and is named for what it governs rather than for pagination.
+- R14. Table-level styling is declared on the table, returning its style cases directly.
+- R15. The table's accent — today `pageStyle()` — is declared on the table as a single case, and is named for what it governs rather than for pagination.
 - R16. The accent keeps driving the search control, the filter controls, the pagination links and the generated CSS.
 
 **Alignment consistency**
@@ -232,11 +232,11 @@ Verified by reading and by rendering the views in Docker on 2026-08-16:
 
 ### Key Technical Decisions
 
-- KTD1. **A generic style value object holds the static styles plus the optional closure, and is generic over each level's own enum.** This is what makes the shape uniform while the vocabularies stay separate, and it generalises `ValueObjects/LazyValue`, which already models "a value or a closure resolved against a context". Governs R2, R3.
-- KTD2. **Every style case declares two things about itself: the element it targets, and the style family it belongs to.** The target satisfies KD2's landing rule without the renderer guessing. The family is what makes a helper default overridable — see KTD6. `Enums/ButtonStyle::toCssClass(Theme, bool $inDropdown)` is the existing precedent for a case that renders differently by context. Governs R6, R21.
+- KTD1. **A generic style value object holds the static styles plus the optional closure, and is generic over each level's own enum.** It generalises `ValueObjects/LazyValue`, which already models "a value or a closure resolved against a context". Applied at the column and row levels only — see [Changes during implementation](#changes-during-implementation). Governs R2, R3.
+- KTD2. **Every cell style case declares two things about itself: the element it targets, and the style family it belongs to.** The target satisfies KD2's landing rule without the renderer guessing. The family is what makes a helper default overridable — see KTD6. `Enums/ButtonStyle::toCssClass(Theme, bool $inDropdown)` is the existing precedent for a case that renders differently by context. Governs R6, R21.
 - KTD3. **The cell's content wrapper is a flex row everywhere, so an alignment case has exactly one rendering.** (session-settled: user-approved — chosen over keeping the two variants and patching the non-sortable branch: the duality is issue #7's cause, and a second variant would keep re-introducing it wherever a new wrapper appears.) This is not the rejected "drop flex alignment" option; alignment stays flex and becomes universal. Governs R17, R18, R19.
 - KTD4. **The per-level contexts are small final readonly classes mirroring `Actions/Contexts/ActionContext`, with no shared base.** A marker interface lets the resolver stay generic. Inheritance would buy nothing: the three contexts share no field beyond what each genuinely needs. Governs R9, R13.
-- KTD5. **The accent vocabulary keeps emitting a bare colour token rather than a finished class.** Three views wrap the same colour as `border-`, `text-` and `bg-`, so no single finished class can serve them. Uniformity lives in the value object's shape, not in a shared class-rendering signature. Governs R15, R16.
+- KTD5. **The accent vocabulary keeps emitting a bare colour token rather than a finished class.** Three views wrap the same colour as `border-`, `text-` and `bg-`, so no single finished class can serve them. Governs R15, R16.
 - KTD6. **A column-type helper contributes family-scoped defaults resolved at render, not merged in at construction.** A construction-time merge would collide with an author's own alignment and make R21's override fiction, because KD5 forbids the package resolving conflicts. Resolving at render lets a default apply only where the author declared nothing in that family. KD5 governs author-versus-author collisions; this governs package-versus-author. Governs R20, R21.
 - KTD7. **Names:** `Column::style()`, `Table::style()`, `Table::rowStyle()`, `Table::accentStyle()`, with vocabularies `CellStyle` (expanded), `TableStyle` (kept), `RowStyle` (new) and `AccentStyle` (renamed from `PageStyle`). Governs R5, R14, R15.
 - KTD8. **`PageStyle` to `AccentStyle` is a rename and a shape change delivered together in one unit.** It is consumed by four views, so splitting the rename from the shape change would leave the tree broken between commits. Governs R15, R16.
@@ -503,4 +503,76 @@ Global:
 - **No commit and no push has been made.** The work sits in the tree with a commit message handed over per unit.
 
 Per unit: the unit's test scenarios pass, its cited requirements hold, and the full gate is green before the next unit starts.
+
+---
+
+## Changes during implementation
+
+Five things came out differently from the plan. Each is recorded with what was planned, what shipped, and why, so the
+reasoning survives alongside the outcome.
+
+### Table-level styling returns its cases directly
+
+**Planned.** All four levels take one shape: static styles plus an optional context-aware closure, held in a style
+value object. `Table::style()` and `Table::accentStyle()` would each return one.
+
+**Shipped.** `Table::style(): array` returns `TableStyle` cases and `Table::accentStyle(): AccentStyle` returns a single
+case. Only the column and row levels keep the value object.
+
+**Why.** The accent is one colour, used to build several classes. Wrapping it in a set meant a set that could hold
+several values while only one could ever apply, and the resolver had to collapse it with a last-one-wins rule that
+existed for no reason other than the wrapper. Reviewing the API surface made that hard to defend.
+
+The closure turned out to be unnecessary at both table levels: a `Table` has the request injected, so anything
+conditional belongs in the method body. The closure earns its place where the declaring method cannot see the context
+it needs — a cell's model, a row's model — and nowhere else.
+
+Removing it took three things with it: `Styles\Contexts\TableContext`, which existed only to resolve those two levels;
+`StyleResolver::accent()`, the collapse rule; and `StyleResolver` as a dependency of `FilterRenderer`, which now reads
+the accent straight off the table. Net thirteen fewer lines of production code, one fewer class, and no capability lost.
+
+**Correction to the plan's reasoning.** KTD1 treated uniformity as a goal in itself and carried it further than it
+earned. The sharper rule is the one above.
+
+### The style contract is narrower than KTD2 described
+
+**Planned.** Every style case declares its target element and its style family.
+
+**Shipped.** `Contracts\Style` requires only `toCssClass()`. `target()` and `family()` live on `CellStyle` alone.
+
+**Why.** Only the cell level has a per-case choice of element — table styles always land on the table, row styles on the
+row, and the renderer knows that from the level. Putting both on the shared contract would have forced `AccentStyle` to
+answer a question with no meaning for it.
+
+### A shared style resolver was extracted
+
+**Planned.** Each renderer would turn resolved styles into class strings itself.
+
+**Shipped.** `Styles\StyleResolver` owns that transformation, injected where it is needed.
+
+**Why.** The first implementation left an identical private helper in both column renderers, which review caught. It
+was not only duplication: the row, table and accent levels needed the same transformation, so the extraction was the
+seam three later units were going to need regardless.
+
+### `TableRegion` carries a `Footer` case
+
+**Planned.** `Header` and `Body` only, because `tfoot.blade.php` is empty and there is nothing to style.
+
+**Shipped.** `Header`, `Body` and `Footer`.
+
+**Why.** Footer content is planned work, and adding a case to a published enum later is a breaking change where adding
+it now is free. Nothing matches on the enum exhaustively, so the unused case costs no coverage.
+
+### Unit sequencing was adjusted to keep every commit green
+
+**Planned.** U2 would drop the `$flex` parameter; U5 would switch the renderers onto the new column API; U2 would
+rename `PageStyle`.
+
+**Shipped.** `$flex` was dropped in U4, once the always-flex wrapper made single-variant alignment correct. The
+renderer switch moved into U3, alongside the API it consumes. `AccentStyle` was added beside `PageStyle` in U2 and only
+replaced it in U8.
+
+**Why.** The plan assumed the work would land as one commit. It landed as one commit per unit, which requires every
+unit to leave the tree green on its own. Each of these three changes would otherwise have left the build broken between
+commits.
 
