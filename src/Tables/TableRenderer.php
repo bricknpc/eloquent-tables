@@ -13,11 +13,14 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
@@ -61,6 +64,7 @@ readonly class TableRenderer
         private RouteModelBinder $methodInvoker,
         private ActionRenderer $actionRenderer,
         private TableParameters $parameters,
+        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -159,6 +163,8 @@ readonly class TableRenderer
             'bulkActionCount'        => $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()),
             'bulkActions'            => $bulkActions,
             'bulkActionColumnWidth'  => $table->bulkActionColumnWidth(),
+            'bulkActionCellStyles'   => $this->styleResolver->classes([CellStyle::AlignCenter], StyleTarget::Content),
+            'rowActionCellStyles'    => $this->styleResolver->classes([CellStyle::AlignRight], StyleTarget::Content),
             'filterCount'            => count($filters),
             'filters'                => $filters,
             'filterRenderer'         => $this->filterRenderer,

@@ -16,6 +16,31 @@ readonly class StyleResolver
     ) {}
 
     /**
+     * @param Style[]     $styles
+     * @param CellStyle[] $defaults
+     *
+     * @return Style[]
+     */
+    public function withDefaults(array $styles, array $defaults): array
+    {
+        $declared = [];
+
+        foreach ($styles as $style) {
+            if ($style instanceof CellStyle) {
+                $declared[] = $style->family();
+            }
+        }
+
+        foreach ($defaults as $default) {
+            if (!in_array($default->family(), $declared, true)) {
+                $styles[] = $default;
+            }
+        }
+
+        return $styles;
+    }
+
+    /**
      * @param Style[] $styles
      */
     public function classes(array $styles, ?StyleTarget $target = null): string

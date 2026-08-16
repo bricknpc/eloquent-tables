@@ -14,8 +14,8 @@
 <thead>
     <tr>
         @if($bulkActionCount > 0)
-            <th class="text-center" @if($bulkActionColumnWidth !== null) style="width: {{ $bulkActionColumnWidth }};" @endif>
-                <div class="form-check form-switch d-flex justify-content-center">
+            <th @if($bulkActionColumnWidth !== null) style="width: {{ $bulkActionColumnWidth }};" @endif>
+                <div class="form-check form-switch d-flex align-items-center w-100 {{ $bulkActionCellStyles }}">
                     <input
                         class="form-check-input"
                         type="checkbox"

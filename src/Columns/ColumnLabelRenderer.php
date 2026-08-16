@@ -48,6 +48,8 @@ readonly class ColumnLabelRenderer
             new CellContext($request, $column, null, TableRegion::Header),
         ) ?? [];
 
+        $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
+
         return $this->viewFactory->make('eloquent-tables::table.th', [
             'theme'          => $theme,
             'label'          => $this->getLabelValue($column),

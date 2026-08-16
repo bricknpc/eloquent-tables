@@ -51,6 +51,8 @@ readonly class ColumnValueRenderer
 
         $styles = $column->style?->resolve(new CellContext($request, $column, $model)) ?? [];
 
+        $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
+
         return $this->viewFactory->make('eloquent-tables::table.td', [
             'theme'          => $theme,
             'value'          => $value,

@@ -53,6 +53,32 @@ class StyleResolverTest extends TestCase
         $this->assertSame('', $this->resolver()->classes([]));
     }
 
+    public function test_a_default_applies_when_its_family_is_absent(): void
+    {
+        $styles = $this->resolver()->withDefaults([CellStyle::BackgroundSuccess], [CellStyle::AlignCenter]);
+
+        $this->assertSame([CellStyle::BackgroundSuccess, CellStyle::AlignCenter], $styles);
+    }
+
+    public function test_a_default_is_displaced_by_a_declared_style_of_the_same_family(): void
+    {
+        $styles = $this->resolver()->withDefaults([CellStyle::AlignRight], [CellStyle::AlignCenter]);
+
+        $this->assertSame([CellStyle::AlignRight], $styles);
+    }
+
+    public function test_no_defaults_leaves_the_styles_alone(): void
+    {
+        $this->assertSame([CellStyle::AlignRight], $this->resolver()->withDefaults([CellStyle::AlignRight], []));
+    }
+
+    public function test_a_style_outside_the_cell_vocabulary_does_not_displace_a_default(): void
+    {
+        $styles = $this->resolver()->withDefaults([RowStyle::Danger], [CellStyle::AlignCenter]);
+
+        $this->assertSame([RowStyle::Danger, CellStyle::AlignCenter], $styles);
+    }
+
     private function resolver(): StyleResolver
     {
         /** @var StyleResolver $resolver */

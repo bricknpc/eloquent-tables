@@ -16,12 +16,15 @@ use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
@@ -86,6 +89,9 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(ColumnType::class)]
 #[UsesClass(ActionCollection::class)]
 #[UsesClass(StyleResolver::class)]
+#[UsesClass(CellStyle::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -555,7 +561,7 @@ class TableRendererTest extends TestCase
 
         // ...but only row A gets a button group. Row B keeps an empty cell so the table stays aligned.
         $this->assertSame(1, substr_count($html, '<div class="btn-group">'));
-        $this->assertSame(2, substr_count($html, '<td class="text-end">'));
+        $this->assertSame(2, substr_count($html, $view->getData()['rowActionCellStyles']));
     }
 
     public function test_a_collection_counts_as_a_single_action(): void
