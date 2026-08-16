@@ -338,6 +338,78 @@ class ColumnTest extends TestCase
             [],
             [],
         ];
+
+        yield 'date with a locale and timezone' => [
+            'date',
+            [
+                'locale'   => 'nl',
+                'timezone' => 'Europe/Amsterdam',
+            ],
+            [
+                'locale'   => 'nl',
+                'timezone' => 'Europe/Amsterdam',
+            ],
+        ];
+
+        yield 'dateTime with a DateTimeZone object' => [
+            'dateTime',
+            [
+                'timezone' => $timezone = new \DateTimeZone('Asia/Tokyo'),
+            ],
+            [
+                'timezone' => $timezone,
+            ],
+        ];
+
+        yield 'date without arguments stores nothing' => [
+            'date',
+            [],
+            [],
+        ];
+
+        yield 'currency from closures' => [
+            'currency',
+            [
+                'currency' => $currency = fn (Model $model) => 'USD',
+                'locale'   => $locale   = fn (Model $model) => 'en_US',
+            ],
+            [
+                'currency' => $currency,
+                'locale'   => $locale,
+            ],
+        ];
+
+        yield 'number with closure decimals' => [
+            'number',
+            [
+                'decimals' => $decimals = fn (Model $model) => 3,
+            ],
+            [
+                'decimals' => $decimals,
+            ],
+        ];
+
+        yield 'float with closure decimals' => [
+            'float',
+            [
+                'decimals' => $floatDecimals = fn (Model $model) => 4,
+            ],
+            [
+                'decimals' => $floatDecimals,
+            ],
+        ];
+
+        yield 'dateTime with closure locale and timezone' => [
+            'dateTime',
+            [
+                'locale'   => $dtLocale   = fn (Model $model) => 'ja_JP',
+                'timezone' => $dtTimezone = fn (Model $model) => 'Asia/Tokyo',
+            ],
+            [
+                'locale'   => $dtLocale,
+                'timezone' => $dtTimezone,
+            ],
+        ];
     }
 
     public function test_fluent_setters_set_correct_column_type(): void

@@ -262,8 +262,9 @@ them by supplying the classname of the formatter to the column or by using the h
 
 #### Date formatter
 
-The date formatter formats dates using the `\IntlDateFormatter`. It uses the timezone settings from the 
-app config: `config('app.timezone')`. It uses the current locale of the app for the locale: `app()->getLocale()`.
+The date formatter formats dates using the `\IntlDateFormatter`. By default it uses the timezone settings from the 
+app config: `config('app.timezone')`, and the current locale of the app for the locale: `app()->getLocale()`. You can
+also specify the locale and the timezone to use. The timezone may be a `\DateTimeZone` or a timezone identifier string.
 
 ```php
 <?php
@@ -273,14 +274,17 @@ use BrickNPC\EloquentTables\Column;
 use lluminate\Contracts\Database\Query\Builder;
 
 new Column(name: 'email_verified_at')->date();
+// Or
+new Column(name: 'email_verified_at')->date(locale: 'nl-NL', timezone: 'Europe/Amsterdam');
 ```
 
 Also see the PHP documentation for the [`IntlDateFormatter`](https://www.php.net/manual/en/class.intldateformatter.php) class.
 
 #### Datetime formatter
 
-The datetime formatter formats dates using the `\IntlDateFormatter`. It uses the timezone settings from the
-app config: `config('app.timezone')`. It uses the current locale of the app for the locale: `app()->getLocale()`.
+The datetime formatter formats dates using the `\IntlDateFormatter`. By default it uses the timezone settings from the
+app config: `config('app.timezone')`, and the current locale of the app for the locale: `app()->getLocale()`. You can
+also specify the locale and the timezone to use. The timezone may be a `\DateTimeZone` or a timezone identifier string.
 
 ```php
 <?php
@@ -290,6 +294,8 @@ use BrickNPC\EloquentTables\Column;
 use lluminate\Contracts\Database\Query\Builder;
 
 new Column(name: 'created_at')->dateTime();
+// Or
+new Column(name: 'created_at')->dateTime(locale: 'nl-NL', timezone: 'Europe/Amsterdam');
 ```
 
 Also see the PHP documentation for the [`IntlDateFormatter`](https://www.php.net/manual/en/class.intldateformatter.php) class.
@@ -346,6 +352,45 @@ new Column(name: 'amount_paid')->currency(currency: 'EUR', locale: 'nl-NL');
 ```
 
 Also see the PHP documentation for the [`NumberFormatter`](https://www.php.net/manual/en/class.numberformatter.php) class.
+
+#### Taking formatter options from the model
+
+Sometimes the option you need is stored on the model rather than known up front — an invoice that records its own
+currency, or a user who has a preferred timezone. Every option on these helper methods also accepts a
+`\Closure(Model $model)` that returns the value. The closure is called once per row and receives the model for that row,
+so each row can be formatted differently.
+
+```php
+<?php
+
+use App\Models\Invoice;
+use BrickNPC\EloquentTables\Column;
+
+// Each invoice is shown in the currency it was issued in.
+new Column(name: 'total')->currency(
+    currency: fn (Invoice $invoice) => $invoice->currency,
+    locale: fn (Invoice $invoice) => $invoice->customer_locale,
+);
+
+// Timestamps in the timezone the user chose.
+new Column(name: 'created_at')->dateTime(
+    timezone: fn (Invoice $invoice) => $invoice->user->timezone,
+);
+
+// The number of decimals can be dynamic too.
+new Column(name: 'quantity')->number(
+    decimals: fn (Invoice $invoice) => $invoice->unit->decimals,
+);
+```
+
+Mixing is fine: any option can be a plain value while another is a closure.
+
+:::warning
+
+The closure runs for every row, so reaching through a relation like `$invoice->user->timezone` will trigger a query per
+row unless you eager load it in your table's `query()` method.
+
+:::
 
 ### Column type
 

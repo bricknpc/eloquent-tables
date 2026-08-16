@@ -39,7 +39,10 @@ readonly class ColumnValueRenderer
         if ($column->formatter !== null) {
             $formatter = $column->formatter instanceof Formatter
                 ? $column->formatter
-                : $this->formatterFactory->build($column->formatter, $column->getFormatterParameters());
+                : $this->formatterFactory->build(
+                    $column->formatter,
+                    $this->resolveFormatterParameters($column->getFormatterParameters(), $model),
+                );
 
             $value = $formatter->format($value, $model);
         }
@@ -54,5 +57,23 @@ readonly class ColumnValueRenderer
             'checkIcon'      => $this->config->checkIcon(),
             'crossIcon'      => $this->config->crossIcon(),
         ]);
+    }
+
+    /**
+     * Resolves any formatter parameter that was given as a closure, handing it the model of the current row.
+     *
+     * @param array<string, mixed> $parameters
+     * @param TModel               $model
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveFormatterParameters(array $parameters, Model $model): array
+    {
+        return array_map(
+            fn (mixed $parameter): mixed => $parameter instanceof \Closure
+                ? call_user_func($parameter, $model)
+                : $parameter,
+            $parameters,
+        );
     }
 }

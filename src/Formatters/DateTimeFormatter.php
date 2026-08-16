@@ -12,7 +12,7 @@ readonly class DateTimeFormatter implements Formatter
 {
     public function __construct(
         private string $locale,
-        private \DateTimeZone $timezone,
+        private \DateTimeZone|string $timezone,
     ) {}
 
     /**
@@ -28,7 +28,7 @@ readonly class DateTimeFormatter implements Formatter
             locale: $this->locale,
             dateType: \IntlDateFormatter::FULL,
             timeType: \IntlDateFormatter::SHORT,
-            timezone: $this->timezone,
+            timezone: $this->timezone(),
         );
 
         $formatted = $formatter->format($value); // @phpstan-ignore argument.type
@@ -38,5 +38,21 @@ readonly class DateTimeFormatter implements Formatter
         }
 
         return str($formatted);
+    }
+
+    /**
+     * @throws InvalidValueException
+     */
+    private function timezone(): \DateTimeZone
+    {
+        if ($this->timezone instanceof \DateTimeZone) {
+            return $this->timezone;
+        }
+
+        try {
+            return new \DateTimeZone($this->timezone);
+        } catch (\Exception) {
+            throw InvalidValueException::forInvalidValue($this->timezone, $this);
+        }
     }
 }

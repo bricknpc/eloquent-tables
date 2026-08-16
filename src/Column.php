@@ -124,17 +124,33 @@ class Column
         return $this;
     }
 
-    public function date(): static
+    /**
+     * @param null|(\Closure(TModel $model): string)|string                               $locale
+     * @param null|(\Closure(TModel $model): (\DateTimeZone|string))|\DateTimeZone|string $timezone
+     */
+    public function date(\Closure|string|null $locale = null, \Closure|\DateTimeZone|string|null $timezone = null): static
     {
+        $this->formatterParameters = $this->dateParameters($locale, $timezone);
+
         return $this->format(DateFormatter::class);
     }
 
-    public function dateTime(): static
+    /**
+     * @param null|(\Closure(TModel $model): string)|string                               $locale
+     * @param null|(\Closure(TModel $model): (\DateTimeZone|string))|\DateTimeZone|string $timezone
+     */
+    public function dateTime(\Closure|string|null $locale = null, \Closure|\DateTimeZone|string|null $timezone = null): static
     {
+        $this->formatterParameters = $this->dateParameters($locale, $timezone);
+
         return $this->format(DateTimeFormatter::class);
     }
 
-    public function number(int $decimals = 0, ?string $locale = null): static
+    /**
+     * @param (\Closure(TModel $model): int)|int            $decimals
+     * @param null|(\Closure(TModel $model): string)|string $locale
+     */
+    public function number(\Closure|int $decimals = 0, \Closure|string|null $locale = null): static
     {
         $this->formatterParameters = ['decimals' => $decimals];
 
@@ -145,18 +161,20 @@ class Column
         return $this->format(NumberFormatter::class);
     }
 
-    public function float(int $decimals = 2, ?string $locale = null): static
+    /**
+     * @param (\Closure(TModel $model): int)|int            $decimals
+     * @param null|(\Closure(TModel $model): string)|string $locale
+     */
+    public function float(\Closure|int $decimals = 2, \Closure|string|null $locale = null): static
     {
-        $this->formatterParameters = ['decimals' => $decimals];
-
-        if ($locale !== null) {
-            $this->formatterParameters['locale'] = $locale;
-        }
-
-        return $this->format(NumberFormatter::class);
+        return $this->number($decimals, $locale);
     }
 
-    public function currency(?string $currency = null, ?string $locale = null): static
+    /**
+     * @param null|(\Closure(TModel $model): string)|string $currency
+     * @param null|(\Closure(TModel $model): string)|string $locale
+     */
+    public function currency(\Closure|string|null $currency = null, \Closure|string|null $locale = null): static
     {
         $this->formatterParameters = [];
 
@@ -200,5 +218,26 @@ class Column
         $this->cellStyles = array_merge($this->cellStyles, $cellStyles);
 
         return $this;
+    }
+
+    /**
+     * @param null|(\Closure(TModel $model): string)|string                               $locale
+     * @param null|(\Closure(TModel $model): (\DateTimeZone|string))|\DateTimeZone|string $timezone
+     *
+     * @return array<string, mixed>
+     */
+    private function dateParameters(\Closure|string|null $locale, \Closure|\DateTimeZone|string|null $timezone): array
+    {
+        $parameters = [];
+
+        if ($locale !== null) {
+            $parameters['locale'] = $locale;
+        }
+
+        if ($timezone !== null) {
+            $parameters['timezone'] = $timezone;
+        }
+
+        return $parameters;
     }
 }
