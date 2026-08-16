@@ -38,6 +38,11 @@ final readonly class StyleSet
         $this->callbacks = $callbacks;
     }
 
+    public function with(\Closure|Style ...$styles): self
+    {
+        return new self(...$this->styles, ...$this->callbacks, ...$styles);
+    }
+
     /**
      * @return Style[]
      */

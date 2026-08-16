@@ -15,9 +15,14 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
@@ -36,6 +41,11 @@ use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 #[UsesClass(CurrencyFormatter::class)]
 #[UsesClass(NumberFormatter::class)]
 #[UsesClass(DateTimeFormatter::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(CellContext::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(TableRegion::class)]
 class ColumnValueRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -112,13 +122,13 @@ class ColumnValueRendererTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
         $model   = new class extends Model {};
-        $column  = new Column('name')->styles(TableStyle::Active, TableStyle::Dark);
+        $column  = new Column('name')->style(CellStyle::BackgroundSuccess, CellStyle::FontBold);
 
         $view = $builder->build($request, $column, $model);
 
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('styles', $view->getData());
-        $this->assertSame('table-active table-dark', $view->getData()['styles']);
+        $this->assertSame('table-success fw-bold', $view->getData()['styles']);
     }
 
     public function test_it_renders_the_correct_cell_styles(): void
@@ -129,13 +139,13 @@ class ColumnValueRendererTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
         $model   = new class extends Model {};
-        $column  = new Column('name')->cellStyles(CellStyle::AlignCenter, CellStyle::AlignBetween);
+        $column  = new Column('name')->style(CellStyle::AlignCenter, CellStyle::AlignBetween);
 
         $view = $builder->build($request, $column, $model);
 
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('cellStyles', $view->getData());
-        $this->assertSame('text-center ', $view->getData()['cellStyles']);
+        $this->assertSame('text-center', $view->getData()['cellStyles']);
         $this->assertArrayHasKey('cellStylesFlex', $view->getData());
         $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStylesFlex']);
     }

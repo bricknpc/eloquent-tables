@@ -11,10 +11,15 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\Theme;
+use BrickNPC\EloquentTables\Contracts\Style;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
 use BrickNPC\EloquentTables\Enums\TableParameter;
 use BrickNPC\EloquentTables\Services\TableParameters;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
 /**
  * @template TModel of Model
@@ -40,6 +45,10 @@ readonly class ColumnLabelRenderer
         $sortDirection     = $this->sortDirectionForColumn($request, $table, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
 
+        $styles = $column->style?->resolve(
+            new CellContext($request, $column, null, TableRegion::Header),
+        ) ?? [];
+
         return $this->viewFactory->make('eloquent-tables::table.th', [
             'theme'          => $theme,
             'label'          => $this->getLabelValue($column),
@@ -52,8 +61,9 @@ readonly class ColumnLabelRenderer
             'iconAsc'        => $this->config->sortAscIcon(),
             'iconDesc'       => $this->config->sortDescIcon(),
             'type'           => $column->type,
-            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
-            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
+            'styles'         => $this->classesFor($styles, StyleTarget::Cell, $theme),
+            'cellStylesFlex' => $this->classesFor($styles, StyleTarget::Content, $theme, true),
+            'cellStyles'     => $this->classesFor($styles, StyleTarget::Content, $theme),
         ]);
     }
 
@@ -105,5 +115,27 @@ readonly class ColumnLabelRenderer
         $namespace[$this->config->sortQueryName()] = $sort === [] ? '' : $sort;
 
         return $request->fullUrlWithQuery([$table->name() => $namespace]);
+    }
+
+    /**
+     * @param Style[] $styles
+     */
+    private function classesFor(array $styles, StyleTarget $target, Theme $theme, bool $flex = false): string
+    {
+        $classes = [];
+
+        foreach ($styles as $style) {
+            if ($style instanceof CellStyle && $style->target() !== $target) {
+                continue;
+            }
+
+            $class = $style instanceof CellStyle ? $style->toCssClass($theme, $flex) : $style->toCssClass($theme);
+
+            if ($class !== '') {
+                $classes[] = $class;
+            }
+        }
+
+        return implode(' ', $classes);
     }
 }

@@ -9,11 +9,14 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Enums\Theme;
+use BrickNPC\EloquentTables\Contracts\Style;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
-use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
 /**
  * @template TModel of Model
@@ -47,12 +50,14 @@ readonly class ColumnValueRenderer
             $value = $formatter->format($value, $model);
         }
 
+        $styles = $column->style?->resolve(new CellContext($request, $column, $model)) ?? [];
+
         return $this->viewFactory->make('eloquent-tables::table.td', [
             'theme'          => $theme,
             'value'          => $value,
-            'styles'         => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
-            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
-            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
+            'styles'         => $this->classesFor($styles, StyleTarget::Cell, $theme),
+            'cellStylesFlex' => $this->classesFor($styles, StyleTarget::Content, $theme, true),
+            'cellStyles'     => $this->classesFor($styles, StyleTarget::Content, $theme),
             'type'           => $column->type,
             'checkIcon'      => $this->config->checkIcon(),
             'crossIcon'      => $this->config->crossIcon(),
@@ -75,5 +80,27 @@ readonly class ColumnValueRenderer
                 : $parameter,
             $parameters,
         );
+    }
+
+    /**
+     * @param Style[] $styles
+     */
+    private function classesFor(array $styles, StyleTarget $target, Theme $theme, bool $flex = false): string
+    {
+        $classes = [];
+
+        foreach ($styles as $style) {
+            if ($style instanceof CellStyle && $style->target() !== $target) {
+                continue;
+            }
+
+            $class = $style instanceof CellStyle ? $style->toCssClass($theme, $flex) : $style->toCssClass($theme);
+
+            if ($class !== '') {
+                $classes[] = $class;
+            }
+        }
+
+        return implode(' ', $classes);
     }
 }

@@ -98,6 +98,16 @@ class StyleSetTest extends TestCase
         $this->assertSame([TestStyle::First, TestStyle::Second], $set->resolve($this->context()));
     }
 
+    public function test_with_appends_to_an_existing_set(): void
+    {
+        $set = new StyleSet(TestStyle::First)->with(TestStyle::Second, fn () => TestStyle::Third);
+
+        $this->assertSame(
+            [TestStyle::First, TestStyle::Second, TestStyle::Third],
+            $set->resolve($this->context()),
+        );
+    }
+
     private function context(): TableContext
     {
         /** @var Request $request */
