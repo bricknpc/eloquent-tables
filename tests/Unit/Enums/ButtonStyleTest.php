@@ -6,6 +6,7 @@ namespace BrickNPC\EloquentTables\Tests\Unit\Enums;
 
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
+use BrickNPC\EloquentTables\Contracts\Style;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -207,6 +208,18 @@ class ButtonStyleTest extends TestCase
             ButtonStyle::Link,
             'text-link',
         ];
+    }
+
+    public function test_a_button_style_is_a_style(): void
+    {
+        $this->assertInstanceOf(Style::class, ButtonStyle::Danger);
+    }
+
+    public function test_every_case_is_a_style(): void
+    {
+        foreach (ButtonStyle::cases() as $style) {
+            $this->assertInstanceOf(Style::class, $style);
+        }
     }
 
     public function test_every_style_has_a_dropdown_variant_without_a_button_class(): void
