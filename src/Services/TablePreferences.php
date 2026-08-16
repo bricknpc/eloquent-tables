@@ -9,15 +9,6 @@ use BrickNPC\EloquentTables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Reads the choices a visitor made on a table and kept.
- *
- * Every table's preferences live in one JSON cookie on the visitor's own device, keyed by table name.
- * This side is read-only: the browser owns every write, because the per-page value has to be resolved
- * server-side before any script runs.
- *
- * Nothing here throws. A cookie that has been hand-edited, truncated or written by an older version
- * yields no preferences rather than breaking the page.
- *
  * @template TModel of Model
  */
 readonly class TablePreferences

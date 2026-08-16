@@ -86,9 +86,6 @@ readonly class ColumnLabelRenderer
     }
 
     /**
-     * Rebuild the table's namespace with the new sort, leaving its other parameters — and every other
-     * table's — untouched.
-     *
      * @param Table<TModel> $table
      */
     private function sortUrl(Request $request, Table $table, string $name, ?Sort $direction): string
@@ -105,8 +102,6 @@ readonly class ColumnLabelRenderer
             $sort[$name] = $direction->value;
         }
 
-        // An empty array vanishes from the query string, which would read as "no sort chosen" and let
-        // a stored sort reappear. An empty string survives and says the sort was cleared.
         $namespace[$this->config->sortQueryName()] = $sort === [] ? '' : $sort;
 
         return $request->fullUrlWithQuery([$table->name() => $namespace]);

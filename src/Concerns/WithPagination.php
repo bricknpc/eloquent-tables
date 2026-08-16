@@ -20,13 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait WithPagination
 {
-    /**
-     * The number of items to show per page when the visitor has not chosen one.
-     *
-     * This is the table's own default. The visitor's choice arrives as a query parameter or a stored
-     * preference, both of which are resolved by Services\TableParameters and take precedence over
-     * this value. The request is still passed so an override can vary the default per visitor.
-     */
     public function perPage(Request $request): int
     {
         $perPage = property_exists($this, 'perPage') ? $this->perPage : 15;

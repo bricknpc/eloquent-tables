@@ -34,8 +34,6 @@ class EloquentTablesServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/eloquent-tables.php', 'eloquent-tables');
 
-        // The preferences cookie is written by the browser, so it is not encrypted and EncryptCookies
-        // would null it before a table could read it back.
         /** @var string $cookieName */
         $cookieName = $this->getConfig('eloquent-tables.preferences.cookie_name', 'eloquent_tables_preferences');
 

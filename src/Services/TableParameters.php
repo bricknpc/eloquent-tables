@@ -10,13 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 use BrickNPC\EloquentTables\Enums\TableParameter;
 
 /**
- * Resolves the query parameters a table owns.
- *
- * Every parameter is nested under the table's name, so `users[sort][email]=asc` belongs to the table
- * named "users" and nothing else on the page can read or overwrite it. This service is the single
- * place that knows the nesting rule; every read path goes through it rather than reaching into the
- * request itself.
- *
  * @template TModel of Model
  */
 readonly class TableParameters
@@ -30,8 +23,6 @@ readonly class TableParameters
     ) {}
 
     /**
-     * The fully-qualified query key, usable as a form field name.
-     *
      * @param Table<TModel> $table
      */
     public function key(Table $table, TableParameter $parameter): string
@@ -96,9 +87,6 @@ readonly class TableParameters
     }
 
     /**
-     * The number of items per page in effect: the visitor's choice when they made one, otherwise the
-     * table's own default.
-     *
      * @param Table<TModel> $table
      */
     public function perPage(Table $table, Request $request, int $default): int

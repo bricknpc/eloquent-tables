@@ -109,8 +109,6 @@ const config = {
             position: 'left',
             label: 'Documentation',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
-          {to: '/showcase', label: 'Community Showcase', position: 'left'},
           {
             type: 'docSidebar',
             sidebarId: 'plansSidebar',
@@ -118,6 +116,8 @@ const config = {
             position: 'left',
             label: 'Agent Plans',
           },
+          {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/showcase', label: 'Community Showcase', position: 'left'},
           {
             href: 'https://github.com/bricknpc/eloquent-tables',
             label: 'GitHub',
@@ -154,12 +154,12 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
                 label: 'Agent Plans',
                 to: '/plans',
+              },
+              {
+                label: 'Blog',
+                to: '/blog',
               },
               {
                 label: 'GitHub',
