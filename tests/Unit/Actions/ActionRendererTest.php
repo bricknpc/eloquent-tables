@@ -12,13 +12,17 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
+use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet;
 use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -47,6 +51,10 @@ use BrickNPC\EloquentTables\Actions\Contributions\ConfirmationContribution;
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(ActionRegion::class)]
+#[UsesClass(ActionStyleResolver::class)]
+#[UsesClass(ButtonStyle::class)]
+#[UsesClass(StyleSet::class)]
 class ActionRendererTest extends TestCase
 {
     private ActionRenderer $renderer;
@@ -206,22 +214,6 @@ class ActionRendererTest extends TestCase
         $this->assertStringContainsString('&quot;', $rendered);
         $this->assertStringContainsString('&amp;', $rendered);
         $this->assertStringNotContainsString('title="Delete "this"', $rendered);
-    }
-
-    public function test_it_does_not_render_the_class_attribute_twice(): void
-    {
-        $action = new Action()
-            ->label('Delete')
-            ->as(new Http('https://example.com/users/1/delete'))
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
-                $descriptor->attributes['class'] = 'btn-danger';
-            }))
-        ;
-
-        $rendered = (string) $this->renderer->render($action, $this->context)?->render();
-
-        $this->assertSame(1, substr_count($rendered, 'class='));
-        $this->assertStringContainsString('class="btn btn-danger"', $rendered);
     }
 
     public function test_it_gives_every_rendered_action_a_unique_id(): void
@@ -539,6 +531,101 @@ class ActionRendererTest extends TestCase
 
         $this->assertFalse($this->renderer->canRender($action, $this->context));
         $this->assertTrue($this->renderer->canRender($action, $this->context->isBulk()));
+    }
+
+    public function test_it_replaces_the_default_class_of_a_rendered_action(): void
+    {
+        $rendered = $this->renderStyled(ButtonStyle::DangerOutline);
+
+        $this->assertStringContainsString('class="btn btn-outline-danger"', $rendered);
+        $this->assertStringNotContainsString('btn-primary', $rendered);
+    }
+
+    public function test_an_action_without_a_style_keeps_the_default_class(): void
+    {
+        $rendered = $this->renderStyled();
+
+        $this->assertStringContainsString('class="btn btn-primary"', $rendered);
+    }
+
+    public function test_it_styles_a_rendered_action_inside_a_dropdown(): void
+    {
+        $rendered = $this->renderStyled(ButtonStyle::Danger, context: $this->context->asDropdown());
+
+        $this->assertStringContainsString('class="dropdown-item text-danger"', $rendered);
+    }
+
+    public function test_an_action_inside_a_dropdown_without_a_style_stays_a_dropdown_item(): void
+    {
+        $rendered = $this->renderStyled(context: $this->context->asDropdown());
+
+        $this->assertStringContainsString('class="dropdown-item', $rendered);
+        $this->assertStringNotContainsString('btn-primary', $rendered);
+    }
+
+    public function test_a_dropdown_item_without_a_style_has_no_trailing_space(): void
+    {
+        // Covers AE5.
+        $rendered = $this->renderStyled(context: $this->context->asDropdown());
+
+        $this->assertStringContainsString('class="dropdown-item"', $rendered);
+    }
+
+    public function test_it_styles_a_form_action(): void
+    {
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users/1', Method::Delete))
+            ->style(ButtonStyle::Danger)
+        ;
+
+        $rendered = (string) $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertStringContainsString('class="btn btn-danger"', $rendered);
+    }
+
+    public function test_it_styles_a_rendered_action_from_a_closure(): void
+    {
+        $rendered = $this->renderStyled(fn () => ButtonStyle::DangerOutline);
+
+        $this->assertStringContainsString('class="btn btn-outline-danger"', $rendered);
+    }
+
+    public function test_two_style_calls_both_reach_the_rendered_action(): void
+    {
+        // Covers AE6.
+        $action = new Action()
+            ->label('Delete')
+            ->as(new Http('https://example.com/users/1/delete'))
+            ->style(ButtonStyle::Danger)
+            ->style(ButtonStyle::Link)
+        ;
+
+        $rendered = (string) $this->renderer->render($action, $this->context)?->render();
+
+        $this->assertStringContainsString('class="btn btn-danger btn-link"', $rendered);
+    }
+
+    public function test_it_renders_no_class_attribute_from_the_attributes_bag(): void
+    {
+        $data = $this->renderer->render(
+            new Action()->label('Delete')->as(new Http('https://example.com/users/1/delete'))->style(ButtonStyle::Danger),
+            $this->context,
+        )?->getData();
+
+        $this->assertArrayNotHasKey('class', $data['attributes']);
+        $this->assertSame('btn btn-danger', $data['classes']);
+    }
+
+    private function renderStyled(ButtonStyle|\Closure|null $style = null, ?ActionContext $context = null): string
+    {
+        $action = new Action()->label('Delete')->as(new Http('https://example.com/users/1/delete'));
+
+        if ($style !== null) {
+            $action->style($style);
+        }
+
+        return (string) $this->renderer->render($action, $context ?? $this->context)?->render();
     }
 
     private function createIntent(): ActionIntent

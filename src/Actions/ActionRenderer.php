@@ -6,7 +6,9 @@ namespace BrickNPC\EloquentTables\Actions;
 
 use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
+use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentNotSet;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
@@ -15,6 +17,7 @@ final readonly class ActionRenderer
 {
     public function __construct(
         private Config $config,
+        private ActionStyleResolver $styles = new ActionStyleResolver(),
     ) {}
 
     /**
@@ -77,12 +80,15 @@ final readonly class ActionRenderer
         // Call before render hook
         $intent->beforeRender($descriptor, $context);
 
+        $region = $context->asDropdown ? ActionRegion::DropdownItem : ActionRegion::Button;
+
         $result = view($intent->view(), [
             'theme'              => $this->config->theme(),
             'dataNamespace'      => $this->config->dataNamespace(),
             'context'            => $context,
             'label'              => $descriptor->label->resolve($context),
             'attributes'         => $descriptor->attributes,
+            'classes'            => $this->styles->classes($descriptor->style, $context, $region),
             'beforeContent'      => $descriptor->beforeRender,
             'afterContent'       => $descriptor->afterRender,
             'renderedAttributes' => $descriptor->attributesRender,

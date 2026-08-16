@@ -24,8 +24,10 @@ use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
 use BrickNPC\EloquentTables\Enums\AccentStyle;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
@@ -47,6 +49,7 @@ use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
@@ -98,6 +101,9 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(RowContext::class)]
 #[UsesClass(StyleSet::class)]
 #[UsesClass(AccentStyle::class)]
+#[UsesClass(ActionRegion::class)]
+#[UsesClass(ButtonStyle::class)]
+#[UsesClass(ActionStyleResolver::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
