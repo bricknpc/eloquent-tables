@@ -8,4 +8,5 @@ enum TableRegion
 {
     case Header;
     case Body;
+    case Footer;
 }
