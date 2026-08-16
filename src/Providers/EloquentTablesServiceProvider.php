@@ -12,6 +12,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
@@ -32,6 +33,13 @@ class EloquentTablesServiceProvider extends ServiceProvider
         View::addNamespace('eloquent-tables', __DIR__ . '/../../resources/views');
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/eloquent-tables.php', 'eloquent-tables');
+
+        // The preferences cookie is written by the browser, so it is not encrypted and EncryptCookies
+        // would null it before a table could read it back.
+        /** @var string $cookieName */
+        $cookieName = $this->getConfig('eloquent-tables.preferences.cookie_name', 'eloquent_tables_preferences');
+
+        EncryptCookies::except($cookieName);
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../resources/lang');
 
         $this->publishes([

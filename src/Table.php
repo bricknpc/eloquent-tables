@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
@@ -93,6 +94,26 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     public function hasFilters(): bool
     {
         return method_exists($this, 'filters');
+    }
+
+    /**
+     * The table's stable name, used to namespace its query parameters and its stored preferences.
+     *
+     * The name is derived from the class name with a trailing "Table" removed, so UserTable becomes
+     * "user". Two instances of the same table class share a name, and therefore share both
+     * namespaces — override this to keep them independent.
+     */
+    public function name(): string
+    {
+        // PHP names an anonymous class "<parent>@anonymous<NUL><file>:<line>$<hash>", so cut it back
+        // to the parent before taking the basename.
+        $basename = class_basename(Str::before(static::class, '@anonymous'));
+
+        $stripped = str_ends_with($basename, 'Table')
+            ? substr($basename, 0, -strlen('Table'))
+            : $basename;
+
+        return Str::snake($stripped === '' ? $basename : $stripped);
     }
 
     /**

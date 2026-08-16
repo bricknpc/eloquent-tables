@@ -16,6 +16,9 @@
     @if($showSearchForm)
         <div class="d-flex align-items-center table-search">
             <form action="{{ $tableSearchUrl }}" method="get" id="search-form-{{ $id }}">
+                @foreach($searchHiddenInputs as $hiddenName => $hiddenValue)
+                    <input type="hidden" name="{{ $hiddenName }}" value="{{ $hiddenValue }}"/>
+                @endforeach
                 <div class="input-group">
                     <input type="search" name="{{ $searchQueryName }}" class="form-control border-{{ $mainTableStyle }}" placeholder="{{ __('Search') }}" value="{{ $searchQuery }}"/>
                     <button class="btn btn-outline-{{ $mainTableStyle }} d-flex align-items-center" type="submit" form="search-form-{{ $id }}">{{ $searchIcon }}</button>
@@ -26,7 +29,7 @@
     @if($filterCount > 0)
         <div class="d-flex align-items-center table-filters ms-3">
             @foreach($filters as $filter)
-                {!! $filterRenderer->build($filter, $request) !!}
+                {!! $filterRenderer->build($filter, $table, $request) !!}
             @endforeach
         </div>
     @endif
@@ -41,6 +44,9 @@
         @if(isset($perPageOptions) && count($perPageOptions) > 0)
             <div class="d-flex align-items-center table-per-page-options ms-3">
                 <form action="{{ $fullUrl }}" method="get" id="per-page-form-{{ $id }}">
+                    @foreach($perPageHiddenInputs as $hiddenName => $hiddenValue)
+                        <input type="hidden" name="{{ $hiddenName }}" value="{{ $hiddenValue }}"/>
+                    @endforeach
                     <select name="{{ $perPageName }}" onchange="this.form.submit()" class="form-select border-{{ $mainTableStyle }}">
                         @foreach($perPageOptions as $option)
                             <option value="{{ $option }}" @if ($option === $perPage) selected="selected" @endif>{{ $option }}</option>

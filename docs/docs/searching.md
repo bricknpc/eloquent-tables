@@ -33,3 +33,22 @@ class UserTable extends Table
 ```
 
 This will automatically add a search input to the table. For more details, check the [Column documentation](columns.md#searchable).
+
+## The query parameter
+
+The search term is nested under the [table's name](table-names.md), so `?user[search]=ada`. Two tables on one page
+therefore search independently. The sub-key comes from config:
+
+```php
+// config/eloquent-tables.php
+'search' => [
+    'query_name' => 'search',
+],
+```
+
+Submitting the search keeps the table's sort, filters and per-page value, and returns it to the first page.
+
+:::note
+In 1.x the parameter was a page-wide `?search=`, shared by every table on the page. See [Upgrading](upgrading.md).
+:::
+

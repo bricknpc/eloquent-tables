@@ -54,32 +54,6 @@ class UserTable extends Table
 }
 ```
 
-### Page name
-
-The name of the current page query parameter can be set by adding a `pageName` property to your Table. If not set, the 
-default value is `page`.
-
-```php
-<?php
-// app/Tables/UserTable.php
-declare(strict_types=1);
-
-namespace App\Tables;
-
-use App\Models\User;
-use BrickNPC\EloquentTables\Table;
-use BrickNPC\EloquentTables\Concerns\WithPagination;
-
-class UserTable extends Table
-{
-    use WithPagination;
-    
-    protected string $pageName = 'users-page';
-    
-    //... Table definition
-}
-```
-
 ### Per page options
 
 If you want users of your Table to be able to choose the number of items per page, you can add a `perPageOptions` 
@@ -107,29 +81,24 @@ class UserTable extends Table
 }
 ```
 
-### Per page name
+### Query parameter names
 
-If you choose to be able to choose the number of items per page, you can customise the name of the query 
-parameter that will be used to store the number of items per page by adding a `perPageName` property to your Table. By 
-default, the name is `per_page`.
+The page and per-page parameters are nested under the [table's name](table-names.md), so `?user[page]=2` and
+`?user[per_page]=50`. The sub-key names come from config rather than from the table:
 
 ```php
-<?php
-// app/Tables/UserTable.php
-declare(strict_types=1);
-
-namespace App\Tables;
-
-use App\Models\User;
-use BrickNPC\EloquentTables\Table;
-use BrickNPC\EloquentTables\Concerns\WithPagination;
-
-class UserTable extends Table
-{
-    use WithPagination;
-    
-    protected string $perPageName = 'number-of-items-per-page';
-    
-    //... Table definition
-}
+// config/eloquent-tables.php
+'pagination' => [
+    'page_query_name'     => 'page',
+    'per_page_query_name' => 'per_page',
+],
 ```
+
+:::note
+In 1.x these were the `pageName` and `perPageName` properties on the table. They were removed in 2.0 — the table name
+already keeps one table's parameters apart from another's. See [Upgrading](upgrading.md).
+:::
+
+### Remembering the choice
+
+A visitor's per-page choice is remembered and applied on their next visit. See [Saved preferences](preferences.md).

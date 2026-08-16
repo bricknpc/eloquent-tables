@@ -67,6 +67,45 @@ return [
     ],
 
     /*
+     * Pagination options
+     * --------------------------------
+     * Pagination is enabled by adding the WithPagination trait to a table.
+     */
+    'pagination' => [
+        /*
+         * The name of the query parameter holding the current page.
+         */
+        'page_query_name' => 'page',
+
+        /*
+         * The name of the query parameter holding the number of items per page.
+         */
+        'per_page_query_name' => 'per_page',
+    ],
+
+    /*
+     * Preferences
+     * --------------------------------
+     * A table remembers the number of items per page and the sort a visitor chose, so the choice survives
+     * navigating away and back. The values are stored in a cookie on the visitor's own device, keyed by the
+     * table name, and no data leaves the browser.
+     *
+     * Disable this if you would rather not store anything on the visitor's device. Tables keep working; they
+     * just start from their defaults on every visit.
+     */
+    'preferences' => [
+        /*
+         * Whether a table stores the visitor's choices at all.
+         */
+        'enabled' => true,
+
+        /*
+         * The name of the cookie every table's preferences are stored in.
+         */
+        'cookie_name' => 'eloquent_tables_preferences',
+    ],
+
+    /*
      * Icons
      * --------------------------------
      * This package shows icons in various places. You can customise the icons shown here.

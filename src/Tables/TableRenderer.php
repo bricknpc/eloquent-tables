@@ -17,10 +17,12 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Enums\TableParameter;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
@@ -45,6 +47,8 @@ readonly class TableRenderer
      * @param ColumnValueRenderer<TModel> $columnValueRenderer
      * @param LayoutFinder<TModel>        $layoutFinder
      * @param RowsBuilder<TModel>         $rowsBuilder
+     * @param FilterRenderer<TModel>      $filterRenderer
+     * @param TableParameters<TModel>     $parameters
      */
     public function __construct(
         private ColumnLabelRenderer $columnLabelRenderer,
@@ -56,6 +60,7 @@ readonly class TableRenderer
         private FilterRenderer $filterRenderer,
         private RouteModelBinder $methodInvoker,
         private ActionRenderer $actionRenderer,
+        private TableParameters $parameters,
     ) {}
 
     /**
@@ -118,6 +123,13 @@ readonly class TableRenderer
 
         $viewData = [
             'id'            => spl_object_id($table),
+            'table'         => $table,
+            'tableName'     => $table->name(),
+            'preferences'   => $this->config->preferencesEnabled() ? [
+                'cookie'     => $this->config->preferencesCookieName(),
+                'perPageKey' => $this->parameters->key($table, TableParameter::PerPage),
+                'sortKey'    => $this->parameters->key($table, TableParameter::Sort),
+            ] : null,
             'theme'         => $theme,
             'dataNamespace' => $this->config->dataNamespace(),
             'request'       => $request,
@@ -132,10 +144,15 @@ readonly class TableRenderer
             'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),
             'tableActions'           => $tableActions,
             'showSearchForm'         => $this->hasSearchableColumns($columns),
-            'tableSearchUrl'         => $request->fullUrlWithQuery([$this->config->searchQueryName() => $request->query($this->config->searchQueryName())]),
+            'tableSearchUrl'         => $request->fullUrl(),
             'fullUrl'                => $request->fullUrl(),
-            'searchQuery'            => $request->query($this->config->searchQueryName()),
-            'searchQueryName'        => $this->config->searchQueryName(),
+            'searchQuery'            => $this->parameters->stringValue($table, TableParameter::Search, $request),
+            'searchQueryName'        => $this->parameters->key($table, TableParameter::Search),
+            'searchHiddenInputs'     => $this->parameters->hiddenInputs($request, [
+                $this->parameters->key($table, TableParameter::Search),
+                // A new search changes the result set, so the old page number no longer means anything.
+                $this->parameters->key($table, TableParameter::Page),
+            ]),
             'searchIcon'             => $this->config->searchIcon(),
             'rowActionCount'         => $this->countRenderableRowActions($rowActions, $rows, $request),
             'rowActions'             => $rowActions,
@@ -160,9 +177,14 @@ readonly class TableRenderer
 
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */
-            $viewData['perPage']        = $table->perPage($request); // @phpstan-ignore-line
-            $viewData['perPageName']    = $table->perPageName(); // @phpstan-ignore-line
-            $viewData['perPageOptions'] = $table->perPageOptions(); // @phpstan-ignore-line
+            $viewData['perPage']             = $this->parameters->perPage($table, $request, $table->perPage($request)); // @phpstan-ignore-line
+            $viewData['perPageName']         = $this->parameters->key($table, TableParameter::PerPage);
+            $viewData['perPageOptions']      = $table->perPageOptions(); // @phpstan-ignore-line
+            $viewData['perPageHiddenInputs'] = $this->parameters->hiddenInputs($request, [
+                $this->parameters->key($table, TableParameter::PerPage),
+                // Changing the page size returns the table to its first page.
+                $this->parameters->key($table, TableParameter::Page),
+            ]);
         }
 
         return $viewData;

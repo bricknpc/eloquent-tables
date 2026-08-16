@@ -56,6 +56,35 @@ readonly class Config
         return $searchQueryName;
     }
 
+    public function pageQueryName(): string
+    {
+        /** @var string $pageQueryName */
+        $pageQueryName = $this->config->get('eloquent-tables.pagination.page_query_name', 'page');
+
+        return $pageQueryName;
+    }
+
+    public function perPageQueryName(): string
+    {
+        /** @var string $perPageQueryName */
+        $perPageQueryName = $this->config->get('eloquent-tables.pagination.per_page_query_name', 'per_page');
+
+        return $perPageQueryName;
+    }
+
+    public function preferencesEnabled(): bool
+    {
+        return (bool) $this->config->get('eloquent-tables.preferences.enabled', true);
+    }
+
+    public function preferencesCookieName(): string
+    {
+        /** @var string $cookieName */
+        $cookieName = $this->config->get('eloquent-tables.preferences.cookie_name', 'eloquent_tables_preferences');
+
+        return $cookieName;
+    }
+
     public function searchIcon(): string|\Stringable
     {
         return $this->icon('search', "\u{1F50D}");
