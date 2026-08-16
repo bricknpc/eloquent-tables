@@ -10,8 +10,8 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
@@ -127,9 +127,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return new StyleSet(TableStyle::Default);
     }
 
-    public function pageStyle(): PageStyle
+    public function accentStyle(): ?StyleSet
     {
-        return PageStyle::Primary;
+        return new StyleSet(AccentStyle::Primary);
     }
 
     /**

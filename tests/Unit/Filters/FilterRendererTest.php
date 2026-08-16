@@ -10,13 +10,16 @@ use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
-use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
+use BrickNPC\EloquentTables\Styles\Contexts\TableContext;
 
 /**
  * @internal
@@ -27,8 +30,11 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 #[UsesClass(Table::class)]
 #[UsesClass(TableParameters::class)]
 #[UsesClass(TablePreferences::class)]
-#[UsesClass(PageStyle::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(StyleResolver::class)]
+#[UsesClass(AccentStyle::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(TableContext::class)]
 class FilterRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

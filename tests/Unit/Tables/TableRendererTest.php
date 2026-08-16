@@ -18,12 +18,12 @@ use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\CellStyle;
-use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -78,7 +78,6 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(FilterRenderer::class)]
 #[UsesClass(Filter::class)]
 #[UsesClass(RouteModelBinder::class)]
-#[UsesClass(PageStyle::class)]
 #[UsesClass(ActionRenderer::class)]
 #[UsesClass(Action::class)]
 #[UsesClass(ActionDescriptor::class)]
@@ -100,6 +99,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(RowContext::class)]
 #[UsesClass(StyleSet::class)]
 #[UsesClass(TableContext::class)]
+#[UsesClass(AccentStyle::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -657,6 +657,36 @@ class TableRendererTest extends TestCase
         $this->assertStringContainsString('table-bordered', $html);
     }
 
+    public function test_a_declared_accent_reaches_every_control(): void
+    {
+        $html = $this->renderAccentedTable(new StyleSet(AccentStyle::Danger));
+
+        $this->assertStringContainsString('border-danger', $html);
+        $this->assertStringContainsString('text-danger', $html);
+    }
+
+    public function test_a_table_declaring_nothing_keeps_the_default_accent(): void
+    {
+        $this->assertStringContainsString('border-primary', $this->renderAccentedTable(null));
+    }
+
+    public function test_the_last_declared_accent_wins(): void
+    {
+        $html = $this->renderAccentedTable(new StyleSet(AccentStyle::Danger, AccentStyle::Success));
+
+        $this->assertStringContainsString('border-success', $html);
+        $this->assertStringNotContainsString('border-danger', $html);
+    }
+
+    public function test_the_accent_still_derives_its_disabled_and_active_variants(): void
+    {
+        $data = $this->accentedViewData(new StyleSet(AccentStyle::Danger));
+
+        $this->assertSame('danger', $data['mainTableStyle']);
+        $this->assertSame('dark', $data['disabledStyle']);
+        $this->assertSame('light', $data['activeStyle']);
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -697,6 +727,67 @@ class TableRendererTest extends TestCase
         };
 
         return $builder->build($table, $request)->render();
+    }
+
+    private function renderAccentedTable(?StyleSet $accent): string
+    {
+        return $this->accentedView($accent)->render();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function accentedViewData(?StyleSet $accent): array
+    {
+        return $this->accentedView($accent)->getData();
+    }
+
+    private function accentedView(?StyleSet $accent): View
+    {
+        DB::table('test_models')->insert(
+            collect(range(1, 20))
+                ->map(fn (int $i) => [
+                    'name'       => 'Row ' . $i,
+                    'email'      => 'row' . $i . '@test.com',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+                ->all(),
+        );
+
+        $table = new class($accent) extends Table {
+            use WithPagination;
+
+            public function __construct(private readonly ?StyleSet $accent) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')->searchable()];
+            }
+
+            public function filters(): array
+            {
+                return [new Filter('name', [])];
+            }
+
+            public function accentStyle(): ?StyleSet
+            {
+                return $this->accent;
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return $builder->build($table, $request);
     }
 
     private function renderStyledTable(?StyleSet $style): string

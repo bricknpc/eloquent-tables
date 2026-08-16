@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Styles\StyleResolver;
 
@@ -20,6 +21,7 @@ use BrickNPC\EloquentTables\Styles\StyleResolver;
 #[UsesClass(Config::class)]
 #[UsesClass(CellStyle::class)]
 #[UsesClass(RowStyle::class)]
+#[UsesClass(AccentStyle::class)]
 class StyleResolverTest extends TestCase
 {
     public function test_it_joins_the_classes_of_every_style(): void
@@ -77,6 +79,27 @@ class StyleResolverTest extends TestCase
         $styles = $this->resolver()->withDefaults([RowStyle::Danger], [CellStyle::AlignCenter]);
 
         $this->assertSame([RowStyle::Danger, CellStyle::AlignCenter], $styles);
+    }
+
+    public function test_the_accent_is_the_last_one_declared(): void
+    {
+        $this->assertSame(
+            AccentStyle::Success,
+            $this->resolver()->accent([AccentStyle::Danger, AccentStyle::Success]),
+        );
+    }
+
+    public function test_the_accent_defaults_to_primary_when_none_is_declared(): void
+    {
+        $this->assertSame(AccentStyle::Primary, $this->resolver()->accent([]));
+    }
+
+    public function test_a_style_from_another_vocabulary_is_not_an_accent(): void
+    {
+        $this->assertSame(
+            AccentStyle::Primary,
+            $this->resolver()->accent([CellStyle::BackgroundSuccess, RowStyle::Danger]),
+        );
     }
 
     private function resolver(): StyleResolver

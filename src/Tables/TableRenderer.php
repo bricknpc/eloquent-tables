@@ -16,6 +16,7 @@ use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
@@ -179,9 +180,11 @@ readonly class TableRenderer
             $viewData['layout'] = $layout;
         }
 
-        $viewData['mainTableStyle'] = $table->pageStyle()->toCssClass($theme);
-        $viewData['disabledStyle']  = $table->pageStyle()->toCssDisabledClass($theme);
-        $viewData['activeStyle']    = $table->pageStyle()->toCssActiveClass($theme);
+        $accent = $this->accent($table, $request);
+
+        $viewData['mainTableStyle'] = $accent->toCssClass($theme);
+        $viewData['disabledStyle']  = $accent->toCssDisabledClass($theme);
+        $viewData['activeStyle']    = $accent->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */
@@ -196,6 +199,16 @@ readonly class TableRenderer
         }
 
         return $viewData;
+    }
+
+    /**
+     * @param Table<TModel> $table
+     */
+    private function accent(Table $table, Request $request): AccentStyle
+    {
+        return $this->styleResolver->accent(
+            $table->accentStyle()?->resolve(new TableContext($request)) ?? [],
+        );
     }
 
     /**
@@ -264,9 +277,9 @@ readonly class TableRenderer
         $theme = $this->config->theme();
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
-            'mainTableStyle' => $table->pageStyle()->toCssClass($theme),
-            'disabledStyle'  => $table->pageStyle()->toCssDisabledClass($theme),
-            'activeStyle'    => $table->pageStyle()->toCssActiveClass($theme),
+            'mainTableStyle' => $this->accent($table, $request)->toCssClass($theme),
+            'disabledStyle'  => $this->accent($table, $request)->toCssDisabledClass($theme),
+            'activeStyle'    => $this->accent($table, $request)->toCssActiveClass($theme),
         ]);
     }
 
