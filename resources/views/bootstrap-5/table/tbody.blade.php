@@ -13,7 +13,7 @@
 @endphp
 <tbody>
     @foreach($rows as $row)
-        <tr>
+        <tr class="{{ $rowStyles[$loop->index] ?? '' }}">
             @if($bulkActionCount > 0)
                 <td>
                     <div class="d-flex align-items-center w-100 {{ $bulkActionCellStyles }}">

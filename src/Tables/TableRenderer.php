@@ -27,6 +27,7 @@ use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -143,6 +144,7 @@ readonly class TableRenderer
             'columns'                => $columns,
             'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $rows,
+            'rowStyles'              => $this->rowStyles($table, $rows, $request),
             'columnValueRenderer'    => $this->columnValueRenderer,
             'links'                  => $this->getLinks($table, $request),
             'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),
@@ -194,6 +196,27 @@ readonly class TableRenderer
         }
 
         return $viewData;
+    }
+
+    /**
+     * @param Table<TModel>          $table
+     * @param Collection<int, Model> $rows
+     *
+     * @return string[]
+     */
+    private function rowStyles(Table $table, Collection $rows, Request $request): array
+    {
+        $set = $table->rowStyle();
+
+        if ($set === null) {
+            return [];
+        }
+
+        return $rows
+            ->values()
+            ->map(fn (Model $row) => $this->styleResolver->classes($set->resolve(new RowContext($request, $row))))
+            ->all()
+        ;
     }
 
     /**

@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\RowStyle;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -32,6 +33,7 @@ use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
@@ -45,6 +47,7 @@ use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
@@ -92,6 +95,9 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(CellStyle::class)]
 #[UsesClass(StyleTarget::class)]
 #[UsesClass(StyleFamily::class)]
+#[UsesClass(RowStyle::class)]
+#[UsesClass(RowContext::class)]
+#[UsesClass(StyleSet::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -571,6 +577,58 @@ class TableRendererTest extends TestCase
         $this->assertSame(1, $view->getData()['rowActionCount']);
     }
 
+    public function test_a_conditional_row_style_lands_only_on_matching_rows(): void
+    {
+        // Covers AE7.
+        $html = $this->renderStyledRows(new StyleSet(
+            fn (RowContext $context) => $context->model->name === 'A' ? RowStyle::Danger : null,
+        ));
+
+        $this->assertSame(1, substr_count($html, '<tr class="table-danger">'));
+        $this->assertSame(1, substr_count($html, '<tr class="">'));
+    }
+
+    public function test_a_static_row_style_applies_to_every_row(): void
+    {
+        $html = $this->renderStyledRows(new StyleSet(RowStyle::Info));
+
+        $this->assertSame(2, substr_count($html, '<tr class="table-info">'));
+    }
+
+    public function test_a_table_without_row_styles_renders_rows_without_a_class(): void
+    {
+        $html = $this->renderStyledRows(null);
+
+        $this->assertSame(2, substr_count($html, '<tr class="">'));
+        $this->assertStringNotContainsString('table-danger', $html);
+    }
+
+    public function test_a_row_style_covers_the_cells_that_columns_cannot_reach(): void
+    {
+        // Covers AE7. The checkbox and action cells sit outside the column loop, so only a row-level
+        // style reaches them.
+        $html = $this->renderStyledRows(new StyleSet(RowStyle::Danger), withActions: true);
+
+        $styled = substr($html, strpos($html, '<tr class="table-danger">'));
+        $styled = substr($styled, 0, strpos($styled, '</tr>'));
+
+        $this->assertStringContainsString('name="selected[]"', $styled);
+        $this->assertStringContainsString('btn-group', $styled);
+    }
+
+    public function test_the_row_closure_receives_its_own_row(): void
+    {
+        $seen = [];
+
+        $this->renderStyledRows(new StyleSet(function (RowContext $context) use (&$seen) {
+            $seen[] = $context->model->name;
+
+            return null;
+        }));
+
+        $this->assertSame(['A', 'B'], $seen);
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -609,6 +667,58 @@ class TableRendererTest extends TestCase
                 return $this->width ?? parent::bulkActionColumnWidth();
             }
         };
+
+        return $builder->build($table, $request)->render();
+    }
+
+    private function renderStyledRows(?StyleSet $rowStyle, bool $withActions = false): string
+    {
+        DB::table('test_models')->insert([
+            ['name' => 'A', 'email' => 'a@test.com', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'B', 'email' => 'b@test.com', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $table = new class($rowStyle, $withActions) extends Table {
+            public function __construct(
+                private readonly ?StyleSet $rowStyle,
+                private readonly bool $withActions,
+            ) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            public function rowStyle(): ?StyleSet
+            {
+                return $this->rowStyle;
+            }
+
+            public function rowActions(): array
+            {
+                return $this->withActions
+                    ? [new Action()->label('R')->as(new Http('https://example.test'))]
+                    : [];
+            }
+
+            public function bulkActions(): array
+            {
+                return $this->withActions
+                    ? [new Action()->label('B')->as(new Http('https://example.test'))]
+                    : [];
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
 
         return $builder->build($table, $request)->render();
     }
