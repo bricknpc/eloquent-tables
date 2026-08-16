@@ -458,26 +458,25 @@ the Bootstrap 5 theme):
 </td>
 ```
 
-### Cell styles
+### Styles
 
-Cell styles are similar to Table styles, but they are added to the `div` element inside the `td` element. The `cellStyles` 
-option expects an array of `BrickNPC\EloquentTable\Enums\CellStyle` enum cases, and can be set through the constructor 
-or through the fluent `cellStyles` method.
+A column's styling is declared with `style()`. It takes any number of `BrickNPC\EloquentTables\Enums\CellStyle`
+cases, plus an optional closure that decides per cell from context.
 
 ```php
 <?php
 
-use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\CellStyle;
-use lluminate\Contracts\Database\Query\Builder;
 
-new Column(name: 'name', cellStyles: [CellStyle::AlignRight]);
-// Or
-new Column(name: 'name')->cellStyles(CellStyle::AlignRight);
+new Column(name: 'name')->style(CellStyle::AlignRight);
 ```
 
-This will result in the text of both the `th` as well as the `td` element being right aligned.
+The declared styles apply to the column's header and to every one of its body cells, whatever the column type and
+whether or not the column is sortable.
+
+See [cell styling](styling/cell-styling.md) for the full vocabulary, conditional styling, and how column-type defaults
+interact with what you declare.
 
 ## Dependency injection
 

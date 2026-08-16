@@ -4,7 +4,8 @@ sidebar_position: 16
 
 # Upgrading to 2.0
 
-Version 2.0 rewrites the actions system and changes the query parameters every table reads.
+Version 2.0 rewrites the actions system, changes the query parameters every table reads, and replaces how styling is
+declared.
 
 **Every 2.0 upgrade needs at least one change.** Tables now namespace their query parameters under a table name, so
 `?sort[name]=asc` becomes `?user[sort][name]=asc`. Any URL you have hard-coded, linked to, bookmarked or documented
@@ -12,7 +13,8 @@ needs updating, and the `pageName` and `perPageName` properties are gone. If you
 `rowActions()` or `massActions()`, every one of those definitions needs to be rewritten as well.
 
 Sorting behaviour changed too: a multi-column sort now applies in the order the visitor clicked the headers rather than
-the order the columns are declared.
+the order the columns are declared. And every styling method was replaced by a single `style()` shape, so
+`styles()`, `cellStyles()`, `tableStyles()` and `pageStyle()` all need rewriting.
 
 The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5.
 
@@ -282,8 +284,9 @@ longer returns a 500.
 ## 11. Republish the views if you have published them
 
 The search, per-page and filter controls now carry hidden inputs so that using one no longer discards the rest of the
-table's state, and the table element carries the table name for the JavaScript. A published copy from 1.x keeps the old
-markup and will silently lose that behaviour.
+table's state, and the table element carries the table name for the JavaScript. Every cell also gained a flex wrapper,
+which is what makes alignment work the same way everywhere. A published copy from 1.x keeps the old markup and will
+silently lose both.
 
 ```bash
 php artisan vendor:publish --tag=views --force
@@ -291,6 +294,43 @@ php artisan vendor:publish --tag=views --force
 
 `ColumnLabelRenderer::build()` and `FilterRenderer::build()` both take the table as an argument now, and
 `RowsBuilder`'s constructor no longer takes `Config`. This only matters if you resolve or subclass them yourself.
+
+## 12. Column styling is one method
+
+`styles()` and `cellStyles()` are replaced by `style()`, which takes any number of `CellStyle` cases and an optional
+closure. The `styles` and `cellStyles` constructor arguments are gone with them.
+
+```php
+new Column('total')->styles(TableStyle::Success)->cellStyles(CellStyle::AlignRight);  // 1.x
+new Column('total')->style(CellStyle::BackgroundSuccess, CellStyle::AlignRight);      // 2.0
+```
+
+`CellStyle` grew from eight alignment cases to also cover backgrounds, text colours and font weights, so anything you
+used to reach for `TableStyle` on a column for now has a cell equivalent. `TableStyle` is table-level only.
+
+The closure is new: it receives a `CellContext` and can style a cell by its value. See
+[cell styling](styling/cell-styling.md).
+
+## 13. `tableStyles()` becomes `style()`
+
+Table-level styling takes the same shape as everything else.
+
+```php
+public function tableStyles(): array { return [TableStyle::Striped]; }              // 1.x
+public function style(): ?StyleSet { return new StyleSet(TableStyle::Striped); }    // 2.0
+```
+
+## 14. `pageStyle()` becomes `accentStyle()`
+
+It never governed a page — it governs the table's own controls, so it is named for that now. `PageStyle` is replaced by
+`AccentStyle`, with the same cases.
+
+```php
+public function pageStyle(): PageStyle { return PageStyle::Primary; }                  // 1.x
+public function accentStyle(): ?StyleSet { return new StyleSet(AccentStyle::Primary); } // 2.0
+```
+
+If you declare more than one accent, the last wins — it is a single colour, not a set.
 
 ## Full example
 
@@ -430,6 +470,11 @@ class UserTable extends Table
 | `massActions()` table method                          | `bulkActions()`                                      |
 | `pageName` table property                             | `eloquent-tables.pagination.page_query_name` config  |
 | `perPageName` table property                          | `eloquent-tables.pagination.per_page_query_name` config |
+| `Column::styles()` and the `styles` argument          | `Column::style()`                                    |
+| `Column::cellStyles()` and the `cellStyles` argument  | `Column::style()`                                    |
+| `Table::tableStyles()`                                | `Table::style()`                                     |
+| `Table::pageStyle()`                                  | `Table::accentStyle()`                               |
+| `BrickNPC\EloquentTables\Enums\PageStyle`            | `BrickNPC\EloquentTables\Enums\AccentStyle`         |
 
 The `Table::$builder` property was renamed to `Table::$renderer` along with them.
 
@@ -450,3 +495,5 @@ Things that have no 1.x equivalent, and that you may want once you have upgraded
 - The [`When` capability](actions/action-definition.md#when), previously available only on row actions
 - [Table names](table-names.md) — a stable identity per table, so two tables on a page stay independent
 - [Saved preferences](preferences.md) — a visitor's per-page choice and multi-column sort survive navigating away and back
+- [Cell styling](styling/cell-styling.md) — backgrounds, text colours and weights, and styling a cell by its value
+- [Row styling](styling/table-styling.md) — highlight a whole row, including its checkbox and action cells

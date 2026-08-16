@@ -35,3 +35,8 @@ new Column(name: 'active')->type(ColumnType::Boolean);
 new Column(name: 'active')->boolean();
 new Column(name: 'active')->checkbox();
 ```
+
+## Types bring a default style
+
+A `boolean` or `checkbox` column centres its content by default. That default is an ordinary cell style, so declaring
+your own alignment replaces it — see [cell styling](cell-styling.md).
