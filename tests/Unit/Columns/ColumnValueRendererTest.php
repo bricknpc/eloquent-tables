@@ -18,6 +18,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Enums\TableRegion;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
@@ -46,6 +47,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 #[UsesClass(StyleTarget::class)]
 #[UsesClass(StyleFamily::class)]
 #[UsesClass(TableRegion::class)]
+#[UsesClass(StyleResolver::class)]
 class ColumnValueRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

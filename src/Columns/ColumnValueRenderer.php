@@ -9,12 +9,10 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\Theme;
-use BrickNPC\EloquentTables\Contracts\Style;
-use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Contracts\Formatter;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
@@ -27,6 +25,7 @@ readonly class ColumnValueRenderer
         private Factory $viewFactory,
         private FormatterFactory $formatterFactory,
         private Config $config,
+        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -55,9 +54,9 @@ readonly class ColumnValueRenderer
         return $this->viewFactory->make('eloquent-tables::table.td', [
             'theme'          => $theme,
             'value'          => $value,
-            'styles'         => $this->classesFor($styles, StyleTarget::Cell, $theme),
-            'cellStylesFlex' => $this->classesFor($styles, StyleTarget::Content, $theme, true),
-            'cellStyles'     => $this->classesFor($styles, StyleTarget::Content, $theme),
+            'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
+            'cellStylesFlex' => $this->styleResolver->classes($styles, StyleTarget::Content, true),
+            'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
             'type'           => $column->type,
             'checkIcon'      => $this->config->checkIcon(),
             'crossIcon'      => $this->config->crossIcon(),
@@ -80,27 +79,5 @@ readonly class ColumnValueRenderer
                 : $parameter,
             $parameters,
         );
-    }
-
-    /**
-     * @param Style[] $styles
-     */
-    private function classesFor(array $styles, StyleTarget $target, Theme $theme, bool $flex = false): string
-    {
-        $classes = [];
-
-        foreach ($styles as $style) {
-            if ($style instanceof CellStyle && $style->target() !== $target) {
-                continue;
-            }
-
-            $class = $style instanceof CellStyle ? $style->toCssClass($theme, $flex) : $style->toCssClass($theme);
-
-            if ($class !== '') {
-                $classes[] = $class;
-            }
-        }
-
-        return implode(' ', $classes);
     }
 }

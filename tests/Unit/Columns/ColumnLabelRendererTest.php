@@ -19,6 +19,7 @@ use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Enums\TableRegion;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\TablePreferences;
@@ -42,6 +43,7 @@ use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 #[UsesClass(StyleTarget::class)]
 #[UsesClass(StyleFamily::class)]
 #[UsesClass(TableRegion::class)]
+#[UsesClass(StyleResolver::class)]
 class ColumnLabelRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

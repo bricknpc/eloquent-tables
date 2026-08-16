@@ -26,6 +26,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
@@ -84,6 +85,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(ActionCapability::class)]
 #[UsesClass(ColumnType::class)]
 #[UsesClass(ActionCollection::class)]
+#[UsesClass(StyleResolver::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
