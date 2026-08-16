@@ -9,10 +9,13 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Actions\CapabilityContribution;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
@@ -31,6 +34,7 @@ use BrickNPC\EloquentTables\Exceptions\ActionIntentAlreadySet;
 #[UsesClass(Config::class)]
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
+#[UsesClass(StyleSet::class)]
 class ActionTest extends TestCase
 {
     private ActionContext $context;
@@ -44,6 +48,77 @@ class ActionTest extends TestCase
         $config = $this->app->make(Config::class);
 
         $this->context = new ActionContext($request, $config);
+    }
+
+    public function test_style_returns_the_action_for_chaining(): void
+    {
+        $action = new Action();
+
+        $this->assertSame($action, $action->style(ButtonStyle::Danger));
+    }
+
+    public function test_style_puts_a_style_set_on_the_descriptor(): void
+    {
+        $action = new Action()->style(ButtonStyle::Danger);
+
+        $this->assertSame([ButtonStyle::Danger], $action->descriptor($this->context)?->style?->resolve($this->context));
+    }
+
+    public function test_an_action_without_a_style_has_no_style_set(): void
+    {
+        $this->assertNull(new Action()->descriptor($this->context)?->style);
+    }
+
+    public function test_a_second_style_call_merges_rather_than_replaces(): void
+    {
+        $action = new Action()->style(ButtonStyle::Danger)->style(ButtonStyle::Link);
+
+        $this->assertSame(
+            [ButtonStyle::Danger, ButtonStyle::Link],
+            $action->descriptor($this->context)?->style?->resolve($this->context),
+        );
+    }
+
+    public function test_style_accepts_a_closure_alongside_the_static_cases(): void
+    {
+        $action = new Action()->style(ButtonStyle::Danger, fn () => ButtonStyle::Link);
+
+        $this->assertSame(
+            [ButtonStyle::Danger, ButtonStyle::Link],
+            $action->descriptor($this->context)?->style?->resolve($this->context),
+        );
+    }
+
+    public function test_a_closure_may_be_declared_before_the_static_cases(): void
+    {
+        $action = new Action()->style(fn () => ButtonStyle::Link)->style(ButtonStyle::Danger);
+
+        $this->assertSame(
+            [ButtonStyle::Danger, ButtonStyle::Link],
+            $action->descriptor($this->context)?->style?->resolve($this->context),
+        );
+    }
+
+    public function test_the_style_set_survives_a_descriptor_call(): void
+    {
+        $action = new Action()->style(ButtonStyle::Danger);
+
+        $action->descriptor($this->context);
+
+        $this->assertSame([ButtonStyle::Danger], $action->descriptor($this->context)?->style?->resolve($this->context));
+    }
+
+    public function test_the_style_set_resolves_fresh_for_every_context(): void
+    {
+        $action = new Action()->style(fn (ActionContext $context) => $context->model === null
+            ? ButtonStyle::Link
+            : ButtonStyle::Danger);
+
+        $withoutModel = new ActionContext($this->context->request, $this->context->config);
+        $withModel    = new ActionContext($this->context->request, $this->context->config, new TestModel());
+
+        $this->assertSame([ButtonStyle::Link], $action->descriptor($withoutModel)?->style?->resolve($withoutModel));
+        $this->assertSame([ButtonStyle::Danger], $action->descriptor($withModel)?->style?->resolve($withModel));
     }
 
     public function test_label_returns_the_action_for_chaining(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 
@@ -15,6 +16,8 @@ final class ActionDescriptor
      * @var array<string, string>
      */
     public array $attributes = [];
+
+    public ?StyleSet $style = null;
 
     public RenderBuffer $beforeRender;
     public RenderBuffer $afterRender;

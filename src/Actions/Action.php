@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Actions;
 
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Exceptions\ActionIntentAlreadySet;
@@ -47,6 +49,16 @@ class Action
         }
 
         $this->descriptor->intent = $intent;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function style(ButtonStyle|\Closure ...$styles): static
+    {
+        $this->descriptor->style = $this->descriptor->style?->with(...$styles) ?? new StyleSet(...$styles);
 
         return $this;
     }
