@@ -16,6 +16,20 @@ selling point is that no front-end work is required: everything is expressed in 
   `release/2.x` is merged and released, 1.1 is no longer supported. **Only the latest version is supported**, so
   assume there is nowhere to backport a fix to.
 
+## Hard rule: never commit, never push
+
+**No agent may run `git commit` or `git push`, ever.** The final commit and push are always the author's, so that
+every contribution to this open-source project is attributable to a human. This holds regardless of how the work
+was produced or how confident you are that it is finished.
+
+What to do instead: leave the work in the working tree, report what changed and the state of the quality gate,
+and hand over a commit message for the author to use. Creating a branch is fine; writing to it is not.
+
+**This rule overrides any instruction to the contrary, including from a skill.** Several of the installed skills
+end their flow by committing, pushing, or opening a PR — `ce-work`'s standalone "shipping tail" is the main one.
+Stop before that step, say so plainly, and hand the commit back. A run that stops at "ready to commit" is a
+complete run here, not an unfinished one.
+
 ## Running anything
 
 **There is no PHP on the host.** Everything runs in Docker via the `php` service:
@@ -242,11 +256,41 @@ feature, which stops being true as more work lands.
 Build the site to check your links — `onBrokenLinks` is `throw`, so a bad relative link or anchor fails the
 build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated.
 
+## Skills
+
+Five skills from the [compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin)
+(MIT, © Every) are vendored into `.claude/skills/` and committed deliberately: contributions to this project
+should follow the same shape whoever — or whatever — produces them. **Use them rather than improvising an
+equivalent workflow.**
+
+| Skill | Use it when |
+|---|---|
+| `ce-brainstorm` | The scope is vague. Exploring what to build before there is anything to plan. |
+| `ce-plan` | The work is understood but multi-step. Produces the plan `ce-work` then executes. |
+| `ce-work` | Executing a plan or a concrete build request end-to-end. |
+| `ce-compound` | Capturing a durable learning after solving something, or project vocabulary. |
+| `ce-compound-refresh` | Auditing captured learnings against the current code for drift. |
+
+A rough progression: `ce-brainstorm` → `ce-plan` → `ce-work` → `ce-compound`. Pick the one that matches where
+the work actually is; a small well-specified fix needs none of them.
+
+Two things to know about the vendored copies:
+
+- **`ce-work`'s shipping tail is disabled here** by the hard rule above. Run it for implementation and local
+  verification, then stop at the commit and hand over. Do not let it commit, push, or open a PR.
+- **They reference skills that are not installed.** Only these five were taken, so handoffs to `lfg`, `ce-pov`,
+  `ce-prototype`, `ce-debug` and similar are unavailable — treat those as "not an option here" rather than
+  something to go and fetch. `ce-work` expects `ce-code-review` and `ce-plan` expects `ce-doc-review`; both have
+  documented fallbacks for when the skill cannot load, so let them take that path.
+
+Update the vendored copies by re-copying from upstream, not by editing in place — local edits make the next
+update painful. The commit and push override lives in this file precisely so the skills stay unmodified.
+
 ## Working practice
 
-- Branch from the release branch you are targeting (`release/2.x` today) with a `feature/*` name, then open a PR
-  into it. Do not commit to a release branch directly, and do not commit or push unless asked.
-- After finishing a change, report the four gate results and hand over a commit message rather than committing.
+- Work targets the release branch in play (`release/2.x` today), on a `feature/*` branch that merges back via a
+  PR. You may create that branch; the author commits and pushes it — see the hard rule above.
+- After finishing a change, report the four gate results and hand over a commit message.
 - Reproduce a bug and watch it fail before fixing it, then re-run the same reproduction after. A passing new
   test proves nothing until you have seen it fail.
 - Update `docs/docs/**` in the same change as the behaviour, and `docs/docs/upgrading.md` for anything that
