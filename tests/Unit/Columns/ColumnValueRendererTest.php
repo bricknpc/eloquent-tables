@@ -16,7 +16,10 @@ use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
+use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 
 /**
@@ -30,6 +33,9 @@ use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 #[UsesClass(TableStyle::class)]
 #[UsesClass(CellStyle::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(CurrencyFormatter::class)]
+#[UsesClass(NumberFormatter::class)]
+#[UsesClass(DateTimeFormatter::class)]
 class ColumnValueRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -168,5 +174,80 @@ class ColumnValueRendererTest extends TestCase
         $this->assertSame('✓', $view->getData()['checkIcon']);
         $this->assertArrayHasKey('crossIcon', $view->getData());
         $this->assertSame('✗', $view->getData()['crossIcon']);
+    }
+
+    public function test_a_closure_formatter_parameter_is_resolved_with_the_row_model(): void
+    {
+        $received = [];
+
+        $column = new Column('amount')->currency(
+            function (Model $model) use (&$received): string {
+                $received[] = $model;
+
+                return $model->currency;
+            },
+            'en_US',
+        );
+
+        $dollars = $this->render($column, $this->modelWith(['amount' => 5, 'currency' => 'USD']));
+        $yen     = $this->render($column, $this->modelWith(['amount' => 5, 'currency' => 'JPY']));
+
+        $this->assertStringContainsString('$5.00', $dollars);
+        $this->assertStringContainsString('¥5', $yen);
+
+        // The closure is called once per row, with that row's model.
+        $this->assertCount(2, $received);
+        $this->assertSame('USD', $received[0]->currency);
+        $this->assertSame('JPY', $received[1]->currency);
+    }
+
+    public function test_a_closure_can_supply_the_number_of_decimals(): void
+    {
+        $column = new Column('amount')->number(fn (Model $model) => $model->decimals, 'en_US');
+
+        $this->assertStringContainsString('1.500', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 3])));
+        $this->assertStringContainsString('2', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 0])));
+    }
+
+    public function test_a_closure_can_supply_the_timezone_as_a_string(): void
+    {
+        $column = new Column('moment')->dateTime('en_US', fn (Model $model) => $model->timezone);
+
+        $moment = new \DateTimeImmutable('2026-01-01 11:00:00', new \DateTimeZone('UTC'));
+
+        $utc   = $this->render($column, $this->modelWith(['moment' => $moment, 'timezone' => 'UTC']));
+        $tokyo = $this->render($column, $this->modelWith(['moment' => $moment, 'timezone' => 'Asia/Tokyo']));
+
+        // ICU puts a narrow no-break space before AM/PM, so assert on the time only.
+        $this->assertStringContainsString('11:00', $utc);
+        $this->assertStringContainsString('8:00', $tokyo);
+        $this->assertStringNotContainsString('11:00', $tokyo);
+    }
+
+    public function test_parameters_that_are_not_closures_are_passed_through_unchanged(): void
+    {
+        $column = new Column('amount')->currency('GBP', 'en_GB');
+
+        $this->assertStringContainsString('£5.00', $this->render($column, $this->modelWith(['amount' => 5])));
+    }
+
+    private function modelWith(array $attributes): Model
+    {
+        $model = new class extends Model {
+            protected $guarded = [];
+        };
+
+        return $model->forceFill($attributes);
+    }
+
+    private function render(Column $column, Model $model): string
+    {
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return $builder->build($request, $column, $model)->render();
     }
 }

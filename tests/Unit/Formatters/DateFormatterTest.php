@@ -218,4 +218,38 @@ class DateFormatterTest extends TestCase
             false,
         ];
     }
+
+    public function test_it_accepts_a_string_timezone(): void
+    {
+        $formatter = new DateFormatter('en_US', 'Asia/Tokyo');
+
+        $model = new class extends Model {};
+
+        $date = new \DateTimeImmutable('2026-01-01 23:00:00', new \DateTimeZone('UTC'));
+
+        // 23:00 UTC is already the 2nd in Tokyo, so the date itself proves the zone was applied.
+        $this->assertStringContainsString('January 2, 2026', $formatter->format($date, $model)->__toString());
+    }
+
+    public function test_it_accepts_a_date_time_zone_object(): void
+    {
+        $formatter = new DateFormatter('en_US', new \DateTimeZone('Asia/Tokyo'));
+
+        $model = new class extends Model {};
+
+        $date = new \DateTimeImmutable('2026-01-01 23:00:00', new \DateTimeZone('UTC'));
+
+        $this->assertStringContainsString('January 2, 2026', $formatter->format($date, $model)->__toString());
+    }
+
+    public function test_an_unknown_string_timezone_throws(): void
+    {
+        $formatter = new DateFormatter('en_US', 'Not/AZone');
+
+        $model = new class extends Model {};
+
+        $this->expectException(InvalidValueException::class);
+
+        $formatter->format(new \DateTimeImmutable(), $model);
+    }
 }
