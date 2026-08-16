@@ -22,7 +22,7 @@ The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5
 
 In 1.x there were three action classes, each with its own constructor, its own set of options and its own view builder:
 `TableAction`, `RowAction` and `MassAction`. Adding a feature to one meant adding it to the other two, and the three
-classes had quietly drifted apart — `RowAction::tooltip()` accepted a closure, `MassAction::tooltip()` did not.
+classes had quietly drifted apart: `RowAction::tooltip()` accepted a closure, `MassAction::tooltip()` did not.
 
 2.0 replaces all three with a single `Action` class built from two pieces:
 
@@ -61,13 +61,13 @@ public function massActions(): array
 public function bulkActions(): array
 ```
 
-A `massActions()` method is no longer called, and it fails silently — the table simply renders without bulk actions and
+A `massActions()` method is no longer called, and it fails silently: the table simply renders without bulk actions and
 without the checkbox column. There is no deprecation warning, so search your project for `massActions` before you
 upgrade.
 
 If you have published the views or written custom JavaScript against the table markup, note that the browser-facing
 names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespace}-bulk-action-form`,
-`id="mass-action-switch-…"` is now `id="bulk-action-switch-…"`, and the `table-mass-actions` class is now
+`id="mass-action-switch-..."` is now `id="bulk-action-switch-..."`, and the `table-mass-actions` class is now
 `table-bulk-actions`.
 
 ## 2. Rewrite your actions
@@ -85,7 +85,7 @@ names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespa
 | `authorize: $closure`                   | `->with(new Authorize($closure))`                               |
 | `when: $closure`                        | `->with(new When($closure))`                                    |
 | `confirm: $text`                        | `->with(new Confirmation($text))`                               |
-| `confirmValue: $value`                  | fourth argument of `Confirmation` — see the warning below       |
+| `confirmValue: $value`                  | fourth argument of `Confirmation` (see the warning below)       |
 | `asModal()`                             | `->as(new Modal(...))` or `->as(new HttpModal(...))`            |
 
 Two details are easy to miss:
@@ -137,10 +137,10 @@ second argument of `Confirmation` is called `$confirmValue` but is the **label o
 behaviour is now the fourth argument, `$inputConfirmationValue`:
 
 ```php
-// 1.x — the user must type "DELETE"
+// 1.x: the user must type "DELETE"
 new RowAction(action: $url)->confirm('Are you sure?', 'DELETE');
 
-// 2.0 — the user must type "DELETE"
+// 2.0: the user must type "DELETE"
 new Action()
     ->as(new Http($url, Method::Delete))
     ->with(new Confirmation(
@@ -169,7 +169,7 @@ These files were deleted:
 - `bootstrap-5/action/row-action.blade.php`
 - `bootstrap-5/action/mass-action.blade.php`
 
-They are replaced by a set of views under `actions/` — one per intent, one per capability contribution, plus the
+They are replaced by a set of views under `actions/`: one per intent, one per capability contribution, plus the
 collection views. Delete the old `action/` directory and republish:
 
 ```bash
@@ -262,7 +262,7 @@ class UserTable extends Table
 {
     use WithPagination;
 
-    // Both of these are removed in 2.0 — delete them.
+    // Both of these are removed in 2.0. Delete them.
     protected string $pageName    = 'users-page';
     protected string $perPageName = 'items';
 }
@@ -322,7 +322,7 @@ public function style(): array      { return [TableStyle::Striped]; }  // 2.0
 
 ## 14. `pageStyle()` becomes `accentStyle()`
 
-It never governed a page — it governs the table's own controls, so it is named for that now. `PageStyle` is replaced by
+It never governed a page. It governs the table's own controls, so it is named for that now. `PageStyle` is replaced by
 `AccentStyle`, with the same cases.
 
 ```php
@@ -489,12 +489,14 @@ none of this affects you.
 
 Things that have no 1.x equivalent, and that you may want once you have upgraded:
 
-- [Action collections](actions/action-collections.md) — group actions, or collapse them into a dropdown
+- [Action collections](actions/action-collections.md): group actions, or collapse them into a dropdown
 - [Modal and HTTP modal intents](actions/action-definition.md#modal-intent)
 - [Custom intents](actions/action-definition.md#custom-intents) and
   [custom capabilities](actions/action-definition.md#custom-capabilities)
 - The [`When` capability](actions/action-definition.md#when), previously available only on row actions
-- [Table names](table-names.md) — a stable identity per table, so two tables on a page stay independent
-- [Saved preferences](preferences.md) — a visitor's per-page choice and multi-column sort survive navigating away and back
-- [Cell styling](styling/cell-styling.md) — backgrounds, text colours and weights, and styling a cell by its value
-- [Row styling](styling/table-styling.md) — highlight a whole row, including its checkbox and action cells
+- [Table names](table-names.md): a stable identity per table, so two tables on a page stay independent
+- [Saved preferences](preferences.md): a visitor's per-page choice and multi-column sort survive navigating away and back
+- [Cell styling](styling/cell-styling.md): backgrounds, text colours and weights, and styling a cell by its value
+- [Row styling](styling/table-styling.md): highlight a whole row, including its checkbox and action cells
+- [Conditional action styling](styling/action-styling.md#styling-an-action-by-its-row): the `Style` capability now
+  also takes closures, so an action can be styled per row

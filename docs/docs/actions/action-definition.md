@@ -338,7 +338,7 @@ class UserTable extends Table
 #### Render hooks
 
 Every intent, custom or built-in, has two optional hooks that run around the render. Both are set with a closure that
-receives the action's descriptor and the current context, and both are optional — an intent that sets neither renders
+receives the action's descriptor and the current context, and both are optional: an intent that sets neither renders
 exactly as before.
 
 | Method                | Runs                                                                       |
@@ -379,7 +379,7 @@ when the behaviour is reusable across intents, and a hook when it is inherent to
 
 Use `before()` for anything that must show up in the output. By the time `after()` runs, `$descriptor->attributes` has
 already been copied into the view's data, so changes made there are lost. Blade renders lazily, so writes to the render
-buffers (`beforeRender`, `afterRender`, `attributesRender`) do still land in the output because those are objects —
+buffers (`beforeRender`, `afterRender`, `attributesRender`) do still land in the output because those are objects,
 which makes `after()` inconsistent about what it can affect. Treat it as a place to clean up or record state, not to
 influence the markup.
 

@@ -23,8 +23,8 @@ new Column('total')->style(CellStyle::AlignRight, CellStyle::FontBold);
 | Family | Cases | Renders as |
 |---|---|---|
 | Alignment | `AlignLeft`, `AlignCenter`, `AlignRight`, `AlignJustify`, `AlignBetween`, `AlignTop`, `AlignMiddle`, `AlignBottom` | flex alignment on the cell's content |
-| Background | `BackgroundPrimary` … `BackgroundDark` | a contextual fill on the cell itself |
-| Text colour | `TextPrimary` … `TextDark` | a colour on the cell's text |
+| Background | `BackgroundPrimary` to `BackgroundDark` | a contextual fill on the cell itself |
+| Text colour | `TextPrimary` to `TextDark` | a colour on the cell's text |
 | Weight | `FontLight`, `FontNormal`, `FontSemibold`, `FontBold` | a font weight on the cell |
 
 Backgrounds and text colours cover the same ten colours the [table styles](table-styling.md) offer.
@@ -63,12 +63,15 @@ new Column('total_amount')->style(
 Here every cell is right-aligned, and negative amounts are additionally red.
 
 The context carries the column, the model, and which part of the table is being rendered. The closure runs for the
-header too, where there is no model — which is why the example above returns `null` for it without needing a guard.
+header too, where there is no model, which is why the example above returns `null` for it without needing a guard.
+
+[Action styling](action-styling.md#styling-an-action-by-its-row) takes the same shape, with `ButtonStyle` cases and an
+`ActionContext`.
 
 ## Styles merge; they are not resolved
 
-Static styles and whatever the closure returns are all applied. If you declare two that fight — a success background
-statically and a danger background conditionally — both classes are emitted and CSS decides. That is deliberate: the
+Static styles and whatever the closure returns are all applied. If you declare two that fight (a success background
+statically and a danger background conditionally), both classes are emitted and CSS decides. That is deliberate: the
 package does not guess which one you meant.
 
 ## Column types bring their own defaults

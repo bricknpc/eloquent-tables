@@ -8,7 +8,7 @@ Action styles define the look and feel of actions. They add styling to your butt
 (for now only Bootstrap 5).
 
 You apply them with the `BrickNPC\EloquentTables\Actions\Capabilities\Style` capability, which accepts one or more
-`BrickNPC\EloquentTables\Enums\ButtonStyle` enum cases. See the
+`BrickNPC\EloquentTables\Enums\ButtonStyle` enum cases, and closures that return them. See the
 [action definition](../actions/action-definition.md#style) documentation for more details on capabilities.
 
 ```php
@@ -76,3 +76,55 @@ use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 
 new Action()->with(new Style(ButtonStyle::Danger, ButtonStyle::Link));
 ```
+
+## Styling an action by its row
+
+Pass a closure alongside the static styles. It receives a
+`BrickNPC\EloquentTables\Actions\Contexts\ActionContext` and returns a case, a list of cases, or `null`. It is the same
+shape [cell styling](cell-styling.md#styling-a-cell-by-its-value) uses:
+
+```php
+<?php
+
+use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Actions\Capabilities\Style;
+use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+
+new Action()
+    ->label(__('Delete'))
+    ->as(...)
+    ->with(new Style(
+        function (ActionContext $context): ButtonStyle {
+            return $context->model?->is_locked
+                ? ButtonStyle::SecondaryOutline
+                : ButtonStyle::DangerOutline;
+        },
+    ));
+```
+
+The context carries the model of the row the action belongs to, the request, the config, and whether the action is
+being rendered inside a dropdown or as a bulk action. A table action and a bulk action have no row, so `model` is
+`null` there. Use `?->` as above rather than guarding.
+
+The closure runs once per render, so the same action definition can style each row differently.
+
+Static styles and whatever the closure returns are all applied, in the order you pass them; a closure declared first
+still contributes after the static cases. Nothing is resolved or de-duplicated: if you declare two styles that fight,
+both classes are emitted and CSS decides.
+
+```php
+<?php
+
+new Action()->with(new Style(
+    ButtonStyle::Danger,
+    fn (ActionContext $context) => $context->isBulk ? ButtonStyle::Link : null,
+));
+```
+
+:::note
+
+The dropdown rule still applies to a closure. A case returned for an action inside a dropdown renders as its colour
+only, so the example above gives `text-danger` there and `btn-danger` everywhere else.
+
+:::

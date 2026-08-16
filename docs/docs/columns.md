@@ -355,7 +355,7 @@ Also see the PHP documentation for the [`NumberFormatter`](https://www.php.net/m
 
 #### Taking formatter options from the model
 
-Sometimes the option you need is stored on the model rather than known up front — an invoice that records its own
+Sometimes the option you need is stored on the model rather than known up front: an invoice that records its own
 currency, or a user who has a preferred timezone. Every option on these helper methods also accepts a
 `\Closure(Model $model)` that returns the value. The closure is called once per row and receives the model for that row,
 so each row can be formatted differently.

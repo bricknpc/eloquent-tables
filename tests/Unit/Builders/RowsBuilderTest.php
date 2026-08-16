@@ -525,7 +525,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        // Clicked email first, then name — the reverse of the declaration order below.
+        // Clicked email first, then name, the reverse of the declaration order below.
         $request->query->set('table', ['sort' => ['email' => 'asc', 'name' => 'desc']]);
 
         /** @var RowsBuilder $builder */

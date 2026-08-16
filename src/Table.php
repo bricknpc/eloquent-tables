@@ -102,7 +102,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      *
      * The name is derived from the class name with a trailing "Table" removed, so UserTable becomes
      * "user". Two instances of the same table class share a name, and therefore share both
-     * namespaces — override this to keep them independent.
+     * namespaces; override this to keep them independent.
      */
     public function name(): string
     {

@@ -48,6 +48,6 @@ public function accentStyle(): AccentStyle
 ```
 
 :::note
-This was `pageStyle()` returning a `PageStyle` in 1.x. It was renamed because it never governed a page — it governs the
+This was `pageStyle()` returning a `PageStyle` in 1.x. It was renamed because it never governed a page. It governs the
 table's own controls. See [Upgrading](../upgrading.md).
 :::

@@ -35,7 +35,7 @@ class UserTable extends Table
 }
 ```
 
-Columns are styled separately, with their own vocabulary — see [cell styling](cell-styling.md).
+Columns are styled separately, with their own vocabulary. See [cell styling](cell-styling.md).
 
 ## Styling a row
 

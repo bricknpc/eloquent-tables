@@ -50,7 +50,7 @@ class ArchivedUserTable extends Table
 }
 ```
 
-Changing a name changes the URLs for that table, and orphans any preference a visitor had saved under the old one —
+Changing a name changes the URLs for that table, and orphans any preference a visitor had saved under the old one, so
 their next visit starts from your defaults. It is worth settling on a name before you ship.
 
 ## Two tables of the same class
@@ -76,5 +76,5 @@ mysteriously reacting to another table's controls, check the console first.
 
 There are none enforced, but the name ends up in a query string, so:
 
-- Stick to characters that survive a URL without encoding — letters, digits, `_` and `-`.
+- Stick to characters that survive a URL without encoding: letters, digits, `_` and `-`.
 - Avoid names that collide with query parameters your application already uses on the same page.

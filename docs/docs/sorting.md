@@ -46,7 +46,7 @@ The sort lives under the [table's name](table-names.md) in the query string:
 ?user[sort][email]=asc&user[sort][name]=desc
 ```
 
-Cycling a column through ascending, descending and off removes it again. A sort is remembered between visits — see
+Cycling a column through ascending, descending and off removes it again. A sort is remembered between visits; see
 [Saved preferences](preferences.md).
 
 :::note
