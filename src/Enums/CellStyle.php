@@ -44,11 +44,11 @@ enum CellStyle implements Style
     case FontSemibold;
     case FontBold;
 
-    public function toCssClass(Theme $theme, bool $flex = false): string
+    public function toCssClass(Theme $theme): string
     {
         return match ($theme) {
             Theme::Bootstrap5 => match ($this->family()) {
-                StyleFamily::Alignment  => $this->toAlignmentCssClass($flex),
+                StyleFamily::Alignment  => $this->toAlignmentCssClass(),
                 StyleFamily::Background => sprintf('table-%s', $this->colour()),
                 StyleFamily::TextColour => sprintf('text-%s', $this->colour()),
                 StyleFamily::FontWeight => sprintf('fw-%s', $this->weight()),
@@ -83,17 +83,17 @@ enum CellStyle implements Style
         };
     }
 
-    private function toAlignmentCssClass(bool $flex): string
+    private function toAlignmentCssClass(): string
     {
         return match ($this) {
-            self::AlignLeft    => $flex ? 'justify-content-start' : 'text-start',
-            self::AlignCenter  => $flex ? 'justify-content-center' : 'text-center',
-            self::AlignRight   => $flex ? 'justify-content-end' : 'text-end',
-            self::AlignJustify => $flex ? 'justify-content-stretch' : 'text-justify',
-            self::AlignBetween => $flex ? 'justify-content-between' : '',
-            self::AlignTop     => $flex ? 'align-items-start' : 'align-text-top',
-            self::AlignMiddle  => $flex ? 'align-items-center' : 'align-middle',
-            self::AlignBottom  => $flex ? 'align-items-end' : 'align-text-bottom',
+            self::AlignLeft    => 'justify-content-start',
+            self::AlignCenter  => 'justify-content-center',
+            self::AlignRight   => 'justify-content-end',
+            self::AlignJustify => 'justify-content-stretch',
+            self::AlignBetween => 'justify-content-between',
+            self::AlignTop     => 'align-items-start',
+            self::AlignMiddle  => 'align-items-center',
+            self::AlignBottom  => 'align-items-end',
             default            => '',
         };
     }

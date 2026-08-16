@@ -61,7 +61,6 @@ readonly class ColumnLabelRenderer
             'iconDesc'       => $this->config->sortDescIcon(),
             'type'           => $column->type,
             'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
-            'cellStylesFlex' => $this->styleResolver->classes($styles, StyleTarget::Content, true),
             'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
         ]);
     }

@@ -44,6 +44,7 @@ use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 #[UsesClass(StyleFamily::class)]
 #[UsesClass(TableRegion::class)]
 #[UsesClass(StyleResolver::class)]
+#[UsesClass(Theme::class)]
 class ColumnLabelRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -105,6 +106,32 @@ class ColumnLabelRendererTest extends TestCase
         ];
     }
 
+    public function test_a_non_sortable_header_aligns_like_a_sortable_one(): void
+    {
+        // Covers AE1. This is issue #7's exact repro: the same column with and without sortable().
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $sortable = $builder->build(
+            $request,
+            new TestTable(),
+            new Column('total_items')->sortable()->style(CellStyle::AlignRight),
+        )->render();
+
+        $plain = $builder->build(
+            $request,
+            new TestTable(),
+            new Column('total_items')->style(CellStyle::AlignRight),
+        )->render();
+
+        $this->assertStringContainsString('justify-content-end', $sortable);
+        $this->assertStringContainsString('justify-content-end', $plain);
+        $this->assertStringNotContainsString('text-end', $plain);
+    }
+
     public function test_it_splits_header_styles_by_their_target(): void
     {
         /** @var ColumnLabelRenderer $builder */
@@ -122,8 +149,7 @@ class ColumnLabelRendererTest extends TestCase
         $data = $builder->build($request, new TestTable(), $column)->getData();
 
         $this->assertSame('table-success', $data['styles']);
-        $this->assertSame('justify-content-end justify-content-between', $data['cellStylesFlex']);
-        $this->assertSame('text-end', $data['cellStyles']);
+        $this->assertSame('justify-content-end justify-content-between', $data['cellStyles']);
     }
 
     public function test_the_sort_link_preserves_every_other_parameter(): void

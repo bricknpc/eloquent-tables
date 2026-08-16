@@ -18,7 +18,7 @@ readonly class StyleResolver
     /**
      * @param Style[] $styles
      */
-    public function classes(array $styles, ?StyleTarget $target = null, bool $flex = false): string
+    public function classes(array $styles, ?StyleTarget $target = null): string
     {
         $theme   = $this->config->theme();
         $classes = [];
@@ -28,7 +28,7 @@ readonly class StyleResolver
                 continue;
             }
 
-            $class = $style instanceof CellStyle ? $style->toCssClass($theme, $flex) : $style->toCssClass($theme);
+            $class = $style->toCssClass($theme);
 
             if ($class !== '') {
                 $classes[] = $class;

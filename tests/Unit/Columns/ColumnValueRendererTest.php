@@ -147,9 +147,7 @@ class ColumnValueRendererTest extends TestCase
 
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('cellStyles', $view->getData());
-        $this->assertSame('text-center', $view->getData()['cellStyles']);
-        $this->assertArrayHasKey('cellStylesFlex', $view->getData());
-        $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStylesFlex']);
+        $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStyles']);
     }
 
     public function test_it_renders_the_correct_type(): void

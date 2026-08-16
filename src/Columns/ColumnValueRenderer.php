@@ -55,7 +55,6 @@ readonly class ColumnValueRenderer
             'theme'          => $theme,
             'value'          => $value,
             'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
-            'cellStylesFlex' => $this->styleResolver->classes($styles, StyleTarget::Content, true),
             'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
             'type'           => $column->type,
             'checkIcon'      => $this->config->checkIcon(),

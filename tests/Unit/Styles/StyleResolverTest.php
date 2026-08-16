@@ -37,15 +37,7 @@ class StyleResolverTest extends TestCase
         $resolver = $this->resolver();
 
         $this->assertSame('table-success', $resolver->classes($styles, StyleTarget::Cell));
-        $this->assertSame('text-end', $resolver->classes($styles, StyleTarget::Content));
-    }
-
-    public function test_it_uses_the_flex_variant_when_asked(): void
-    {
-        $this->assertSame(
-            'justify-content-end',
-            $this->resolver()->classes([CellStyle::AlignRight], StyleTarget::Content, true),
-        );
+        $this->assertSame('justify-content-end', $resolver->classes($styles, StyleTarget::Content));
     }
 
     public function test_a_style_outside_the_cell_vocabulary_ignores_the_target(): void
@@ -53,14 +45,6 @@ class StyleResolverTest extends TestCase
         $this->assertSame(
             'table-danger',
             $this->resolver()->classes([RowStyle::Danger], StyleTarget::Cell),
-        );
-    }
-
-    public function test_it_drops_styles_that_render_to_nothing(): void
-    {
-        $this->assertSame(
-            'text-end',
-            $this->resolver()->classes([CellStyle::AlignBetween, CellStyle::AlignRight], StyleTarget::Content),
         );
     }
 
