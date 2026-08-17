@@ -28,6 +28,7 @@ use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Enums\ActionRegion;
+use BrickNPC\EloquentTables\Columns\ColumnValue;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
@@ -104,6 +105,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(ActionRegion::class)]
 #[UsesClass(ButtonStyle::class)]
 #[UsesClass(ActionStyleResolver::class)]
+#[UsesClass(ColumnValue::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void

@@ -26,6 +26,7 @@ readonly class ColumnValueRenderer
         private FormatterFactory $formatterFactory,
         private Config $config,
         private StyleResolver $styleResolver,
+        private ColumnValue $columnValue = new ColumnValue(),
     ) {}
 
     /**
@@ -36,7 +37,7 @@ readonly class ColumnValueRenderer
     {
         $theme = $this->config->theme();
 
-        $value = is_callable($column->valueUsing) ? call_user_func($column->valueUsing, $model) : $model->{$column->name};
+        $value = $this->columnValue->resolve($column, $model);
 
         if ($column->formatter !== null) {
             $formatter = $column->formatter instanceof Formatter
