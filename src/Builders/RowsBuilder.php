@@ -33,6 +33,8 @@ class RowsBuilder
      */
     private Collection|Paginator|null $result = null;
 
+    private ?Builder $narrowedQuery = null;
+
     /**
      * @param TableParameters<TModel> $parameters
      */
@@ -67,6 +69,10 @@ class RowsBuilder
         $this->applyFilters($query, $table, $request);
         $this->applySort($query, $table, $request);
 
+        // Retained before pagination, so a footer aggregate can run against the same narrowed
+        // set the rows came from without the page limit.
+        $this->narrowedQuery = clone $query;
+
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
             ? $query->paginate(
@@ -79,6 +85,17 @@ class RowsBuilder
             : $query->get();
 
         return $this->result = $result;
+    }
+
+    /**
+     * The query behind the rows, with search, filters and sorting applied but no page limit.
+     *
+     * Null until build() has run. A fresh clone is returned each call so one aggregate cannot
+     * affect the next.
+     */
+    public function narrowedQuery(): ?Builder
+    {
+        return $this->narrowedQuery === null ? null : clone $this->narrowedQuery;
     }
 
     /**
