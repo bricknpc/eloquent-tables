@@ -30,11 +30,19 @@ Please give us a reasonable window to release a fix before disclosing publicly.
 
 ## Supported versions
 
-| Version | Supported                                            |
-|---------|------------------------------------------------------|
-| 1.2.x   | Yes                                                  |
-| < 1.2   | No, please upgrade                                   |
-| 2.0.x   | Pre-release. Reports are welcome, but 2.0 is not yet released and carries no security support |
+Security fixes go to the active major version, and to one older major for as long as it is still supported. They ship
+as a patch release on that version rather than waiting for the next feature release. The
+[supported versions](https://bricknpc.github.io/eloquent-tables/docs/supported-versions) page carries the full policy,
+along with the PHP and Laravel versions each release targets.
+
+| Version | Security support   |
+|---------|--------------------|
+| 2.0.x   | Yes                |
+| < 2.0   | No, please upgrade |
+
+Version 1.x was not carried forward as a supported older major, so 1.2 reached end of life when 2.0 was released and
+there is nowhere to backport a 1.x fix to. If you are reporting against 1.x, please check the problem still exists on
+2.0 first.
 
 ## Scope
 

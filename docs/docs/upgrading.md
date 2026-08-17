@@ -38,6 +38,7 @@ be used as a table action, a row action or a bulk action.
 
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
@@ -293,7 +294,8 @@ php artisan vendor:publish --tag=views --force
 ```
 
 `ColumnLabelRenderer::build()` and `FilterRenderer::build()` both take the table as an argument now, and
-`RowsBuilder`'s constructor no longer takes `Config`. This only matters if you resolve or subclass them yourself.
+`RowsBuilder`'s constructor takes `RouteModelBinder` and `TableParameters` where it used to take `Config` and
+`RouteModelBinder`. This only matters if you resolve or subclass them yourself.
 
 ## 12. Column styling is one method
 
@@ -514,6 +516,11 @@ class UserTable extends Table
 
 The `Table::$builder` property was renamed to `Table::$renderer` along with them.
 
+`Action` existed in 1.x as well, as the abstract base class the three action classes extended. In 2.0 it is a concrete
+class you instantiate directly, so if you subclassed the old abstract `Action` to build an action type of your own,
+that is now a [custom intent](actions/action-definition.md#custom-intents) or
+[capability](actions/action-definition.md#custom-capabilities) rather than a subclass.
+
 `BrickNPC\EloquentTables\Builders\RowsBuilder` keeps its name and location. It builds the row data rather than markup,
 so it is not a renderer.
 
@@ -535,5 +542,5 @@ Things that have no 1.x equivalent, and that you may want once you have upgraded
 - [Row styling](styling/table-styling.md): highlight a whole row, including its checkbox and action cells
 - [Footers](footers.md) with per-column aggregates: sum, average, median, count, min and max, for the current page or
   the whole filtered result set, and a contract so you can add your own
-- [Conditional action styling](styling/action-styling.md#styling-an-action-by-its-row): the `Style` capability now
-  also takes closures, so an action can be styled per row
+- [Conditional action styling](styling/action-styling.md#styling-an-action-by-its-row): `style()` also takes closures,
+  so an action can be styled per row

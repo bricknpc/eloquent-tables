@@ -83,7 +83,10 @@ readonly class ColumnLabelRenderer
     {
         $sort = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
-        return array_key_exists($column->name, $sort) ? Sort::from($sort[$column->name]) : null;
+        // tryFrom, not from: the direction comes straight off the query string, so a hand-edited or
+        // stale value must leave the column unsorted rather than throwing while the header renders.
+        // RowsBuilder ignores it the same way, so the query and the header agree.
+        return array_key_exists($column->name, $sort) ? Sort::tryFrom($sort[$column->name]) : null;
     }
 
     private function getNextSortDirection(?Sort $currentSortDirection): ?Sort

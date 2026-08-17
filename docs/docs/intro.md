@@ -23,6 +23,9 @@ Already using Eloquent Tables 1.x? Version 2.0 rewrites the actions system. See 
 - Laravel `^12.0|^13.0`
 - Bootstrap 5
 
+Older releases target different versions. See [supported versions](supported-versions.md) for the full matrix and
+how long each release is supported.
+
 ## Installation
 
 Install the package via composer:

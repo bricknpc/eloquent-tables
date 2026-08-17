@@ -47,7 +47,9 @@ of the table. The `search` config option defines configuration options for this 
 
 #### Query name
 
-The `query_name` search option defines the name of query parameter that is used for the search value.
+The `query_name` search option defines the key holding the search value. It is nested under the
+[table's name](table-names.md), so this sets the sub-key rather than the whole parameter: with the default, a table
+named `user` reads `?user[search]=ada`.
 
 ```php
 <?php
@@ -68,9 +70,11 @@ config option defines configuration options for this behavior.
 
 #### Query name
 
-The `query_name` sorting option defines the name of query parameter that is used for the sorting value. Sorting a table 
-is done by adding this query parameter to the URL as an array, where the keys are the column names and the values are 
-the sorting direction. This way you can sort on multiple columns.
+The `query_name` sorting option defines the key holding the sort. It is nested under the
+[table's name](table-names.md), so this sets the sub-key rather than the whole parameter. The value is an array where
+the keys are column names and the values are the direction, which is how you sort on multiple columns:
+`?user[sort][email]=asc&user[sort][name]=desc`. The order of that array is the order the visitor clicked the headers,
+and that is the order the sort is applied in.
 
 ```php
 <?php
@@ -91,9 +95,10 @@ defines configuration options for this behavior.
 
 #### Query name
 
-The `query_name` filtering option defines the name of query parameter that is used for the filtering value. Filtering a 
-table is done by adding the filter query parameter to the URL as an array, where the keys are the names of the filter, 
-and the values are the filter values. This way you can use multiple filters.
+The `query_name` filtering option defines the key holding the filters. It is nested under the
+[table's name](table-names.md), so this sets the sub-key rather than the whole parameter. The value is an array where
+the keys are filter names and the values are the filter values, which is how you apply multiple filters at once:
+`?user[filter][active]=1`.
 
 ```php
 <?php

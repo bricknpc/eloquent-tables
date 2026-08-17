@@ -1,11 +1,16 @@
 name: Eloquent Tables CI
 
 on:
+  # Long-lived branches are named after a version and never contain a slash: the major
+  # branches ("2.x", a later "3.x") and the next release branch ("2.1"). A single "*"
+  # matches exactly those, because "*" does not match "/". Short-lived feature/*, bugfix/*
+  # and hotfix/* branches are therefore excluded here and covered by the pull_request
+  # trigger instead, so a branch without a PR does not burn a run and a branch with one is
+  # not checked twice. Do not narrow this to "*.x": that silently skips a next release
+  # branch like "2.1", which is where almost all work lands.
   push:
     branches:
-      - "main"
-      - "release/**"
-      - "hotfix/**"
+      - "*"
   pull_request:
     branches: [ "**" ]
 
@@ -190,8 +195,11 @@ jobs:
   deploy-docs:
     name: Deploy documentation
     runs-on: ubuntu-latest
-    # Only deploy on push to main branch
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only deploy from the repository's default branch, which is the current major version
+    # branch and tracks the released state. Comparing against default_branch rather than a
+    # hardcoded name means the next major taking over as default needs no change here, and
+    # keeps unreleased documentation on the next release branch out of the published site.
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     needs: [phpunit, phpstan, php-cs-fixer]
 
     permissions:

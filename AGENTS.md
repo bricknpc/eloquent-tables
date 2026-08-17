@@ -5,16 +5,51 @@ definitions. A user defines a `Table` subclass — a query, some columns, option
 searching, and pagination — and the package produces the markup, accessibility attributes, and JavaScript. The
 selling point is that no front-end work is required: everything is expressed in PHP.
 
-- **Requires** PHP `^8.4|^8.5` and Laravel `^12.0`. Bootstrap 5 is the only theme so far.
-- **Depends on** `illuminate/database`, `illuminate/support`, and `illuminate/http`. Any `illuminate/*` package
-  is fair game — this is a Laravel package and Laravel is built on illuminate — but only require one when you
-  actually need it. If you use a class from a package that is not required yet, add it to `composer.json` in the
-  same change rather than relying on it arriving transitively.
-- **Releases are cut from release branches** — `release/2.x`, `release/2.1`, `release/3.x`, and so on. Feature
-  work branches off the release branch it targets and merges back into it. `main` tracks the latest release, so
-  it is the released state rather than a development branch. The current released version is 1.1; once
-  `release/2.x` is merged and released, 1.1 is no longer supported. **Only the latest version is supported**, so
-  assume there is nowhere to backport a fix to.
+- **Requires** PHP `^8.4|^8.5` and Laravel `^12.0|^13.0`. Bootstrap 5 is the only theme so far.
+- **Depends on** `illuminate/database`, `illuminate/support`, `illuminate/http`, and `illuminate/cookie`. Any
+  `illuminate/*` package is fair game — this is a Laravel package and Laravel is built on illuminate — but only
+  require one when you actually need it. If you use a class from a package that is not required yet, add it to
+  `composer.json` in the same change rather than relying on it arriving transitively.
+- **Every long-lived branch is named after a version.** There is no `main` and there are no `release/*` branches.
+  The default branch is the current major, `2.x` today, and it **tracks the released state**: the only thing that
+  lands on it directly is a hotfix, and a hotfix is tagged the moment it merges, so the branch never drifts far
+  from the latest tag. One leftover `release/2.x` branch still exists; see the transition bullet at the end of
+  this list.
+- **Ordinary work goes on a next release branch, never on the major branch.** It is named after the version it
+  will become, so `2.1` for a minor or `3.x` for a major, and it is cut from the current major branch the first
+  time something is proposed for that release. **Only one exists at a time.** Both `feature/*` and `bugfix/*`
+  branch from it and merge back into it by PR, named `feature/<issue-nr>-descriptive-name` with the issue number
+  optional.
+- **`bugfix/*` and `hotfix/*` are not synonyms here, and that is the easiest thing to get wrong.** A **bugfix**
+  targets the next release branch and ships with that release like anything else. A **hotfix** targets the current
+  major branch, is for something that cannot wait, and **merging it cuts a release**: the major branch is tagged
+  as a patch straight away, so a hotfix on 2.0 ships as 2.0.1. A hotfix also has to be **cherry-picked into the
+  next release branch**, or the fix is absent from the branch all other work is built on.
+- **A release is cut differently depending on whether it is a minor or a major.** A minor merges its branch into
+  the current major branch and tags that: `2.1` merges into `2.x`, `2.x` is tagged `2.1.0`, and `2.1` is retired.
+  A major keeps its own branch: `3.x` comes off `2.x`, and when ready it becomes the default branch and is tagged
+  `3.0.0`, leaving `2.x` as the previous major taking hotfixes until its support ends.
+- **At most three majors exist at once**, each with one role: the **active** major, one **older** major that may
+  still take hotfixes, and one **next** major that may be in progress. Once an older major's support ends it
+  accepts no more PRs.
+- **1.x is not carried forward.** The last 1.x release is 1.2.0, and rather than staying on as the supported older
+  major it reaches end of life the moment 2.0 lands. So 2.0 is the only supported version, there is no `1.x`
+  branch, and there is nowhere to backport a 1.x fix to. The user-facing matrix and policy live in
+  `docs/docs/supported-versions.md`, which is the source of truth to update when any of this changes; the README
+  and `.github/SECURITY.md` carry shortened copies of the same table and have to move with it.
+- **The version lives only in the git tag.** `composer.json` deliberately carries no `version` field, since
+  `composer validate` warns about one for a Packagist package, so there is nothing to bump at release time and it
+  must not be added back. Related trap: `composer.lock` stores a `content-hash` of `composer.json`, so *any* edit
+  to that file makes the lock stale. Refresh it with `composer update --lock`, which rewrites the hash without
+  moving a single dependency — a bare `composer update` would.
+- **Mid-transition, so confirm the branch state before trusting any of the above.** `main` was renamed to `2.x`
+  and still points at the 1.2.0 release commit, which is what a branch tracking the released state should do. The
+  2.0 work sits on `release/2.x`, the legacy name for what the model above calls the next release branch; under
+  the new naming it would be `2.0`. Merging it into `2.x` and tagging `2.0.0` *is* the release procedure above,
+  only with the old branch name, and no `release/*` branch should exist afterwards. Run `git branch -avv` rather
+  than assuming any of this is done. **The published documentation is deliberately ahead of the tag**: the README,
+  the docs site and `SECURITY.md` are all written as though 2.0.0 is already out, because they ship with it and
+  the tag follows immediately. Do not "correct" them back to a pre-release voice.
 
 ## Hard rule: never commit, never push
 
@@ -134,32 +169,37 @@ Views `trim()` composed class attributes, so expect no stray whitespace when ass
 ```
 src/
   Actions/          the actions system (see below)
+  Aggregates/       Sum, Average, Median, Count, Min, Max — the bundled Aggregate implementations
   Attributes/       Layout — the #[Layout] attribute
   Builders/         RowsBuilder — builds row data (Collection|Paginator), not markup
-  Columns/          ColumnLabelRenderer, ColumnValueRenderer
-  Concerns/         WithPagination — an opt-in trait on a Table
+  Columns/          ColumnLabelRenderer, ColumnValueRenderer, ColumnValue
+  Concerns/         WithPagination — an opt-in trait on a Table; AggregatesValues — shared by the aggregates
   Console/Commands/ MakeTableCommand
-  Contracts/        Filter, Formatter — user-implementable interfaces
-  Enums/            Theme, ColumnType, Method, Sort, and the *Style enums
+  Contracts/        Aggregate, Filter, Formatter, Style, StyleContext — user-implementable interfaces
+  Enums/            Theme, ColumnType, Method, Sort, AggregateScope, and the *Style enums
   Exceptions/
   Factories/        FormatterFactory — resolves formatters out of the container
   Filters/          Filter base class, FilterRenderer
+  Footers/          FooterResolver — resolves declared footer rows into cells; FooterRenderer
   Formatters/       Date, DateTime, Number, Currency
   Providers/        EloquentTablesServiceProvider
-  Services/         Config, LayoutFinder, RouteModelBinder
+  Services/         Config, LayoutFinder, RouteModelBinder, TableParameters, TablePreferences
+  Styles/           StyleResolver, ActionStyleResolver, and the CellContext / RowContext closure contexts
   Tables/           TableRenderer — assembles the whole table view
-  ValueObjects/     LazyValue
+  ValueObjects/     LazyValue, StyleSet, FooterRow, ResolvedFooter, ResolvedFooterRow
   Column.php  
   Table.php  
   helpers.php
 resources/views/    Blade views (see the theme pattern below)
 resources/lang/     JSON translations, one file per locale
-docs/               Docusaurus site, published to GitHub Pages from main
+docs/               Docusaurus site, published to GitHub Pages from the default branch
 ```
 
 **Naming:** anything producing markup is a `*Renderer` and lives in a folder named for its domain
 (`Tables/TableRenderer`, `Columns/ColumnValueRenderer`, `Actions/ActionRenderer`). `RowsBuilder` is
-deliberately still a `Builder` because it returns data, not markup. Follow this when adding classes.
+deliberately still a `Builder` because it returns data, not markup, and a `*Resolver` (`FooterResolver`,
+`StyleResolver`) turns a declaration into the data or class strings a renderer then emits. Follow this when
+adding classes.
 
 ## How a table renders
 
@@ -174,10 +214,12 @@ deliberately still a `Builder` because it returns data, not markup. Follow this 
    binding on those hooks), assembles ~30 view variables, and picks `table` or `table-with-layout`.
 5. The Blade views render, calling back into the renderers that were passed in as view variables.
 
-Optional hooks a user may define on their table: `tableActions()`, `rowActions()`, `bulkActions()`,
-`filters()`, `layout()`, plus overridable `tableStyles()`, `pageStyle()` and `bulkActionColumnWidth()`.
-Presentational per-table settings belong on `Table` as overridable methods; `config/eloquent-tables.php` is for
-infrastructure (namespaces, query parameter names, icons).
+Optional hooks a user may *add* to their table, each guarded by a `method_exists` check: `tableActions()`,
+`rowActions()`, `bulkActions()`, `filters()`, `layout()`. On top of those, `Table` itself defines methods to
+*override*: `name()`, `style()`, `rowStyle()`, `accentStyle()`, `footer()`, `bulkActionColumnWidth()`, and the
+`authorize()` / `unauthorizedMessage()` / `unauthorizedResponseCode()` trio. Presentational per-table settings
+belong on `Table` as overridable methods; `config/eloquent-tables.php` is for infrastructure (namespaces, query
+parameter names, icons).
 
 ## The actions system
 
@@ -256,21 +298,33 @@ Anything on that list changing needs an entry in `docs/docs/upgrading.md` in the
 
 ## Documentation
 
-The site is Docusaurus in `docs/`, deployed to GitHub Pages by CI on push to `main`. Since `main` tracks the
-latest release, the published site always describes the released version — documentation written on a release
-branch only goes live when that release merges to `main`. Write it for the version it ships with, not for the
-current state of the branch.
+The site is Docusaurus in `docs/`, deployed to GitHub Pages by CI on push to the **default branch**, which the
+workflow finds via `github.event.repository.default_branch` rather than a hardcoded name, so the deploy follows
+the current major automatically.
+
+**Keeping ordinary work off the default branch is what keeps the site honest.** Since only hotfixes land on `2.x`
+and each is tagged as it merges, the published site describes the released version and nothing else. Documentation
+written on a next release branch goes live at the moment that release is cut, which is also when the feature it
+describes becomes real, so the two cannot disagree. Write it for the version it ships with, not for the current
+state of the branch. A hotfix is the one case where a doc change publishes within minutes of being merged.
 
 Pages live in `docs/docs/**`, are ordered by a `sidebar_position` in the frontmatter, and folders get a
 `_category_.json`. Admonitions (`:::note`, `:::info`, `:::warning`) are used throughout — reach for `:::warning`
 when something will silently do the wrong thing rather than fail loudly.
 
-`docs/docs/upgrading.md` is the 1.x → 2.0 guide and stays a living document until 2.0 is tagged. The 2.0 release
-post in `docs/blog/` is still `draft: true`; both currently describe the actions rewrite as the release's only
-feature, which stops being true as more work lands.
+`docs/docs/upgrading.md` is the 1.x → 2.0 guide. Both it and the 2.0 release post in `docs/blog/` now cover the
+whole release — actions, table identity, styling and footers — so anything further that lands needs adding to
+both. `docs/docs/supported-versions.md` holds the version matrix and the branching policy.
+
+The 2.0 release post is published: the `draft: true` flag is gone and the file is dated `2026-08-17`. Worth
+remembering for the next release post, since both bit here: Docusaurus takes the post date from the **filename**,
+not from any frontmatter field, and the `slug` is what fixes the permalink, so renaming the file for the real
+release date does not move the published URL.
 
 Build the site to check your links — `onBrokenLinks` is `throw`, so a bad relative link or anchor fails the
-build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated.
+build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated,
+and its tags and authors are not resolved either. Un-drafting is therefore the first real check of a post, so
+build straight after flipping the flag rather than assuming a green build beforehand covered it.
 
 ### Agent plans are published
 
@@ -287,7 +341,8 @@ Three things follow from that:
 - **Mermaid is enabled**, so ```` ```mermaid ```` fenced blocks render as diagrams. They are drawn in the browser,
   so they do not appear in the built HTML — that is expected, not a broken build.
 
-Since the site deploys from `main`, a plan on a release branch goes live when that branch merges.
+Since the site deploys from the default branch, a plan written on a next release branch goes live when that
+release is cut, along with the documentation for the work it planned.
 
 ## Skills
 
@@ -321,8 +376,9 @@ update painful. The commit and push override lives in this file precisely so the
 
 ## Working practice
 
-- Work targets the release branch in play (`release/2.x` today), on a `feature/*` branch that merges back via a
-  PR. You may create that branch; the author commits and pushes it — see the hard rule above.
+- Work targets the **next release branch**, not the major branch, on a `feature/*` or `bugfix/*` branch that
+  merges back into it via a PR. Only a `hotfix/*` targets the major branch. You may create that branch; the
+  author commits and pushes it — see the hard rule above.
 - After finishing a change, report the four gate results and hand over a commit message.
 - Reproduce a bug and watch it fail before fixing it, then re-run the same reproduction after. A passing new
   test proves nothing until you have seen it fail.
@@ -334,7 +390,6 @@ update painful. The commit and push override lives in this file precisely so the
 
 True at the time of writing — confirm before relying on any of it.
 
-- `composer.json` carries an explicit `version` field, currently `2.0.0-alpha`, which needs bumping at release.
 - `ActionIntent::after()` is inconsistent: writes to the render buffers reach the output, but writes to
   `$descriptor->attributes` do not, because attributes are copied into the view data before it runs. Use
   `before()` for anything that must affect the markup.
