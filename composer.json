@@ -12,7 +12,6 @@
     "Filtering",
     "Sorting"
   ],
-  "version": "2.0.0-alpha",
   "license": "MIT",
   "require": {
     "php": "^8.4|^8.5",
