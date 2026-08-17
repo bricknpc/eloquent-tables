@@ -27,6 +27,8 @@ use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
@@ -38,8 +40,10 @@ use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 use BrickNPC\EloquentTables\Tests\Resources\ArchivedTestTable;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
@@ -77,6 +81,10 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(FooterRow::class)]
 #[UsesClass(AggregateScope::class)]
 #[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(FooterRenderer::class)]
+#[UsesClass(FooterResolver::class)]
+#[UsesClass(ResolvedFooter::class)]
+#[UsesClass(ResolvedFooterRow::class)]
 class TableTest extends TestCase
 {
     public function test_a_table_declares_no_footer_rows_by_default(): void

@@ -23,6 +23,7 @@ use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
@@ -52,6 +53,7 @@ readonly class TableRenderer
      * @param RowsBuilder<TModel>         $rowsBuilder
      * @param FilterRenderer<TModel>      $filterRenderer
      * @param TableParameters<TModel>     $parameters
+     * @param FooterRenderer<TModel>      $footerRenderer
      */
     public function __construct(
         private ColumnLabelRenderer $columnLabelRenderer,
@@ -65,6 +67,7 @@ readonly class TableRenderer
         private ActionRenderer $actionRenderer,
         private TableParameters $parameters,
         private StyleResolver $styleResolver,
+        private FooterRenderer $footerRenderer,
     ) {}
 
     /**
@@ -142,6 +145,13 @@ readonly class TableRenderer
             'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $rows,
             'rowStyles'              => $this->rowStyles($table, $rows, $request),
+            'footer'                 => $this->footerRenderer->build(
+                $table,
+                $columns,
+                $rows,
+                $this->rowsBuilder->narrowedQuery(),
+                $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()) > 0 ? 1 : 0,
+            ),
             'columnValueRenderer'    => $this->columnValueRenderer,
             'links'                  => $this->getLinks($table, $request),
             'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),

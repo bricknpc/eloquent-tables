@@ -12,6 +12,7 @@ use BrickNPC\EloquentTables\Contracts\Aggregate;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Enums\AggregateScope;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
@@ -24,15 +25,16 @@ readonly class FooterResolver
 {
     public function __construct(
         private FormatterFactory $formatterFactory,
+        private StyleResolver $styleResolver,
         private ColumnValue $columnValue = new ColumnValue(),
     ) {}
 
     /**
-     * @param FooterRow[]                $footerRows
-     * @param array<int, Column<TModel>> $columns
-     * @param Collection<int, TModel>    $rows
-     * @param int                        $leadingCells cells before the first column, such as the
-     *                                                 bulk action checkbox
+     * @param FooterRow[]            $footerRows
+     * @param array<Column<TModel>>  $columns
+     * @param Collection<int, Model> $rows
+     * @param int                    $leadingCells cells before the first column, such as the
+     *                                             bulk action checkbox
      */
     public function resolve(
         array $footerRows,
@@ -50,15 +52,18 @@ readonly class FooterResolver
                 $footerRow->resolveLabel(),
                 $this->valuesFor($footerRow, $columns, $rows, $query),
                 $this->labelIndex($footerRow, $columns),
+                $this->styleResolver->classes($footerRow->styles),
             );
         }
 
-        return new ResolvedFooter($resolved, $leadingCells + $this->firstAggregated($footerRows, $columns));
+        $firstValueIndex = $this->firstAggregated($footerRows, $columns);
+
+        return new ResolvedFooter($resolved, $leadingCells + $firstValueIndex, $firstValueIndex);
     }
 
     /**
      * @param array<int, Column<TModel>> $columns
-     * @param Collection<int, TModel>    $rows
+     * @param Collection<int, Model>     $rows
      *
      * @return array<int, string>
      */
@@ -78,8 +83,8 @@ readonly class FooterResolver
     }
 
     /**
-     * @param Column<TModel>          $column
-     * @param Collection<int, TModel> $rows
+     * @param Column<TModel>         $column
+     * @param Collection<int, Model> $rows
      */
     private function compute(
         Aggregate $aggregate,
@@ -90,7 +95,9 @@ readonly class FooterResolver
     ): mixed {
         if ($scope === AggregateScope::Page) {
             return $aggregate->forPage($rows->map(
-                fn (Model $model) => $this->columnValue->resolve($column, $model),
+                // Column's TModel is invariant, so a Column<TModel> cannot be handed to a method
+                // that binds its template from the model argument.
+                fn (Model $model) => $this->columnValue->resolve($column, $model), // @phpstan-ignore argument.type
             ));
         }
 

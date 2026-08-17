@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Aggregates\Sum;
 use BrickNPC\EloquentTables\Enums\RowStyle;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
@@ -33,12 +34,16 @@ use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Enums\AggregateScope;
 use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterResolver;
+use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
@@ -49,13 +54,16 @@ use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
+use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 
@@ -106,6 +114,15 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(ButtonStyle::class)]
 #[UsesClass(ActionStyleResolver::class)]
 #[UsesClass(ColumnValue::class)]
+#[UsesClass(Sum::class)]
+#[UsesClass(FooterRow::class)]
+#[UsesClass(AggregateScope::class)]
+#[UsesClass(RowStyle::class)]
+#[UsesClass(FooterRenderer::class)]
+#[UsesClass(FooterResolver::class)]
+#[UsesClass(ResolvedFooter::class)]
+#[UsesClass(ResolvedFooterRow::class)]
+#[UsesClass(IgnoresNullValues::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -671,6 +688,100 @@ class TableRendererTest extends TestCase
         $this->assertSame('light', $data['activeStyle']);
     }
 
+    public function test_a_table_without_a_footer_renders_no_footer_markup(): void
+    {
+        $html = $this->renderFooterTable(footer: []);
+
+        $this->assertStringNotContainsString('<tfoot>', $html);
+    }
+
+    public function test_a_declared_footer_row_renders_inside_tfoot(): void
+    {
+        $html = $this->renderFooterTable(footer: [
+            new FooterRow(new Sum(), AggregateScope::Total, 'All rows'),
+        ]);
+
+        $this->assertStringContainsString('<tfoot>', $html);
+        $this->assertSame(1, $this->rowsIn($html, '<tfoot>'), 'the footer holds exactly one row');
+        $this->assertStringContainsString('All rows', $html);
+    }
+
+    public function test_the_page_total_and_the_grand_total_render_as_separate_rows(): void
+    {
+        // Covers AE1.
+        $this->seedAmounts(10, 20, 30, 40, 50);
+
+        $html = $this->renderFooterTable(
+            footer: [
+                new FooterRow(new Sum(), AggregateScope::Page, 'This page'),
+                new FooterRow(new Sum(), AggregateScope::Total, 'All rows'),
+            ],
+            perPage: 2,
+        );
+
+        $this->assertStringContainsString('This page', $html);
+        $this->assertStringContainsString('All rows', $html);
+        $this->assertStringContainsString('>30<', $html);
+        $this->assertStringContainsString('>150<', $html);
+    }
+
+    public function test_the_label_renders_in_a_spanning_cell(): void
+    {
+        // Covers R9.
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
+            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
+        );
+
+        $this->assertStringContainsString('<th colspan="1">Total</th>', $html);
+    }
+
+    public function test_a_row_naming_a_label_column_renders_the_label_there(): void
+    {
+        // Covers R9.
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total', labelColumn: 'name')],
+            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
+        );
+
+        $this->assertStringNotContainsString('colspan', $html);
+        $this->assertStringContainsString('<th>Total</th>', $html);
+    }
+
+    public function test_a_footer_row_carries_its_declared_styles(): void
+    {
+        // Covers R11.
+        $html = $this->renderFooterTable(footer: [
+            new FooterRow(new Sum(), AggregateScope::Page, 'Total', styles: [RowStyle::Danger]),
+        ]);
+
+        $this->assertStringContainsString('table-danger', $html);
+    }
+
+    public function test_a_closure_label_is_resolved_in_the_markup(): void
+    {
+        $html = $this->renderFooterTable(footer: [
+            new FooterRow(new Sum(), AggregateScope::Page, fn () => 'Deferred label'),
+        ]);
+
+        $this->assertStringContainsString('Deferred label', $html);
+    }
+
+    public function test_a_footer_row_has_the_same_cell_count_as_a_body_row(): void
+    {
+        $this->seedAmounts(10, 20);
+
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
+            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
+        );
+
+        $body   = $this->cellsInFirst($html, '<tbody>');
+        $footer = $this->cellsInFirst($html, '<tfoot>');
+
+        $this->assertSame($body, $footer, 'footer cell count must match a body row');
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -927,5 +1038,92 @@ class TableRendererTest extends TestCase
         $request = $this->app->make('request');
 
         return $builder->build($table, $request);
+    }
+
+    private function rowsIn(string $html, string $section): int
+    {
+        $part = substr($html, (int) strpos($html, $section));
+
+        return substr_count(substr($part, 0, (int) strpos($part, '</tfoot>')), '<tr');
+    }
+
+    /**
+     * Counts the cells of the first row inside the given section, treating a colspan as the cells it
+     * covers so a spanning label is comparable to a body row.
+     */
+    private function cellsInFirst(string $html, string $section): int
+    {
+        $part = substr($html, (int) strpos($html, $section));
+        $part = substr($part, 0, (int) strpos($part, '</tr>'));
+
+        $cells = substr_count($part, '<td') + substr_count($part, '<th');
+
+        if (preg_match('/colspan="(\d+)"/', $part, $matches) === 1) {
+            $cells += (int) $matches[1] - 1;
+        }
+
+        return $cells;
+    }
+
+    /**
+     * @param FooterRow[]        $footer
+     * @param null|array<Column> $columns
+     */
+    private function renderFooterTable(array $footer, ?array $columns = null, ?int $perPage = null): string
+    {
+        $columns ??= [new Column('amount')->aggregate(new Sum())];
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $table = new class($columns, $footer, $perPage) extends Table {
+            use WithPagination;
+
+            /**
+             * @param array<Column> $tableColumns
+             * @param FooterRow[]   $footerRows
+             */
+            public function __construct(
+                private array $tableColumns,
+                private array $footerRows,
+                private ?int $rowsPerPage,
+            ) {}
+
+            public function columns(): array
+            {
+                return $this->tableColumns;
+            }
+
+            public function footer(): array
+            {
+                return $this->footerRows;
+            }
+
+            public function perPage(Request $request): int
+            {
+                return $this->rowsPerPage ?? 15;
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        return $builder->build($table, $request)->render();
+    }
+
+    private function seedAmounts(int ...$amounts): void
+    {
+        foreach ($amounts as $index => $amount) {
+            $model         = new TestModel();
+            $model->name   = 'Row ' . $index;
+            $model->email  = 'row' . $index . '@example.com';
+            $model->amount = $amount;
+            $model->save();
+        }
     }
 }

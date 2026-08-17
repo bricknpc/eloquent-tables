@@ -16,5 +16,6 @@ final readonly class ResolvedFooterRow
         public string $label,
         public array $values,
         public ?int $labelIndex = null,
+        public string $styles = '',
     ) {}
 }

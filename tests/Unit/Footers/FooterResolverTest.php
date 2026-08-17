@@ -10,12 +10,14 @@ use BrickNPC\EloquentTables\Aggregates\Max;
 use BrickNPC\EloquentTables\Aggregates\Sum;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Aggregates\Count;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Aggregates\Median;
 use BrickNPC\EloquentTables\Aggregates\Average;
 use BrickNPC\EloquentTables\Columns\ColumnValue;
 use BrickNPC\EloquentTables\Enums\AggregateScope;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Footers\FooterResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
@@ -47,6 +49,8 @@ use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(DoubledSum::class)]
 #[UsesClass(ArrayAggregate::class)]
+#[UsesClass(StyleResolver::class)]
+#[UsesClass(Config::class)]
 class FooterResolverTest extends TestCase
 {
     public function test_a_page_row_and_a_total_row_produce_different_values(): void
