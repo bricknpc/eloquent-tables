@@ -106,6 +106,43 @@ class ColumnLabelRendererTest extends TestCase
         ];
     }
 
+    #[DataProvider('unrecognisedSortDirectionProvider')]
+    public function test_an_unrecognised_sort_direction_leaves_the_column_unsorted(string $direction): void
+    {
+        // The direction is whatever the query string says, so it has to survive a hand-edited URL or a
+        // link that outlived a rename. Sort::from() threw here and took the whole table down with it,
+        // while RowsBuilder was already ignoring the same value.
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $request->query->set('test', ['sort' => ['name' => $direction]]);
+
+        $view = $builder->build($request, new TestTable(), new Column('name')->sortable());
+
+        $this->assertFalse($view->getData()['isSorted']);
+        $this->assertNull($view->getData()['sortDirection']);
+
+        // Still recoverable: the header offers the first click of a fresh cycle.
+        $this->assertSame('http://localhost/?test%5Bsort%5D%5Bname%5D=asc', $view->getData()['href']);
+
+        // And it renders rather than throwing, which is the actual regression.
+        $this->assertStringContainsString('name', $view->render());
+    }
+
+    public static function unrecognisedSortDirectionProvider(): \Generator
+    {
+        yield 'nonsense'      => ['sideways'];
+
+        yield 'wrong case'    => ['ASC'];
+
+        yield 'sql injection' => ['asc; drop table users'];
+
+        yield 'numeric'       => ['1'];
+    }
+
     public function test_a_non_sortable_header_aligns_like_a_sortable_one(): void
     {
         // Covers AE1. This is issue #7's exact repro: the same column with and without sortable().
