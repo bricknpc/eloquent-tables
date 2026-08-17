@@ -6,8 +6,11 @@ tags: [eloquent, laravel, table, release]
 draft: true
 ---
 
-Version `2.0.0` of Eloquent Tables is here 🎉. This is our first major release since `1.0.0`, and it does two things:
-it rewrites actions from the ground up, and it gives every table an identity of its own.
+Version `2.0.0` of Eloquent Tables is here 🎉. This is our first major release since `1.0.0`, and it is a big one. It
+rewrites actions from the ground up, gives every table an identity of its own, replaces every styling method with one
+consistent shape, and adds footers that can total a column.
+
+It also widens the requirements: PHP `^8.4|^8.5` and Laravel `^12.0|^13.0`.
 
 ## One action to rule them all
 
@@ -24,7 +27,7 @@ drifted apart: a row action tooltip accepted a closure, a mass action tooltip di
 new Action()
     ->label(__('Delete'))
     ->as(new Http(route('users.destroy'), Method::Delete))
-    ->with(new Style(ButtonStyle::Danger))
+    ->style(ButtonStyle::DangerOutline)
     ->with(new Confirmation(__('Are you sure?')));
 ```
 
@@ -43,9 +46,6 @@ modal body. In 1.x `TableAction::asModal()` existed but no view ever read the fl
 **Extensibility.** Intents and capabilities are both open contracts, so you can write your own without touching the
 package. The capability pipeline has `check`, `apply` and `contribute` hooks, letting a capability veto an action,
 change its attributes, or render markup before, after, or inside it.
-
-**Action styling.** The `Style` capability applies `ButtonStyle` values to any action, and adapts automatically inside a
-dropdown, where a colour is used instead of a button class.
 
 **Mass is now bulk.** `massActions()` is now `bulkActions()`, in the PHP API and in the rendered markup.
 
@@ -89,6 +89,87 @@ the order you get.
 whole query string, silently discarding everything else, including your other filters. Each control now carries the
 rest of the table's state with it.
 
+## One way to style anything
+
+In 1.x styling was four unrelated methods with four different shapes: `styles()`, `cellStyles()`, `tableStyles()` and
+`pageStyle()`. 2.0 replaces all of them with a single idea. Whatever you are styling, you say `style()`, and you pass
+cases from that thing's own vocabulary.
+
+```php
+// A table.
+public function style(): array
+{
+    return [TableStyle::Striped, TableStyle::Hover];
+}
+
+// A column, and every cell in it.
+new Column('total')->style(CellStyle::AlignRight, CellStyle::FontBold);
+
+// An action.
+new Action()->style(ButtonStyle::DangerOutline);
+```
+
+Each level has its own enum, so the type system stops you putting `AlignRight` on a table or `Striped` on a cell.
+
+**Anything that depends on the row takes a closure instead.** A cell can colour itself from its own value, and a row
+can colour itself from its model:
+
+```php
+new Column('balance')->style(
+    CellStyle::AlignRight,
+    fn (CellContext $context) => $context->model?->balance < 0 ? CellStyle::TextDanger : null,
+);
+```
+
+Static cases and whatever the closure returns are both applied. Nothing is resolved or de-duplicated: if you declare two
+styles that fight, both classes are emitted and CSS decides. That is deliberate, because the package guessing which one
+you meant is worse than you seeing both.
+
+The same shape reaches actions and action collections, so a delete button can turn grey when a record is locked, and a
+dropdown's toggle button can be styled at all, which it never could before.
+
+**A fix rode along with it.** Cell alignment used to apply on sortable columns and quietly do nothing on the rest,
+because the alignment classes came in two variants and the non-sortable header used the wrong one. Alignment now works
+the same everywhere.
+
+## Footers that add up
+
+A table full of amounts invites the obvious question. 2.0 answers it.
+
+```php
+public function columns(): array
+{
+    return [
+        new Column('number'),
+        new Column('total')->currency()->aggregate(new Sum()),
+    ];
+}
+
+public function footer(): array
+{
+    return [
+        new FooterRow(new Sum(), AggregateScope::Page, __('This page')),
+        new FooterRow(new Sum(), AggregateScope::Total, __('All invoices')),
+    ];
+}
+```
+
+That renders two footer rows: the total of what is on screen, and the total of everything matching the current search
+and filters. On a paginated table those are different numbers, and rather than guess which one you meant, you declare
+the ones you want.
+
+**A column opts in.** A footer row only fills a cell where the column declared that aggregate, so an id, a year or a
+postcode is never summed by accident.
+
+**Six aggregates ship**: sum, average, median, count, min and max. A sum of a currency column renders as currency,
+because the aggregate says whether its result is still in the column's unit; a count of the same column renders as a
+plain number, because it is not.
+
+**And you can write your own.** `Aggregate` is an open contract with one method per scope. Return `null` from a scope
+you cannot answer and that cell simply stays empty, which is exactly how the built-in median declines to compute across
+a whole result set: there is no median function that works on every database Laravel supports, and loading every
+matching row to find out would defeat the point of paginating.
+
 ## Upgrading
 
 **Every 2.0 upgrade needs at least one change.** Because query parameters are namespaced under the table name now,
@@ -96,7 +177,9 @@ any table URL you have hard-coded, linked to or bookmarked changes shape, and th
 properties are gone.
 
 On top of that, anyone using actions has more to do: every `tableActions()`, `rowActions()` and `massActions()`
-definition needs to be rewritten, and closures now receive a single `ActionContext` instead of a model.
+definition needs to be rewritten, and closures now receive a single `ActionContext` instead of a model. Anyone who
+styled anything has `styles()`, `cellStyles()`, `tableStyles()` and `pageStyle()` to convert, and anyone who wrote a
+custom formatter has one signature to widen.
 
 The [upgrade guide](/docs/upgrading) walks through it step by step, with a full before-and-after example and a list of
 every removed and renamed API. Two things in particular are worth reading before you start: the closure signature
