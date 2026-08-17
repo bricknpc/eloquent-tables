@@ -332,22 +332,27 @@ public function accentStyle(): AccentStyle   { return AccentStyle::Primary; }   
 The accent is a single colour, so the method returns one case. Anything conditional goes in the method body, which
 already has the request.
 
-## 15. Action styling is a method, not a capability
+## 15. `styles:` becomes `style()`
 
-The `Style` capability is gone. Actions and action collections style themselves with `style()`, the same method columns
-use.
+Actions style themselves with a `style()` method, the same one columns use. It is variadic, so the array is gone.
 
 ```php
 new RowAction(action: $url, styles: [ButtonStyle::Danger]);   // 1.x
 new Action()->as(new Http($url))->style(ButtonStyle::Danger); // 2.0
 ```
 
-Two behaviours changed with it. Repeated declarations now merge instead of the last one winning, so
-`->style(A)->style(B)` renders both. And a custom capability can no longer style an action by writing
-`$descriptor->attributes['class']`; add to `$descriptor->style` instead.
+Repeated declarations merge, so `->style(A)->style(B)` renders both rather than the last one winning.
 
-The upside is that a dropdown's toggle button can be styled at all now, which the capability could never reach. See
-[action styling](styling/action-styling.md#styling-a-dropdown).
+New in 2.0: an [action collection](actions/action-collections.md) of the dropdown type takes the same method, so the
+toggle button can be styled. See [action styling](styling/action-styling.md#styling-a-dropdown).
+
+:::note
+
+If you followed the 2.0 alpha, styling was briefly a `Style` capability. That capability is gone, `->style()` replaces
+`->with(new Style(...))`, and a custom capability can no longer style an action by writing
+`$descriptor->attributes['class']`. Add to `$descriptor->style` instead.
+
+:::
 
 ## Full example
 
