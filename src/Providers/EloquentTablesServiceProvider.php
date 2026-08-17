@@ -41,7 +41,7 @@ class EloquentTablesServiceProvider extends ServiceProvider
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../resources/lang');
 
         $this->publishes([
-            __DIR__ . '/../../config/eloquent-tables.php' => $this->app->configPath('package.php'),
+            __DIR__ . '/../../config/eloquent-tables.php' => $this->app->configPath('eloquent-tables.php'),
         ], 'config');
 
         $this->publishes([
