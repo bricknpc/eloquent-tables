@@ -197,7 +197,7 @@ class ColumnTest extends TestCase
     {
         yield [
             new class implements Formatter {
-                public function format(mixed $value, Model $model): \Stringable
+                public function format(mixed $value, ?Model $model = null): \Stringable
                 {
                     return str('formatted');
                 }

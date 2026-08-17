@@ -9,7 +9,7 @@ use BrickNPC\EloquentTables\Contracts\Formatter;
 
 final readonly class TestFormatter implements Formatter
 {
-    public function format(mixed $value, Model $model): \Stringable
+    public function format(mixed $value, ?Model $model = null): \Stringable
     {
         return str('formatted');
     }
