@@ -9,9 +9,11 @@ use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use BrickNPC\EloquentTables\Aggregates\Sum;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\CellStyle;
+use BrickNPC\EloquentTables\Aggregates\Count;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\StyleFamily;
@@ -22,6 +24,7 @@ use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
+use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
@@ -38,6 +41,9 @@ use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 #[UsesClass(StyleTarget::class)]
 #[UsesClass(StyleFamily::class)]
 #[UsesClass(TableRegion::class)]
+#[UsesClass(Sum::class)]
+#[UsesClass(Count::class)]
+#[UsesClass(IgnoresNullValues::class)]
 class ColumnTest extends TestCase
 {
     public function test_can_create_a_column_with_only_a_name(): void
@@ -443,6 +449,43 @@ class ColumnTest extends TestCase
     public function test_a_column_declares_no_styles_by_default(): void
     {
         $this->assertNull(new Column(name: 'name')->style);
+    }
+
+    public function test_a_column_offers_no_aggregates_by_default(): void
+    {
+        $this->assertSame([], new Column('amount')->aggregates);
+    }
+
+    public function test_aggregates_can_be_declared_through_the_constructor(): void
+    {
+        $sum = new Sum();
+
+        $this->assertSame([$sum], new Column(name: 'amount', aggregates: [$sum])->aggregates);
+    }
+
+    public function test_aggregates_can_be_declared_fluently(): void
+    {
+        $sum   = new Sum();
+        $count = new Count();
+
+        $this->assertSame([$sum, $count], new Column('amount')->aggregate($sum, $count)->aggregates);
+    }
+
+    public function test_aggregate_returns_the_column_for_chaining(): void
+    {
+        $column = new Column('amount');
+
+        $this->assertSame($column, $column->aggregate(new Sum()));
+    }
+
+    public function test_declaring_aggregates_twice_appends_rather_than_replaces(): void
+    {
+        $sum   = new Sum();
+        $count = new Count();
+
+        $column = new Column('amount')->aggregate($sum)->aggregate($count);
+
+        $this->assertSame([$sum, $count], $column->aggregates);
     }
 
     public function test_styles_can_be_declared_through_the_constructor(): void

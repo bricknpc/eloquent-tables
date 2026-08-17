@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Contracts\Style;
 use BrickNPC\EloquentTables\Enums\ColumnType;
+use BrickNPC\EloquentTables\Contracts\Aggregate;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
@@ -34,6 +35,7 @@ class Column
      * @param null|\Closure(Request $request, Builder $query): void|Sort                 $defaultSort
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      * @param null|class-string<Formatter>|Formatter                                     $formatter
+     * @param Aggregate[]                                                                $aggregates
      */
     public function __construct(
         public string $name,
@@ -47,6 +49,7 @@ class Column
         public Formatter|string|null $formatter = null,
         public ?ColumnType $type = ColumnType::Text,
         public ?StyleSet $style = null,
+        public array $aggregates = [],
     ) {}
 
     /**
@@ -206,6 +209,13 @@ class Column
     public function style(\Closure|Style ...$styles): static
     {
         $this->style = $this->style?->with(...$styles) ?? new StyleSet(...$styles);
+
+        return $this;
+    }
+
+    public function aggregate(Aggregate ...$aggregates): static
+    {
+        $this->aggregates = [...$this->aggregates, ...$aggregates];
 
         return $this;
     }
