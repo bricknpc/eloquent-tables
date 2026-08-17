@@ -9,6 +9,6 @@
 @extends($layout->name, $layout->with)
 
 @section($layout->section ?? 'slot')
-    @include('eloquent-tables::' . $theme->value . '.table')
+    @include($theme->view('table'))
     @include('eloquent-tables::js')
 @endsection

@@ -77,6 +77,86 @@ class ConfigTest extends TestCase
         $this->assertSame('f', $config->filterQueryName());
     }
 
+    public function test_it_returns_the_correct_page_query_name(): void
+    {
+        config()->set('eloquent-tables.pagination.page_query_name', 'p');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('p', $config->pageQueryName());
+    }
+
+    public function test_it_returns_the_default_page_query_name_when_none_set(): void
+    {
+        config()->set('eloquent-tables.pagination', []);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('page', $config->pageQueryName());
+    }
+
+    public function test_it_returns_the_correct_per_page_query_name(): void
+    {
+        config()->set('eloquent-tables.pagination.per_page_query_name', 'size');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('size', $config->perPageQueryName());
+    }
+
+    public function test_it_returns_the_default_per_page_query_name_when_none_set(): void
+    {
+        config()->set('eloquent-tables.pagination', []);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('per_page', $config->perPageQueryName());
+    }
+
+    public function test_it_returns_the_correct_preferences_cookie_name(): void
+    {
+        config()->set('eloquent-tables.preferences.cookie_name', 'prefs');
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('prefs', $config->preferencesCookieName());
+    }
+
+    public function test_it_returns_the_default_preferences_cookie_name_when_none_set(): void
+    {
+        config()->set('eloquent-tables.preferences', []);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertSame('eloquent_tables_preferences', $config->preferencesCookieName());
+    }
+
+    public function test_preferences_are_enabled_when_none_set(): void
+    {
+        config()->set('eloquent-tables.preferences', []);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertTrue($config->preferencesEnabled());
+    }
+
+    public function test_preferences_can_be_disabled(): void
+    {
+        config()->set('eloquent-tables.preferences.enabled', false);
+
+        /** @var Config $config */
+        $config = $this->app->make(Config::class);
+
+        $this->assertFalse($config->preferencesEnabled());
+    }
+
     #[DataProvider('iconProvider')]
     public function test_it_returns_the_correct_icons(string $method, string $name, string|\Stringable $value): void
     {

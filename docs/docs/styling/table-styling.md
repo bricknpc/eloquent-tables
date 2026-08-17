@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Table Styling
 
-Table styles control the visual appearance of your tables and columns. They apply directly to the generated HTML 
-table markup and integrate with your chosen theme (currently only Bootstrap 5).
+Table styles control the visual appearance of the table itself. They apply directly to the generated HTML table markup
+and integrate with your chosen theme (currently only Bootstrap 5).
 
-You can set table styles on tables, by implementing the `tableStyles` method, and on columns by setting the 
-`styles` property.
+You can set table styles by implementing the `style()` method on your table, returning the
+`BrickNPC\EloquentTables\Enums\TableStyle` cases you want.
 
 ```php
 <?php
@@ -18,24 +18,59 @@ declare(strict_types=1);
 
 namespace App\Tables;
 
-use App\Models\User;
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 
 class UserTable extends Table
 {
     //... Other methods
-    
+
     /**
      * @return TableStyle[]
      */
-    public function tableStyles(): array
+    public function style(): array
     {
-        return [
-            TableStyle::Bordered,
-        ];
+        return [TableStyle::Bordered];
     }
 }
 ```
 
-See the [columns](../columns.md#styles) documentation for more details about styles on columns.
+Columns are styled separately, with their own vocabulary. See [cell styling](cell-styling.md).
+
+## Styling a row
+
+A row style covers the whole row, including the bulk-action checkbox and the row-action cells that column styles cannot
+reach. Declare it with `rowStyle()`, over `BrickNPC\EloquentTables\Enums\RowStyle`:
+
+```php
+<?php
+
+use BrickNPC\EloquentTables\Enums\RowStyle;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
+
+public function rowStyle(): ?StyleSet
+{
+    return new StyleSet(
+        fn (RowContext $context) => $context->model->is_overdue ? RowStyle::Danger : null,
+    );
+}
+```
+
+The closure receives a `RowContext` carrying that row's model. Returning `null` leaves the row unstyled.
+
+:::note
+You can approximate this by giving every column the same conditional style, but the leading checkbox cell and the
+trailing actions cell sit outside the column loop, so they would stay uncoloured and the row would look broken at both
+ends.
+:::
+
+## Styling a footer row
+
+A [footer](../footers.md) row takes the same `RowStyle` cases a body row does, declared on the row itself:
+
+```php
+new FooterRow(new Sum(), AggregateScope::Total, __('All invoices'), styles: [RowStyle::Primary]);
+```
+
+There is no closure form, because a footer row aggregates many rows and has no single model to vary on.

@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Exceptions\InvalidValueException;
 
 /**
@@ -217,5 +218,54 @@ class DateFormatterTest extends TestCase
         yield [
             false,
         ];
+    }
+
+    public function test_it_accepts_a_string_timezone(): void
+    {
+        $formatter = new DateFormatter('en_US', 'Asia/Tokyo');
+
+        $model = new class extends Model {};
+
+        $date = new \DateTimeImmutable('2026-01-01 23:00:00', new \DateTimeZone('UTC'));
+
+        // 23:00 UTC is already the 2nd in Tokyo, so the date itself proves the zone was applied.
+        $this->assertStringContainsString('January 2, 2026', $formatter->format($date, $model)->__toString());
+    }
+
+    public function test_it_accepts_a_date_time_zone_object(): void
+    {
+        $formatter = new DateFormatter('en_US', new \DateTimeZone('Asia/Tokyo'));
+
+        $model = new class extends Model {};
+
+        $date = new \DateTimeImmutable('2026-01-01 23:00:00', new \DateTimeZone('UTC'));
+
+        $this->assertStringContainsString('January 2, 2026', $formatter->format($date, $model)->__toString());
+    }
+
+    public function test_an_unknown_string_timezone_throws(): void
+    {
+        $formatter = new DateFormatter('en_US', 'Not/AZone');
+
+        $model = new class extends Model {};
+
+        $this->expectException(InvalidValueException::class);
+
+        $formatter->format(new \DateTimeImmutable(), $model);
+    }
+
+    public function test_it_formats_the_same_value_with_and_without_a_model(): void
+    {
+        $formatter = new DateFormatter('en_US', 'UTC');
+
+        $this->assertSame(
+            (string) $formatter->format(Carbon::parse('2026-08-17 12:00:00'), new TestModel()),
+            (string) $formatter->format(Carbon::parse('2026-08-17 12:00:00')),
+        );
+    }
+
+    public function test_it_formats_a_value_with_no_model_at_all(): void
+    {
+        $this->assertNotSame('', (string) new DateFormatter('en_US', 'UTC')->format(Carbon::parse('2026-08-17 12:00:00')));
     }
 }

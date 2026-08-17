@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Exceptions\InvalidValueException;
 
@@ -193,5 +194,20 @@ class NumberFormatterTest extends TestCase
             2,
             false,
         ];
+    }
+
+    public function test_it_formats_the_same_value_with_and_without_a_model(): void
+    {
+        $formatter = new NumberFormatter('en_US');
+
+        $this->assertSame(
+            (string) $formatter->format(1234.56, new TestModel()),
+            (string) $formatter->format(1234.56),
+        );
+    }
+
+    public function test_it_formats_a_value_with_no_model_at_all(): void
+    {
+        $this->assertNotSame('', (string) new NumberFormatter('en_US')->format(1234.56));
     }
 }

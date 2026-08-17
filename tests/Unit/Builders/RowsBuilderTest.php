@@ -20,7 +20,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 
 /**
@@ -29,6 +31,8 @@ use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 #[CoversClass(RowsBuilder::class)]
 #[UsesClass(Table::class)]
 #[UsesClass(Config::class)]
+#[UsesClass(TableParameters::class)]
+#[UsesClass(TablePreferences::class)]
 #[UsesClass(Column::class)]
 #[UsesClass(WithPagination::class)]
 #[UsesClass(Filter::class)]
@@ -63,7 +67,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('search', 'this will not give any results');
+        $request->query->set('table', ['search' => 'this will not give any results']);
 
         $rows = $builder->build($table, $request);
 
@@ -92,7 +96,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('search', '');
+        $request->query->set('table', ['search' => '']);
 
         $rows = $builder->build($table, $request);
 
@@ -122,7 +126,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('search', 'test-email-1@test.com');
+        $request->query->set('table', ['search' => 'test-email-1@test.com']);
 
         $rows = $builder->build($table, $request);
 
@@ -152,7 +156,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('search', 'test-email-01@test.com');
+        $request->query->set('table', ['search' => 'test-email-01@test.com']);
 
         $rows = $builder->build($table, $request);
 
@@ -181,7 +185,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('sort', 'invalid');
+        $request->query->set('table', ['sort' => 'invalid']);
 
         $rows = $builder->build($table, $request);
 
@@ -270,7 +274,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('sort', ['email' => 'asc']);
+        $request->query->set('table', ['sort' => ['email' => 'asc']]);
 
         $rows = $builder->build($table, $request);
 
@@ -300,7 +304,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('sort', ['name' => 'desc']);
+        $request->query->set('table', ['sort' => ['name' => 'desc']]);
 
         $rows = $builder->build($table, $request);
 
@@ -330,7 +334,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('sort', ['name' => 'asc']);
+        $request->query->set('table', ['sort' => ['name' => 'asc']]);
 
         $rows = $builder->build($table, $request);
 
@@ -367,13 +371,236 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('filter', ['name' => 'Test Model 01']);
+        $request->query->set('table', ['filter' => ['name' => 'Test Model 01']]);
 
         $rows = $builder->build($table, $request);
 
         $this->assertInstanceOf(Collection::class, $rows);
         $this->assertCount(1, $rows);
         $this->assertSame('Test Model 01', $rows[0]->name);
+    }
+
+    public function test_it_applies_a_filter_under_the_configured_filtering_query_name(): void
+    {
+        // Regression: applyFilters read a hardcoded "filter" key, so a configured filtering query
+        // name was honoured when the filter rendered but ignored when it applied.
+        config()->set('eloquent-tables.filtering.query_name', 'refine');
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = new class extends Table {
+            public function columns(): array
+            {
+                return [
+                    new Column('name'),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('name', []),
+                ];
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['refine' => ['name' => 'Test Model 01']]);
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertCount(1, $rows);
+        $this->assertSame('Test Model 01', $rows[0]->name);
+    }
+
+    public function test_two_tables_on_one_request_sort_independently(): void
+    {
+        $makeTable = fn (string $name) => new class($name) extends Table {
+            public function __construct(private readonly string $tableName) {}
+
+            public function name(): string
+            {
+                return $this->tableName;
+            }
+
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('users', ['sort' => ['name' => 'desc']]);
+        $request->query->set('orders', ['sort' => ['name' => 'asc']]);
+
+        /** @var RowsBuilder $usersBuilder */
+        $usersBuilder = $this->app->make(RowsBuilder::class);
+
+        /** @var RowsBuilder $ordersBuilder */
+        $ordersBuilder = $this->app->make(RowsBuilder::class);
+
+        $users  = $usersBuilder->build($makeTable('users'), $request);
+        $orders = $ordersBuilder->build($makeTable('orders'), $request);
+
+        $this->assertSame('Test Model 49', $users->first()->name);
+        $this->assertSame('Test Model 00', $orders->first()->name);
+    }
+
+    public function test_the_paginator_uses_the_tables_nested_page_key(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $table = $this->paginatedTable('users');
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('users', ['sort' => ['name' => 'asc'], 'search' => 'Test']);
+        $request->query->set('orders', ['page' => '2']);
+
+        $paginator = $builder->build($table, $request);
+
+        $url = $paginator->url(2);
+
+        $this->assertStringContainsString('users%5Bpage%5D=2', $url);
+        $this->assertStringContainsString('users%5Bsort%5D%5Bname%5D=asc', $url);
+        $this->assertStringContainsString('users%5Bsearch%5D=Test', $url);
+        $this->assertStringContainsString('orders%5Bpage%5D=2', $url);
+    }
+
+    public function test_each_table_paginates_independently(): void
+    {
+        /** @var RowsBuilder $usersBuilder */
+        $usersBuilder = $this->app->make(RowsBuilder::class);
+
+        /** @var RowsBuilder $ordersBuilder */
+        $ordersBuilder = $this->app->make(RowsBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('users', ['page' => '2']);
+
+        $users  = $usersBuilder->build($this->paginatedTable('users'), $request);
+        $orders = $ordersBuilder->build($this->paginatedTable('orders'), $request);
+
+        $this->assertSame(2, $users->currentPage());
+        $this->assertSame(1, $orders->currentPage());
+    }
+
+    public function test_the_per_page_value_comes_from_the_tables_own_parameter(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('users', ['per_page' => '5']);
+        $request->query->set('orders', ['per_page' => '25']);
+
+        $paginator = $builder->build($this->paginatedTable('users'), $request);
+
+        $this->assertSame(5, $paginator->perPage());
+    }
+
+    public function test_sort_precedence_follows_the_click_order_not_the_column_order(): void
+    {
+        $applied = [];
+
+        $table = $this->recordingSortTable($applied);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        // Clicked email first, then name, the reverse of the declaration order below.
+        $request->query->set('table', ['sort' => ['email' => 'asc', 'name' => 'desc']]);
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+        $builder->build($table, $request);
+
+        $this->assertSame(['email:asc', 'name:desc'], $applied);
+    }
+
+    public function test_sort_precedence_preserves_a_three_column_click_order(): void
+    {
+        $applied = [];
+
+        $table = $this->recordingSortTable($applied);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['sort' => ['created_at' => 'desc', 'name' => 'asc', 'email' => 'asc']]);
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+        $builder->build($table, $request);
+
+        $this->assertSame(['created_at:desc', 'name:asc', 'email:asc'], $applied);
+    }
+
+    public function test_a_sort_key_for_a_column_that_is_not_sortable_is_ignored(): void
+    {
+        $applied = [];
+
+        $table = $this->recordingSortTable($applied);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['sort' => ['not_sortable' => 'asc', 'name' => 'asc']]);
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+        $builder->build($table, $request);
+
+        $this->assertSame(['name:asc'], $applied);
+    }
+
+    public function test_a_sort_key_for_an_unknown_column_is_ignored(): void
+    {
+        $applied = [];
+
+        $table = $this->recordingSortTable($applied);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['sort' => ['nope' => 'asc', 'name' => 'asc']]);
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+        $builder->build($table, $request);
+
+        $this->assertSame(['name:asc'], $applied);
+    }
+
+    public function test_an_unusable_sort_direction_is_ignored(): void
+    {
+        $applied = [];
+
+        $table = $this->recordingSortTable($applied);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['sort' => ['name' => 'sideways', 'email' => 'asc']]);
+
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+        $builder->build($table, $request);
+
+        $this->assertSame(['email:asc'], $applied);
     }
 
     public function test_empty_filter_is_not_applied(): void
@@ -404,7 +631,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('filter', ['name' => '']);
+        $request->query->set('table', ['filter' => ['name' => '']]);
 
         $rows = $builder->build($table, $request);
 
@@ -440,7 +667,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('filter', 'invalid');
+        $request->query->set('table', ['filter' => 'invalid']);
 
         $rows = $builder->build($table, $request);
 
@@ -499,7 +726,7 @@ class RowsBuilderTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $request->query->set('sort', ['name' => 'desc']);
+        $request->query->set('table', ['sort' => ['name' => 'desc']]);
 
         $rows = $builder->build($table, $request);
 
@@ -515,6 +742,139 @@ class RowsBuilderTest extends TestCase
         $this->assertSame($rows[49]->name, $rows2[49]->name);
     }
 
+    public function test_the_narrowed_query_is_null_before_build_has_run(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $this->assertNull($builder->narrowedQuery());
+    }
+
+    public function test_the_narrowed_query_ignores_the_page_limit(): void
+    {
+        $this->seedAmounts(10, 20, 30, 40, 50);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->paginatedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertCount(2, $rows);
+        $this->assertSame(150, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_reflects_an_applied_search(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->searchableAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['search' => 'Row 0']);
+
+        $builder->build($table, $request);
+
+        $this->assertSame(10, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_reflects_an_applied_filter(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->filteredAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['filter' => ['amount' => '30']]);
+
+        $builder->build($table, $request);
+
+        $this->assertSame(30, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_survives_a_sorted_table(): void
+    {
+        // An aggregate over an ordered query is invalid SQL on strict databases, so this pins that
+        // the order is dropped rather than carried into the aggregate.
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->sortedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $builder->build($table, $request);
+
+        $this->assertSame(60, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_running_an_aggregate_does_not_disturb_the_rows(): void
+    {
+        // Covers R7.
+        $this->seedAmounts(10, 20, 30, 40, 50);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->paginatedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $totalBefore = $rows->total();
+
+        $builder->narrowedQuery()?->sum('amount');
+        $builder->narrowedQuery()?->count('amount');
+        $builder->narrowedQuery()?->max('amount');
+
+        $this->assertCount(2, $rows);
+        $this->assertSame($totalBefore, $rows->total());
+        $this->assertSame(150, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_each_call_returns_an_independent_query(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->amountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $builder->build($table, $request);
+
+        $first  = $builder->narrowedQuery();
+        $second = $builder->narrowedQuery();
+
+        $this->assertNotSame($first, $second);
+        $this->assertSame(60, $first?->sum('amount'));
+        $this->assertSame(60, $second?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_is_available_without_pagination(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->amountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertSame(60, $builder->narrowedQuery()?->sum('amount'));
+    }
+
     private function seedTestModel(): void
     {
         for ($i = 0; $i < 50; ++$i) {
@@ -525,5 +885,167 @@ class RowsBuilderTest extends TestCase
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    private function paginatedTable(string $name): Table
+    {
+        return new class($name) extends Table {
+            use WithPagination;
+
+            public function __construct(private readonly string $tableName) {}
+
+            public function name(): string
+            {
+                return $this->tableName;
+            }
+
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable()->searchable(),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    /**
+     * A table whose sortable columns record the order their sort is applied, so precedence is
+     * observable directly rather than inferred from row output. Declaration order here is
+     * name, email, created_at.
+     *
+     * @param list<string> $applied
+     */
+    private function recordingSortTable(array &$applied): Table
+    {
+        $record = function (string $name) use (&$applied) {
+            return function ($request, $query, Sort $sort) use ($name, &$applied) {
+                $applied[] = $name . ':' . $sort->value;
+            };
+        };
+
+        return new class($record) extends Table {
+            /** @param \Closure(string): \Closure $record */
+            public function __construct(private readonly \Closure $record) {}
+
+            public function columns(): array
+            {
+                return [
+                    new Column('name')->sortable(($this->record)('name')),
+                    new Column('email')->sortable(($this->record)('email')),
+                    new Column('created_at')->sortable(($this->record)('created_at')),
+                    new Column('not_sortable'),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function seedAmounts(int ...$amounts): void
+    {
+        foreach ($amounts as $index => $amount) {
+            $model         = new TestModel();
+            $model->name   = 'Row ' . $index;
+            $model->email  = 'row' . $index . '@example.com';
+            $model->amount = $amount;
+            $model->save();
+        }
+    }
+
+    private function amountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function paginatedAmountTable(): Table
+    {
+        return new class extends Table {
+            use WithPagination;
+
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function perPage(Request $request): int
+            {
+                return 2;
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function searchableAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('name', searchable: true), new Column('amount')];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function filteredAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('amount', []),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function sortedAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount', sortable: true, defaultSort: Sort::Desc)];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
     }
 }

@@ -1,24 +1,26 @@
 @php
     use Illuminate\Http\Request;
     use BrickNPC\EloquentTables\Column;
-    use BrickNPC\EloquentTables\Builders\ColumnLabelViewBuilder;
-    use BrickNPC\EloquentTables\Builders\ColumnValueViewBuilder;
+    use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+    use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 
     /** @var Request $request */
+    /** @var \BrickNPC\EloquentTables\Table $table */
     /** @var Column[] $columns */
-    /** @var ColumnLabelViewBuilder $columnLabelViewBuilder */
-    /** @var ColumnValueViewBuilder $columnValueViewBuilder */
+    /** @var ColumnLabelRenderer $columnLabelRenderer */
+    /** @var ColumnValueRenderer $columnValueRenderer */
+    /** @var ?string $bulkActionColumnWidth */
 @endphp
 <thead>
     <tr>
-        @if($massActionCount > 0)
-            <th class="text-center" style="width: 5%;">
-                <div class="form-check form-switch d-flex justify-content-center">
+        @if($bulkActionCount > 0)
+            <th @if($bulkActionColumnWidth !== null) style="width: {{ $bulkActionColumnWidth }};" @endif>
+                <div class="form-check form-switch d-flex align-items-center w-100 {{ $bulkActionCellStyles }}">
                     <input
                         class="form-check-input"
                         type="checkbox"
                         role="switch"
-                        id="mass-action-switch-{{ $id }}"
+                        id="bulk-action-switch-{{ $id }}"
                         data-{{ $dataNamespace }}-select-all="true"
                         aria-label="{{ __('Select all') }}"
                     >
@@ -26,7 +28,7 @@
             </th>
         @endif
         @foreach($columns as $column)
-            {{ $columnLabelViewBuilder->build($request, $column) }}
+            {{ $columnLabelRenderer->build($request, $table, $column) }}
         @endforeach
         @if($rowActionCount > 0)
             <th>&nbsp;</th>

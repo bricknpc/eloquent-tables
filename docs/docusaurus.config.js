@@ -32,6 +32,16 @@ const config = {
 
   onBrokenLinks: 'throw',
 
+  markdown: {
+    mermaid: true,
+    // `.md` is parsed as CommonMark and only `.mdx` gets MDX. Agent plans are written
+    // by a tool and routinely contain angle brackets and braces outside code fences,
+    // which MDX would try to parse as JSX and fail the build on.
+    format: 'detect',
+  },
+
+  themes: ['@docusaurus/theme-mermaid'],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -47,10 +57,11 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
+          // "HEAD" resolves to whichever branch is currently the default, which is the
+          // current major version branch. Naming it that way means these links survive the
+          // next major taking over as default. Remove editUrl to drop "edit this page".
           editUrl:
-            'https://github.com/bricknpc/eloquent-tables/tree/main/docs/',
+            'https://github.com/bricknpc/eloquent-tables/tree/HEAD/docs/',
         },
         blog: {
           showReadingTime: true,
@@ -99,6 +110,13 @@ const config = {
             position: 'left',
             label: 'Documentation',
           },
+          {
+            type: 'docSidebar',
+            sidebarId: 'plansSidebar',
+            docsPluginId: 'plans',
+            position: 'left',
+            label: 'Agent Plans',
+          },
           {to: '/blog', label: 'Blog', position: 'left'},
           {to: '/showcase', label: 'Community Showcase', position: 'left'},
           {
@@ -137,6 +155,10 @@ const config = {
             title: 'More',
             items: [
               {
+                label: 'Agent Plans',
+                to: '/plans',
+              },
+              {
                 label: 'Blog',
                 to: '/blog',
               },
@@ -156,6 +178,18 @@ const config = {
       },
     }),
     plugins: [
+      [
+        '@docusaurus/plugin-content-docs',
+        /** @type {import('@docusaurus/plugin-content-docs').Options} */
+        ({
+          id: 'plans',
+          path: 'plans',
+          routeBasePath: 'plans',
+          sidebarPath: './sidebarsPlans.js',
+          editUrl:
+            'https://github.com/bricknpc/eloquent-tables/tree/HEAD/docs/',
+        }),
+      ],
       [
         '@docusaurus/plugin-ideal-image',
         {

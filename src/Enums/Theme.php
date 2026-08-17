@@ -8,10 +8,13 @@ enum Theme: string
 {
     case Bootstrap5 = 'bootstrap-5';
 
+    public function view(string $view): string
+    {
+        return 'eloquent-tables::' . $this->value . '.' . $view;
+    }
+
     public function getLinksView(): string
     {
-        return match ($this) {
-            self::Bootstrap5 => 'eloquent-tables::bootstrap-5.pagination',
-        };
+        return $this->view('pagination');
     }
 }

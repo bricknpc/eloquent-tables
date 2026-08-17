@@ -10,10 +10,11 @@ use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\Enums\TableParameter;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
+use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use Illuminate\Pagination\AbstractPaginator as Paginator;
 
@@ -32,9 +33,14 @@ class RowsBuilder
      */
     private Collection|Paginator|null $result = null;
 
+    private ?Builder $narrowedQuery = null;
+
+    /**
+     * @param TableParameters<TModel> $parameters
+     */
     public function __construct(
-        private readonly Config $config,
         private readonly RouteModelBinder $routeModelBinder,
+        private readonly TableParameters $parameters,
     ) {}
 
     /**
@@ -59,16 +65,37 @@ class RowsBuilder
         /** @var Builder $query */
         $query = $this->routeModelBinder->call($table, 'query');
 
-        $this->applySearch($query, $request);
+        $this->applySearch($query, $table, $request);
         $this->applyFilters($query, $table, $request);
-        $this->applySort($query, $request);
+        $this->applySort($query, $table, $request);
+
+        // Retained before pagination, so a footer aggregate can run against the same narrowed
+        // set the rows came from without the page limit.
+        $this->narrowedQuery = clone $query;
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
-            ? $query->paginate(perPage: $table->perPage($request), pageName: $table->pageName())->withQueryString() // @phpstan-ignore-line
+            ? $query->paginate(
+                perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
+                pageName: $this->parameters->key($table, TableParameter::Page),
+                // Laravel resolves the current page with $request->input($pageName), which reads dot
+                // notation and cannot see a bracketed key, so the page is resolved here instead.
+                page: $this->parameters->integerValue($table, TableParameter::Page, $request),
+            )->withQueryString()
             : $query->get();
 
         return $this->result = $result;
+    }
+
+    /**
+     * The query behind the rows, with search, filters and sorting applied but no page limit.
+     *
+     * Null until build() has run. A fresh clone is returned each call so one aggregate cannot
+     * affect the next.
+     */
+    public function narrowedQuery(): ?Builder
+    {
+        return $this->narrowedQuery === null ? null : clone $this->narrowedQuery;
     }
 
     /**
@@ -80,18 +107,7 @@ class RowsBuilder
             return;
         }
 
-        /** @var array<string, string>|string $filterRequest */
-        $filterRequest = $request->query('filter', []);
-
-        if (!is_array($filterRequest)) {
-            $filterRequest = [];
-        }
-
-        foreach ($filterRequest as $key => $value) {
-            if (empty($value)) {
-                unset($filterRequest[$key]);
-            }
-        }
+        $filterRequest = $this->parameters->arrayValue($table, TableParameter::Filter, $request);
 
         /** @var Filter[] $filters */
         $filters = $this->routeModelBinder->call($table, 'filters');
@@ -102,35 +118,48 @@ class RowsBuilder
         ;
     }
 
-    private function applySort(Builder $query, Request $request): void
+    /**
+     * @param Table<TModel> $table
+     */
+    private function applySort(Builder $query, Table $table, Request $request): void
     {
-        /** @var array<string, string>|string $sortRequest */
-        $sortRequest = $request->query($this->config->sortQueryName(), []);
+        $sortRequest = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
-        if (!is_array($sortRequest)) {
-            $sortRequest = [];
+        $sortable = $this->columns
+            ->filter(fn (Column $column) => $column->sortable)
+            ->keyBy(fn (Column $column) => $column->name)
+        ;
+
+        $sorted = false;
+
+        // Driven by the request rather than the column list, so the order the visitor clicked the
+        // headers is the order the sort is applied in.
+        foreach ($sortRequest as $name => $direction) {
+            /** @var null|Column<TModel> $column */
+            $column = $sortable->get($name);
+            $sort   = Sort::tryFrom($direction);
+
+            if ($column === null || $sort === null) {
+                continue;
+            }
+
+            $sorted = true;
+
+            if ($column->sortUsing !== null) {
+                call_user_func($column->sortUsing, $request, $query, $sort);
+            } else {
+                $query->orderBy($column->name, $sort->value);
+            }
         }
 
+        if ($sorted) {
+            return;
+        }
+
+        // Nothing usable came from the visitor, so fall back to whatever the columns declare.
         $this->columns
-            ->filter(fn (Column $column) => $column->sortable)
-            ->filter(fn (Column $column) => array_key_exists($column->name, $sortRequest) || $column->defaultSort !== null)
-            ->each(function (Column $column) use ($sortRequest, $query, $request) {
-                if (array_key_exists($column->name, $sortRequest)) {
-                    $sort = Sort::from($sortRequest[$column->name]);
-
-                    if ($column->sortUsing !== null) {
-                        call_user_func($column->sortUsing, $request, $query, $sort);
-                    } else {
-                        $query->orderBy($column->name, $sort->value);
-                    }
-
-                    return;
-                }
-
-                if (count($sortRequest) > 0) {
-                    return;
-                }
-
+            ->filter(fn (Column $column) => $column->sortable && $column->defaultSort !== null)
+            ->each(function (Column $column) use ($query, $request) {
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
                 } else {
@@ -140,11 +169,14 @@ class RowsBuilder
         ;
     }
 
-    private function applySearch(Builder $query, Request $request): void
+    /**
+     * @param Table<TModel> $table
+     */
+    private function applySearch(Builder $query, Table $table, Request $request): void
     {
-        $search = $request->query($this->config->searchQueryName());
+        $search = $this->parameters->stringValue($table, TableParameter::Search, $request);
 
-        if (!is_string($search) || empty($search)) {
+        if ($search === null) {
             return;
         }
 

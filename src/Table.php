@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
+use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 
@@ -38,11 +41,11 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * @var TableViewBuilder<TModel>
+     * @var TableRenderer<TModel>
      */
-    public TableViewBuilder $builder {
-        set(TableViewBuilder $value) {
-            $this->builder = $value;
+    public TableRenderer $renderer {
+        set(TableRenderer $value) {
+            $this->renderer = $value;
         }
     }
 
@@ -82,7 +85,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
             $this->unauthorized();
         }
 
-        return $this->builder->build($this, $this->request);
+        return $this->renderer->build($this, $this->request);
     }
 
     public function withPagination(): bool
@@ -96,18 +99,59 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     }
 
     /**
-     * @return TableStyle[]
+     * The table's stable name, used to namespace its query parameters and its stored preferences.
+     *
+     * The name is derived from the class name with a trailing "Table" removed, so UserTable becomes
+     * "user". Two instances of the same table class share a name, and therefore share both
+     * namespaces; override this to keep them independent.
      */
-    public function tableStyles(): array
+    public function name(): string
     {
-        return [
-            TableStyle::Default,
-        ];
+        // PHP names an anonymous class "<parent>@anonymous<NUL><file>:<line>$<hash>", so cut it back
+        // to the parent before taking the basename.
+        $basename = class_basename(Str::before(static::class, '@anonymous'));
+
+        $stripped = str_ends_with($basename, 'Table')
+            ? substr($basename, 0, -strlen('Table'))
+            : $basename;
+
+        return Str::snake($stripped === '' ? $basename : $stripped);
     }
 
-    public function pageStyle(): PageStyle
+    public function rowStyle(): ?StyleSet
     {
-        return PageStyle::Primary;
+        return null;
+    }
+
+    /**
+     * @return TableStyle[]
+     */
+    public function style(): array
+    {
+        return [TableStyle::Default];
+    }
+
+    public function accentStyle(): AccentStyle
+    {
+        return AccentStyle::Primary;
+    }
+
+    /**
+     * @return FooterRow[]
+     */
+    public function footer(): array
+    {
+        return [];
+    }
+
+    /**
+     * The width of the leading column holding the bulk action checkboxes, as a CSS length.
+     *
+     * Return null to omit the inline width entirely and size the column from your own stylesheet.
+     */
+    public function bulkActionColumnWidth(): ?string
+    {
+        return '5%';
     }
 
     /**

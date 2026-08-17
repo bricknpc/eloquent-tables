@@ -262,8 +262,9 @@ them by supplying the classname of the formatter to the column or by using the h
 
 #### Date formatter
 
-The date formatter formats dates using the `\IntlDateFormatter`. It uses the timezone settings from the 
-app config: `config('app.timezone')`. It uses the current locale of the app for the locale: `app()->getLocale()`.
+The date formatter formats dates using the `\IntlDateFormatter`. By default it uses the timezone settings from the 
+app config: `config('app.timezone')`, and the current locale of the app for the locale: `app()->getLocale()`. You can
+also specify the locale and the timezone to use. The timezone may be a `\DateTimeZone` or a timezone identifier string.
 
 ```php
 <?php
@@ -273,14 +274,17 @@ use BrickNPC\EloquentTables\Column;
 use lluminate\Contracts\Database\Query\Builder;
 
 new Column(name: 'email_verified_at')->date();
+// Or
+new Column(name: 'email_verified_at')->date(locale: 'nl-NL', timezone: 'Europe/Amsterdam');
 ```
 
 Also see the PHP documentation for the [`IntlDateFormatter`](https://www.php.net/manual/en/class.intldateformatter.php) class.
 
 #### Datetime formatter
 
-The datetime formatter formats dates using the `\IntlDateFormatter`. It uses the timezone settings from the
-app config: `config('app.timezone')`. It uses the current locale of the app for the locale: `app()->getLocale()`.
+The datetime formatter formats dates using the `\IntlDateFormatter`. By default it uses the timezone settings from the
+app config: `config('app.timezone')`, and the current locale of the app for the locale: `app()->getLocale()`. You can
+also specify the locale and the timezone to use. The timezone may be a `\DateTimeZone` or a timezone identifier string.
 
 ```php
 <?php
@@ -290,6 +294,8 @@ use BrickNPC\EloquentTables\Column;
 use lluminate\Contracts\Database\Query\Builder;
 
 new Column(name: 'created_at')->dateTime();
+// Or
+new Column(name: 'created_at')->dateTime(locale: 'nl-NL', timezone: 'Europe/Amsterdam');
 ```
 
 Also see the PHP documentation for the [`IntlDateFormatter`](https://www.php.net/manual/en/class.intldateformatter.php) class.
@@ -347,6 +353,45 @@ new Column(name: 'amount_paid')->currency(currency: 'EUR', locale: 'nl-NL');
 
 Also see the PHP documentation for the [`NumberFormatter`](https://www.php.net/manual/en/class.numberformatter.php) class.
 
+#### Taking formatter options from the model
+
+Sometimes the option you need is stored on the model rather than known up front: an invoice that records its own
+currency, or a user who has a preferred timezone. Every option on these helper methods also accepts a
+`\Closure(Model $model)` that returns the value. The closure is called once per row and receives the model for that row,
+so each row can be formatted differently.
+
+```php
+<?php
+
+use App\Models\Invoice;
+use BrickNPC\EloquentTables\Column;
+
+// Each invoice is shown in the currency it was issued in.
+new Column(name: 'total')->currency(
+    currency: fn (Invoice $invoice) => $invoice->currency,
+    locale: fn (Invoice $invoice) => $invoice->customer_locale,
+);
+
+// Timestamps in the timezone the user chose.
+new Column(name: 'created_at')->dateTime(
+    timezone: fn (Invoice $invoice) => $invoice->user->timezone,
+);
+
+// The number of decimals can be dynamic too.
+new Column(name: 'quantity')->number(
+    decimals: fn (Invoice $invoice) => $invoice->unit->decimals,
+);
+```
+
+Mixing is fine: any option can be a plain value while another is a closure.
+
+:::warning
+
+The closure runs for every row, so reaching through a relation like `$invoice->user->timezone` will trigger a query per
+row unless you eager load it in your table's `query()` method.
+
+:::
+
 ### Column type
 
 :::warning[Experimental]
@@ -384,55 +429,23 @@ new Column(name: 'name')->checkbox();
 
 ### Styles
 
-To style a cell, you can use two types of styles: Table styles and Cell styles. Table styles add styling to the 
-`td` element, while Cell styles are added to a `div` (or similar element) inside both the `th` and `td` element.
-
-You can use the `styles` option for the Table styles. The `styles` option expects an array of 
-`BrickNPC\EloquentTable\Enums\TableStyle` enum cases, and can be set through the constructor or through the fluent 
-`styles` method.
+A column's styling is declared with `style()`. It takes any number of `BrickNPC\EloquentTables\Enums\CellStyle`
+cases, plus an optional closure that decides per cell from context.
 
 ```php
 <?php
 
-use Illuminate\Http\Request;
-use BrickNPC\EloquentTables\Column;
-use BrickNPC\EloquentTables\Enums\TableStyle;
-use lluminate\Contracts\Database\Query\Builder;
-
-new Column(name: 'name', styles: [TableStyle::Active, TableStyle::Success]);
-// Or
-new Column(name: 'name')->styles(TableStyle::Active, TableStyle::Success);
-```
-
-Setting this option will do nothing to the header of the column but will render the cell of the column as such (assuming 
-the Bootstrap 5 theme):
-
-```html
-<td class="table-active table-success">
-    ...
-</td>
-```
-
-### Cell styles
-
-Cell styles are similar to Table styles, but they are added to the `div` element inside the `td` element. The `cellStyles` 
-option expects an array of `BrickNPC\EloquentTable\Enums\CellStyle` enum cases, and can be set through the constructor 
-or through the fluent `cellStyles` method.
-
-```php
-<?php
-
-use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\CellStyle;
-use lluminate\Contracts\Database\Query\Builder;
 
-new Column(name: 'name', cellStyles: [CellStyle::AlignRight]);
-// Or
-new Column(name: 'name')->cellStyles(CellStyle::AlignRight);
+new Column(name: 'name')->style(CellStyle::AlignRight);
 ```
 
-This will result in the text of both the `th` as well as the `td` element being right aligned.
+The declared styles apply to the column's header and to every one of its body cells, whatever the column type and
+whether or not the column is sortable.
+
+See [cell styling](styling/cell-styling.md) for the full vocabulary, conditional styling, and how column-type defaults
+interact with what you declare.
 
 ## Dependency injection
 
@@ -507,3 +520,14 @@ class UserTable extends Table
 Navigating to `http://my-app.test/1/users` will automatically try to load the Team with ID 1 and inject it into the
 `columns` method. If there is no team with the given key, a `404 model not found` exception is thrown just like for 
 normal route model binding in Laravel.
+
+## Aggregating a column
+
+A column can offer aggregates for the table's [footer](footers.md), so a total or an average appears beneath it:
+
+```php
+new Column('total')->currency()->aggregate(new Sum(), new Average());
+```
+
+Declaring an aggregate does not render anything on its own. The table's `footer()` method decides which aggregates
+appear and at which scope. See [footers](footers.md).

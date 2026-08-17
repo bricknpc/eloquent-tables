@@ -14,33 +14,22 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin Table<TModel>
  *
  * @property int        $perPage        The number of items to show per page.
- * @property string     $pageName       The name of the page query string parameter.
  * @property array<int> $perPageOptions The available options for the number of items to show per page. If you don't want to show this option, set it to an empty array.
- * @property string     $perPageName    The name of the per-page query string parameter.
  *
  * @phpstan-ignore trait.unused
  */
 trait WithPagination
 {
-    public function pageName(): string
-    {
-        return property_exists($this, 'pageName') ? $this->pageName : 'page';
-    }
-
     public function perPage(Request $request): int
     {
-        $defaultPerPage = property_exists($this, 'perPage') ? $this->perPage : 15;
+        $perPage = property_exists($this, 'perPage') ? $this->perPage : 15;
 
-        $perPage = $request->integer($this->perPageName(), $defaultPerPage);
-
-        return $perPage > 0 ? $perPage : $defaultPerPage;
+        return $perPage > 0 ? $perPage : 15;
     }
 
-    public function perPageName(): string
-    {
-        return property_exists($this, 'perPageName') ? $this->perPageName : 'per_page';
-    }
-
+    /**
+     * @return array<int>
+     */
     public function perPageOptions(): array
     {
         return property_exists($this, 'perPageOptions') ? $this->perPageOptions : [10, 15, 25, 50, 100];

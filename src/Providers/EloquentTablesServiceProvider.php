@@ -12,8 +12,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
-use BrickNPC\EloquentTables\Builders\TableViewBuilder;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
@@ -32,6 +33,11 @@ class EloquentTablesServiceProvider extends ServiceProvider
         View::addNamespace('eloquent-tables', __DIR__ . '/../../resources/views');
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/eloquent-tables.php', 'eloquent-tables');
+
+        /** @var string $cookieName */
+        $cookieName = $this->getConfig('eloquent-tables.preferences.cookie_name', 'eloquent_tables_preferences');
+
+        EncryptCookies::except($cookieName);
         $this->loadJsonTranslationsFrom(__DIR__ . '/../../resources/lang');
 
         $this->publishes([
@@ -51,9 +57,9 @@ class EloquentTablesServiceProvider extends ServiceProvider
     {
         $this->app->resolving(Table::class, function (Table $table, Application $app) {
             $table->setLogger($this->getLogger());
-            $table->request = $this->getRequest();
-            $table->trans   = $this->getTranslator();
-            $table->builder = $this->getConcrete(TableViewBuilder::class);
+            $table->request  = $this->getRequest();
+            $table->trans    = $this->getTranslator();
+            $table->renderer = $this->getConcrete(TableRenderer::class);
         });
 
         $this->registerFormatters();
@@ -80,10 +86,10 @@ class EloquentTablesServiceProvider extends ServiceProvider
         $this->app->when(NumberFormatter::class)->needs('$decimals')->give($decimals);
         $this->app->when(NumberFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
-        $this->app->when(DateFormatter::class)->needs(\DateTimeZone::class)->give(fn () => $timezone);
+        $this->app->when(DateFormatter::class)->needs('$timezone')->give(fn () => $timezone);
         $this->app->when(DateFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
-        $this->app->when(DateTimeFormatter::class)->needs(\DateTimeZone::class)->give(fn () => $timezone);
+        $this->app->when(DateTimeFormatter::class)->needs('$timezone')->give(fn () => $timezone);
         $this->app->when(DateTimeFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
     }
 

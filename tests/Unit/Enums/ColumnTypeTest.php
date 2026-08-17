@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BrickNPC\EloquentTables\Tests\Unit\Enums;
 
 use BrickNPC\EloquentTables\Tests\TestCase;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -61,5 +62,20 @@ class ColumnTypeTest extends TestCase
             ColumnType::Checkbox,
             'th-checkbox',
         ];
+    }
+
+    public function test_a_text_column_contributes_no_default_style(): void
+    {
+        $this->assertSame([], ColumnType::Text->defaultStyles());
+    }
+
+    public function test_a_boolean_column_defaults_to_centred(): void
+    {
+        $this->assertSame([CellStyle::AlignCenter], ColumnType::Boolean->defaultStyles());
+    }
+
+    public function test_a_checkbox_column_defaults_to_centred(): void
+    {
+        $this->assertSame([CellStyle::AlignCenter], ColumnType::Checkbox->defaultStyles());
     }
 }

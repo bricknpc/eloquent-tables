@@ -10,11 +10,21 @@ No front-end setup. No JavaScript boilerplate. No custom markup. Just expressive
 
 With Eloquent Tables, you can define sorting, searching, filtering, pagination, row actions, styling, and more using clean PHP classes. The package handles generating the correct HTML structure, accessibility attributes, and integrations for you. Whether you're building admin dashboards, data-heavy applications, or CRUD interfaces, Eloquent Tables gives backend developers everything they need to create powerful table components without touching the front end.
 
+:::info
+
+Already using Eloquent Tables 1.x? Version 2.0 rewrites the actions system. See the
+[upgrade guide](upgrading.md) for what changed and how to migrate.
+
+:::
+
 ## Requirements
 
-- PHP `^8.4`
-- Laravel `^12.0`
-- Optional: Bootstrap 5
+- PHP `^8.4|^8.5`
+- Laravel `^12.0|^13.0`
+- Bootstrap 5
+
+Older releases target different versions. See [supported versions](supported-versions.md) for the full matrix and
+how long each release is supported.
 
 ## Installation
 

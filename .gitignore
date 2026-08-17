@@ -1,3 +1,7 @@
 .idea
 .phpunit.cache
 vendor/
+.php-cs-fixer.cache
+
+# Per-developer Claude Code settings. The shared skills in .claude/skills are committed.
+.claude/settings.local.json

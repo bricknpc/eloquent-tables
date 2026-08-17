@@ -207,3 +207,25 @@ class UserTable extends Table
 Navigating to `http://my-app.test/1/users` will automatically try to load the Team with ID 1 and inject it into the
 `layout` method. If there is no team with the given key, a `404 model not found` exception is thrown just like for
 normal route model binding in Laravel.
+
+## The query parameter
+
+Filter values are nested under the [table's name](table-names.md), so `?user[filter][active]=1`. Two tables on one page
+therefore filter independently. The sub-key comes from config:
+
+```php
+// config/eloquent-tables.php
+'filtering' => [
+    'query_name' => 'filter',
+],
+```
+
+Changing one filter keeps the table's other filters, its search, its sort and its per-page value, and returns it to the
+first page.
+
+:::note
+In 1.x the parameter was a page-wide `?filter[...]`, shared by every table on the page, and the configured query name
+was honoured when a filter rendered but ignored when it was applied. Both are fixed in 2.0.
+See [Upgrading](upgrading.md).
+:::
+
