@@ -302,6 +302,15 @@ The site is Docusaurus in `docs/`, deployed to GitHub Pages by CI on push to the
 workflow finds via `github.event.repository.default_branch` rather than a hardcoded name, so the deploy follows
 the current major automatically.
 
+**Renaming the default branch breaks that deploy in a way no file in this repo controls.** The `github-pages`
+environment carries a deployment branch policy, GitHub stores the branch names in it **literally**, and renaming a
+branch does not update it. Renaming `main` to `2.x` therefore left the policy allowing a branch that no longer
+existed, and the deploy failed *after* passing the workflow's own condition, with *"Branch 2.x is not allowed to
+deploy to github-pages due to environment protection rules"*. The symptom points at the workflow; the cause is in
+Settings → Environments → `github-pages` → Deployment branches and tags, which no agent can read or change. It
+wants the pattern `*.x` rather than a literal branch name, so that the next major does not repeat this. Check it
+whenever the default branch changes.
+
 **Keeping ordinary work off the default branch is what keeps the site honest.** Since only hotfixes land on `2.x`
 and each is tagged as it merges, the published site describes the released version and nothing else. Documentation
 written on a next release branch goes live at the moment that release is cut, which is also when the feature it
