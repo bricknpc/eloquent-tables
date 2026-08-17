@@ -23,6 +23,7 @@ abstract class TestCase extends BaseTestCase
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->integer('amount')->nullable();
             $table->timestamps();
         });
 
