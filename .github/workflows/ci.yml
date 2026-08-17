@@ -27,6 +27,7 @@ jobs:
     strategy:
       matrix:
         php-version: ['8.4', '8.5']
+        laravel: ['12', '13']
 
     steps:
       - uses: actions/checkout@v4
@@ -43,19 +44,24 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
       - name: Install dependencies
+        if: matrix.laravel == '12'
         run: composer install --prefer-dist --no-progress
+
+      - name: Install dependencies against Laravel ${{ matrix.laravel }}
+        if: matrix.laravel != '12'
+        run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPUnit tests with coverage
         run: vendor/bin/phpunit --coverage-text --coverage-cobertura=coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
@@ -63,7 +69,7 @@ jobs:
           verbose: true
 
       - name: Get coverage percentage
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         id: coverage
         run: |
           COVERAGE=$(php -r "
@@ -76,7 +82,7 @@ jobs:
           echo "Current coverage: $COVERAGE%"
 
       - name: Download previous coverage
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         uses: actions/cache@v3
         with:
           path: previous-coverage.txt
@@ -85,7 +91,7 @@ jobs:
             coverage-${{ github.ref }}-
 
       - name: Compare coverage
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         run: |
           CURRENT_COVERAGE=${{ steps.coverage.outputs.current }}
           
@@ -107,7 +113,7 @@ jobs:
           echo "$CURRENT_COVERAGE" > previous-coverage.txt
 
       - name: Save current coverage
-        if: matrix.php-version == '8.5' && always()
+        if: matrix.php-version == '8.5' && matrix.laravel == '12' && always()
         uses: actions/cache/save@v3
         with:
           path: previous-coverage.txt
@@ -118,6 +124,7 @@ jobs:
     strategy:
       matrix:
         php-version: ['8.4', '8.5']
+        laravel: ['12', '13']
 
     steps:
       - uses: actions/checkout@v4
@@ -133,12 +140,17 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
       - name: Install dependencies
+        if: matrix.laravel == '12'
         run: composer install --prefer-dist --no-progress
+
+      - name: Install dependencies against Laravel ${{ matrix.laravel }}
+        if: matrix.laravel != '12'
+        run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --error-format=github

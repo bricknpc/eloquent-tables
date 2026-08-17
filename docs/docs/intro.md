@@ -20,7 +20,7 @@ Already using Eloquent Tables 1.x? Version 2.0 rewrites the actions system. See 
 ## Requirements
 
 - PHP `^8.4|^8.5`
-- Laravel `^12.0`
+- Laravel `^12.0|^13.0`
 - Bootstrap 5
 
 ## Installation

@@ -16,7 +16,8 @@ Sorting behaviour changed too: a multi-column sort now applies in the order the 
 the order the columns are declared. And every styling method was replaced by a single `style()` shape, so
 `styles()`, `cellStyles()`, `tableStyles()` and `pageStyle()` all need rewriting.
 
-The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5.
+The requirements are unchanged, except that Laravel 13 is supported as well: PHP `^8.4|^8.5`,
+Laravel `^12.0|^13.0` and Bootstrap 5.
 
 ## What changed
 

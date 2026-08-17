@@ -16,7 +16,7 @@ enum Method: string
     {
         return match ($this) {
             self::Get, self::Post => $this->value,
-            default              => 'POST',
+            default               => 'POST',
         };
     }
 }
