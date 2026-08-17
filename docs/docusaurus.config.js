@@ -57,10 +57,11 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
+          // "HEAD" resolves to whichever branch is currently the default, which is the
+          // current major version branch. Naming it that way means these links survive the
+          // next major taking over as default. Remove editUrl to drop "edit this page".
           editUrl:
-            'https://github.com/bricknpc/eloquent-tables/tree/main/docs/',
+            'https://github.com/bricknpc/eloquent-tables/tree/HEAD/docs/',
         },
         blog: {
           showReadingTime: true,
@@ -186,7 +187,7 @@ const config = {
           routeBasePath: 'plans',
           sidebarPath: './sidebarsPlans.js',
           editUrl:
-            'https://github.com/bricknpc/eloquent-tables/tree/main/docs/',
+            'https://github.com/bricknpc/eloquent-tables/tree/HEAD/docs/',
         }),
       ],
       [

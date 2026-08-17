@@ -39,6 +39,19 @@ Roadmap:
 - Bulma
 - BlazeUI
 
+### Supported versions
+
+| Eloquent Tables | PHP      | Laravel | Status      |
+|-----------------|----------|---------|-------------|
+| 2.0             | 8.4, 8.5 | 12, 13  | Active      |
+| 1.2             | 8.4, 8.5 | 12      | End of life |
+| 1.1             | 8.4      | 12      | End of life |
+| 1.0             | 8.4      | 12      | End of life |
+
+Only the active major version receives new features. At most one older major is supported alongside it, and it
+receives bug fixes only. Version 1.x was not carried forward, so 2.0 is currently the only supported version. See
+[supported versions](https://bricknpc.github.io/eloquent-tables/docs/supported-versions) for the full policy.
+
 ### Publishing assets
 
 You can publish the Eloquent Tables config and view files.
@@ -130,7 +143,7 @@ docker-compose exec php composer ps
 ## Community showcase
 
 Are you using Eloquent Tables in your project? Let us know by opening a pull request to add your project to the 
-[community showcase](https://github.com/bricknpc/eloquent-tables/blob/main/docs/src/pages/showcase.js). We love seeing 
+[community showcase](https://github.com/bricknpc/eloquent-tables/blob/HEAD/docs/src/pages/showcase.js). We love seeing 
 what people are building with Eloquent Tables.
 
 ## Contributing
@@ -142,3 +155,18 @@ manually.
 Before creating a pull request, please run the tests and code quality tools locally.
 
 We only accept pull requests when PHPStan reports no errors and the test coverage hasn't gone down.
+
+### Which branch to target
+
+Branches are named after versions. The default branch is the current major, `2.x` today, and it tracks what is
+released. Work does not go there directly.
+
+Features and bug fixes target the **next release branch** instead, named after the version it will become, so `2.1`
+for the next minor or `3.x` for the next major. Branch from it as
+`feature/<issue-number>-descriptive-name` or `bugfix/<issue-number>-descriptive-name`, leaving the issue number out
+if there is no issue, and open your pull request back against it. If no next release branch exists yet, mention it
+on your issue or pull request and one will be created.
+
+The exception is an urgent fix that cannot wait for the next release. Those branch as `hotfix/<name>` from the
+current major branch, and are tagged as a patch release as soon as they merge. See
+[supported versions](https://bricknpc.github.io/eloquent-tables/docs/supported-versions) for the full policy.

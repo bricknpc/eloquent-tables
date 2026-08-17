@@ -11,7 +11,7 @@ tags: [eloquent, laravel, table, release]
 We are proud to announce the first release of Eloquent Tables 🎉🎉🎉. We just tagged version `1.0.0`!
 
 This is the first stable release of the Eloquent Tables package. We hope you'll enjoy using it, and don't forget to 
-[open a PR](https://github.com/bricknpc/eloquent-tables/blob/main/docs/src/pages/showcase.js) to add your showcase if 
+[open a PR](https://github.com/bricknpc/eloquent-tables/blob/HEAD/docs/src/pages/showcase.js) to add your showcase if 
 you're using Eloquent Tables.
 
 > Edit: 22-11-2025
