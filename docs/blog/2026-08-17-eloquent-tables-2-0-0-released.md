@@ -11,6 +11,27 @@ consistent shape, and adds footers that can total a column.
 
 It also widens the requirements: PHP `^8.4|^8.5` and Laravel `^12.0|^13.0`.
 
+## What's new
+
+**One action to rule them all.** The actions are rebuilt from the ground up, giving you even more control over what they
+do and how they look.
+
+**Action collections.** Group related actions together, or collapse them into a dropdown, with `ActionCollection`.
+
+**Extensibility.** The new action system is extensible, it allows you to write your own intents and capabilities. So are
+the new aggregates.
+
+**Modals that actually work.** The `Modal` intent renders a modal with inline content; `HttpModal` loads a URL into the
+modal body. In 1.x `TableAction::asModal()` existed but no view ever read the flag, so it rendered a plain link.
+
+**User preferences.** Tables remember what you chose.
+
+**Footers that add up.** Add a footer row that can aggregate a column.
+
+**More Styling.** Styling is now a single concept across pages, tables, actions, rows, and cells.
+
+<!--truncate-->
+
 ## One action to rule them all
 
 In 1.x there were three action classes (`TableAction`, `RowAction` and `MassAction`), each with its own constructor,
@@ -32,21 +53,6 @@ new Action()
 
 The type of an action is no longer baked into its class. It comes from the method you return it from. The same
 `Action` can be a table action, a row action or a bulk action.
-
-<!--truncate-->
-
-## What's new
-
-**Modals that actually work.** The `Modal` intent renders a modal with inline content; `HttpModal` loads a URL into the
-modal body. In 1.x `TableAction::asModal()` existed but no view ever read the flag, so it rendered a plain link.
-
-**Action collections.** Group related actions together, or collapse them into a dropdown, with `ActionCollection`.
-
-**Extensibility.** Intents and capabilities are both open contracts, so you can write your own without touching the
-package. The capability pipeline has `check`, `apply` and `contribute` hooks, letting a capability veto an action,
-change its attributes, or render markup before, after, or inside it.
-
-**Mass is now bulk.** `massActions()` is now `bulkActions()`, in the PHP API and in the rendered markup.
 
 ## Tables remember what you chose
 
