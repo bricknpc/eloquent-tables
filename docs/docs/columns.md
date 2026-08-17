@@ -355,7 +355,7 @@ Also see the PHP documentation for the [`NumberFormatter`](https://www.php.net/m
 
 #### Taking formatter options from the model
 
-Sometimes the option you need is stored on the model rather than known up front — an invoice that records its own
+Sometimes the option you need is stored on the model rather than known up front: an invoice that records its own
 currency, or a user who has a preferred timezone. Every option on these helper methods also accepts a
 `\Closure(Model $model)` that returns the value. The closure is called once per row and receives the model for that row,
 so each row can be formatted differently.
@@ -429,55 +429,23 @@ new Column(name: 'name')->checkbox();
 
 ### Styles
 
-To style a cell, you can use two types of styles: Table styles and Cell styles. Table styles add styling to the 
-`td` element, while Cell styles are added to a `div` (or similar element) inside both the `th` and `td` element.
-
-You can use the `styles` option for the Table styles. The `styles` option expects an array of 
-`BrickNPC\EloquentTable\Enums\TableStyle` enum cases, and can be set through the constructor or through the fluent 
-`styles` method.
+A column's styling is declared with `style()`. It takes any number of `BrickNPC\EloquentTables\Enums\CellStyle`
+cases, plus an optional closure that decides per cell from context.
 
 ```php
 <?php
 
-use Illuminate\Http\Request;
-use BrickNPC\EloquentTables\Column;
-use BrickNPC\EloquentTables\Enums\TableStyle;
-use lluminate\Contracts\Database\Query\Builder;
-
-new Column(name: 'name', styles: [TableStyle::Active, TableStyle::Success]);
-// Or
-new Column(name: 'name')->styles(TableStyle::Active, TableStyle::Success);
-```
-
-Setting this option will do nothing to the header of the column but will render the cell of the column as such (assuming 
-the Bootstrap 5 theme):
-
-```html
-<td class="table-active table-success">
-    ...
-</td>
-```
-
-### Cell styles
-
-Cell styles are similar to Table styles, but they are added to the `div` element inside the `td` element. The `cellStyles` 
-option expects an array of `BrickNPC\EloquentTable\Enums\CellStyle` enum cases, and can be set through the constructor 
-or through the fluent `cellStyles` method.
-
-```php
-<?php
-
-use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\CellStyle;
-use lluminate\Contracts\Database\Query\Builder;
 
-new Column(name: 'name', cellStyles: [CellStyle::AlignRight]);
-// Or
-new Column(name: 'name')->cellStyles(CellStyle::AlignRight);
+new Column(name: 'name')->style(CellStyle::AlignRight);
 ```
 
-This will result in the text of both the `th` as well as the `td` element being right aligned.
+The declared styles apply to the column's header and to every one of its body cells, whatever the column type and
+whether or not the column is sortable.
+
+See [cell styling](styling/cell-styling.md) for the full vocabulary, conditional styling, and how column-type defaults
+interact with what you declare.
 
 ## Dependency injection
 

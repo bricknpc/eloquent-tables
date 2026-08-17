@@ -95,7 +95,7 @@ The page and per-page parameters are nested under the [table's name](table-names
 ```
 
 :::note
-In 1.x these were the `pageName` and `perPageName` properties on the table. They were removed in 2.0 — the table name
+In 1.x these were the `pageName` and `perPageName` properties on the table. They were removed in 2.0, because the table name
 already keeps one table's parameters apart from another's. See [Upgrading](upgrading.md).
 :::
 

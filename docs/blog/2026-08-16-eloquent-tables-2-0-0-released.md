@@ -11,7 +11,7 @@ it rewrites actions from the ground up, and it gives every table an identity of 
 
 ## One action to rule them all
 
-In 1.x there were three action classes — `TableAction`, `RowAction` and `MassAction` — each with its own constructor,
+In 1.x there were three action classes (`TableAction`, `RowAction` and `MassAction`), each with its own constructor,
 its own options and its own view builder. Adding a feature meant adding it three times, and the three had quietly
 drifted apart: a row action tooltip accepted a closure, a mass action tooltip did not.
 
@@ -28,7 +28,7 @@ new Action()
     ->with(new Confirmation(__('Are you sure?')));
 ```
 
-The type of an action is no longer baked into its class — it comes from the method you return it from. The same
+The type of an action is no longer baked into its class. It comes from the method you return it from. The same
 `Action` can be a table action, a row action or a bulk action.
 
 <!--truncate-->
@@ -55,7 +55,7 @@ Set a table to 50 rows per page, sort it by last login, then click into a record
 15 rows in the default order. In 2.0 the table is exactly as you left it.
 
 **Per-page and sort are remembered.** Including the order of a multi-column sort, so a view you built up by clicking
-three headers comes back the way you built it. Search terms and filters are deliberately not remembered — those are
+three headers comes back the way you built it. Search terms and filters are deliberately not remembered, because those are
 usually a one-off question, and finding an old search still applied on your next visit is more annoying than useful.
 
 **It is stored on the visitor's own device**, in a single cookie shared by every table on the site, and nothing is
@@ -71,7 +71,7 @@ Underneath that sits the change that made it possible. In 1.x a table had no ide
 every table on a page read the same `?search=`, `?sort[...]` and `?filter[...]`. Two tables side by side fought over
 them: sorting one sorted both.
 
-In 2.0 every table has a name — derived from the class name, or whatever you return from `name()` — and everything it
+In 2.0 every table has a name, derived from the class name or from whatever you return from `name()`, and everything it
 reads is nested under it:
 
 ```
@@ -82,11 +82,11 @@ So two tables on a page are finally independent, and the browser console tells y
 sharing a name.
 
 **Multi-column sort follows your clicks.** Previously the click order was faithfully recorded in the URL and then
-thrown away — the sort came out in whatever order the columns happened to be declared. Now the order you clicked is
+thrown away: the sort came out in whatever order the columns happened to be declared. Now the order you clicked is
 the order you get.
 
 **The controls stop eating each other.** Changing the page size, searching, or changing one filter used to replace the
-whole query string, silently discarding everything else — including your other filters. Each control now carries the
+whole query string, silently discarding everything else, including your other filters. Each control now carries the
 rest of the table's state with it.
 
 ## Upgrading
@@ -103,4 +103,4 @@ every removed and renamed API. Two things in particular are worth reading before
 change, and the fact that `confirmValue` still exists but means something different.
 
 If your tables only use columns, formatting, searching, sorting, filters or pagination, the actions rewrite passes you
-by — but the query parameter change does not, so read that section before you upgrade.
+by, but the query parameter change does not, so read that section before you upgrade.

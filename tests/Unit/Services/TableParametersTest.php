@@ -381,7 +381,7 @@ class TableParametersTest extends TestCase
     public function test_an_explicitly_cleared_sort_does_not_fall_back_to_the_stored_one(): void
     {
         // Covers AE5. Cycling every column off leaves "users[sort]=" in the URL, which means the
-        // visitor cleared the sort — distinct from never having chosen one.
+        // visitor cleared the sort, distinct from never having chosen one.
         $request = $this->requestWithPreferences([
             'users' => ['sort' => ['name' => 'desc']],
         ]);

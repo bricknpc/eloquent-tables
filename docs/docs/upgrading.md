@@ -4,7 +4,8 @@ sidebar_position: 16
 
 # Upgrading to 2.0
 
-Version 2.0 rewrites the actions system and changes the query parameters every table reads.
+Version 2.0 rewrites the actions system, changes the query parameters every table reads, and replaces how styling is
+declared.
 
 **Every 2.0 upgrade needs at least one change.** Tables now namespace their query parameters under a table name, so
 `?sort[name]=asc` becomes `?user[sort][name]=asc`. Any URL you have hard-coded, linked to, bookmarked or documented
@@ -12,7 +13,8 @@ needs updating, and the `pageName` and `perPageName` properties are gone. If you
 `rowActions()` or `massActions()`, every one of those definitions needs to be rewritten as well.
 
 Sorting behaviour changed too: a multi-column sort now applies in the order the visitor clicked the headers rather than
-the order the columns are declared.
+the order the columns are declared. And every styling method was replaced by a single `style()` shape, so
+`styles()`, `cellStyles()`, `tableStyles()` and `pageStyle()` all need rewriting.
 
 The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5.
 
@@ -20,7 +22,7 @@ The requirements are unchanged: PHP `^8.4|^8.5`, Laravel `^12.0` and Bootstrap 5
 
 In 1.x there were three action classes, each with its own constructor, its own set of options and its own view builder:
 `TableAction`, `RowAction` and `MassAction`. Adding a feature to one meant adding it to the other two, and the three
-classes had quietly drifted apart — `RowAction::tooltip()` accepted a closure, `MassAction::tooltip()` did not.
+classes had quietly drifted apart: `RowAction::tooltip()` accepted a closure, `MassAction::tooltip()` did not.
 
 2.0 replaces all three with a single `Action` class built from two pieces:
 
@@ -36,13 +38,12 @@ be used as a table action, a row action or a bulk action.
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
-use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
 new Action()
     ->label(__('Delete'))
     ->as(new Http(fn (ActionContext $context) => route('users.destroy', $context->model), Method::Delete))
-    ->with(new Style(ButtonStyle::Danger));
+    ->style(ButtonStyle::Danger);
 ```
 
 See [Action definition](actions/action-definition.md) for the full reference.
@@ -59,13 +60,13 @@ public function massActions(): array
 public function bulkActions(): array
 ```
 
-A `massActions()` method is no longer called, and it fails silently — the table simply renders without bulk actions and
+A `massActions()` method is no longer called, and it fails silently: the table simply renders without bulk actions and
 without the checkbox column. There is no deprecation warning, so search your project for `massActions` before you
 upgrade.
 
 If you have published the views or written custom JavaScript against the table markup, note that the browser-facing
 names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespace}-bulk-action-form`,
-`id="mass-action-switch-…"` is now `id="bulk-action-switch-…"`, and the `table-mass-actions` class is now
+`id="mass-action-switch-..."` is now `id="bulk-action-switch-..."`, and the `table-mass-actions` class is now
 `table-bulk-actions`.
 
 ## 2. Rewrite your actions
@@ -79,17 +80,17 @@ names changed with it: `data-{namespace}-mass-action-form` is now `data-{namespa
 | `method: Method::Delete`                | second argument of `Http`                                       |
 | `label: $label`                         | `->label($label)` (unchanged)                                   |
 | `tooltip: $text`                        | `->with(new Tooltip($text))`                                    |
-| `styles: [ButtonStyle::Danger]`         | `->with(new Style(ButtonStyle::Danger))` (variadic, no array)   |
+| `styles: [ButtonStyle::Danger]`         | `->style(ButtonStyle::Danger)` (variadic, no array)             |
 | `authorize: $closure`                   | `->with(new Authorize($closure))`                               |
 | `when: $closure`                        | `->with(new When($closure))`                                    |
 | `confirm: $text`                        | `->with(new Confirmation($text))`                               |
-| `confirmValue: $value`                  | fourth argument of `Confirmation` — see the warning below       |
+| `confirmValue: $value`                  | fourth argument of `Confirmation` (see the warning below)       |
 | `asModal()`                             | `->as(new Modal(...))` or `->as(new HttpModal(...))`            |
 
 Two details are easy to miss:
 
-**`Style` is variadic.** In 1.x styles were an array; in 2.0 they are separate arguments:
-`new Style(ButtonStyle::Danger, ButtonStyle::Link)`.
+**`style()` is variadic.** In 1.x styles were an array; in 2.0 they are separate arguments:
+`->style(ButtonStyle::Danger, ButtonStyle::Link)`.
 
 **Every action needs an intent.** An `Action` without `->as()` throws `ActionIntentNotSet` when it renders, and calling
 `->as()` twice on the same action throws `ActionIntentAlreadySet`. In 1.x the URL was a constructor argument, so this
@@ -135,10 +136,10 @@ second argument of `Confirmation` is called `$confirmValue` but is the **label o
 behaviour is now the fourth argument, `$inputConfirmationValue`:
 
 ```php
-// 1.x — the user must type "DELETE"
+// 1.x: the user must type "DELETE"
 new RowAction(action: $url)->confirm('Are you sure?', 'DELETE');
 
-// 2.0 — the user must type "DELETE"
+// 2.0: the user must type "DELETE"
 new Action()
     ->as(new Http($url, Method::Delete))
     ->with(new Confirmation(
@@ -167,7 +168,7 @@ These files were deleted:
 - `bootstrap-5/action/row-action.blade.php`
 - `bootstrap-5/action/mass-action.blade.php`
 
-They are replaced by a set of views under `actions/` — one per intent, one per capability contribution, plus the
+They are replaced by a set of views under `actions/`: one per intent, one per capability contribution, plus the
 collection views. Delete the old `action/` directory and republish:
 
 ```bash
@@ -260,7 +261,7 @@ class UserTable extends Table
 {
     use WithPagination;
 
-    // Both of these are removed in 2.0 — delete them.
+    // Both of these are removed in 2.0. Delete them.
     protected string $pageName    = 'users-page';
     protected string $perPageName = 'items';
 }
@@ -282,8 +283,9 @@ longer returns a 500.
 ## 11. Republish the views if you have published them
 
 The search, per-page and filter controls now carry hidden inputs so that using one no longer discards the rest of the
-table's state, and the table element carries the table name for the JavaScript. A published copy from 1.x keeps the old
-markup and will silently lose that behaviour.
+table's state, and the table element carries the table name for the JavaScript. Every cell also gained a flex wrapper,
+which is what makes alignment work the same way everywhere. A published copy from 1.x keeps the old markup and will
+silently lose both.
 
 ```bash
 php artisan vendor:publish --tag=views --force
@@ -291,6 +293,66 @@ php artisan vendor:publish --tag=views --force
 
 `ColumnLabelRenderer::build()` and `FilterRenderer::build()` both take the table as an argument now, and
 `RowsBuilder`'s constructor no longer takes `Config`. This only matters if you resolve or subclass them yourself.
+
+## 12. Column styling is one method
+
+`styles()` and `cellStyles()` are replaced by `style()`, which takes any number of `CellStyle` cases and an optional
+closure. The `styles` and `cellStyles` constructor arguments are gone with them.
+
+```php
+new Column('total')->styles(TableStyle::Success)->cellStyles(CellStyle::AlignRight);  // 1.x
+new Column('total')->style(CellStyle::BackgroundSuccess, CellStyle::AlignRight);      // 2.0
+```
+
+`CellStyle` grew from eight alignment cases to also cover backgrounds, text colours and font weights, so anything you
+used to reach for `TableStyle` on a column for now has a cell equivalent. `TableStyle` is table-level only.
+
+The closure is new: it receives a `CellContext` and can style a cell by its value. See
+[cell styling](styling/cell-styling.md).
+
+## 13. `tableStyles()` becomes `style()`
+
+Table-level styling takes the same shape as everything else.
+
+```php
+public function tableStyles(): array { return [TableStyle::Striped]; }  // 1.x
+public function style(): array      { return [TableStyle::Striped]; }  // 2.0
+```
+
+## 14. `pageStyle()` becomes `accentStyle()`
+
+It never governed a page. It governs the table's own controls, so it is named for that now. `PageStyle` is replaced by
+`AccentStyle`, with the same cases.
+
+```php
+public function pageStyle(): PageStyle       { return PageStyle::Primary; }     // 1.x
+public function accentStyle(): AccentStyle   { return AccentStyle::Primary; }   // 2.0
+```
+
+The accent is a single colour, so the method returns one case. Anything conditional goes in the method body, which
+already has the request.
+
+## 15. `styles:` becomes `style()`
+
+Actions style themselves with a `style()` method, the same one columns use. It is variadic, so the array is gone.
+
+```php
+new RowAction(action: $url, styles: [ButtonStyle::Danger]);   // 1.x
+new Action()->as(new Http($url))->style(ButtonStyle::Danger); // 2.0
+```
+
+Repeated declarations merge, so `->style(A)->style(B)` renders both rather than the last one winning.
+
+New in 2.0: an [action collection](actions/action-collections.md) of the dropdown type takes the same method, so the
+toggle button can be styled. See [action styling](styling/action-styling.md#styling-a-dropdown).
+
+:::note
+
+If you followed the 2.0 alpha, styling was briefly a `Style` capability. That capability is gone, `->style()` replaces
+`->with(new Style(...))`, and a custom capability can no longer style an action by writing
+`$descriptor->attributes['class']`. Add to `$descriptor->style` instead.
+
+:::
 
 ## Full example
 
@@ -361,7 +423,6 @@ use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\Action;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
-use BrickNPC\EloquentTables\Actions\Capabilities\Style;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\Capabilities\Tooltip;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
@@ -389,7 +450,7 @@ class UserTable extends Table
             new Action()
                 ->label(__('Delete'))
                 ->as(new Http(route('users.destroy'), Method::Delete))
-                ->with(new Style(ButtonStyle::Danger))
+                ->style(ButtonStyle::Danger)
                 ->with(new Authorize(
                     fn (ActionContext $context) => $context->request->user()->can('delete', $context->model),
                 ))
@@ -428,8 +489,14 @@ class UserTable extends Table
 | `BrickNPC\EloquentTables\Builders\FilterViewBuilder`      | `BrickNPC\EloquentTables\Filters\FilterRenderer` |
 | `BrickNPC\EloquentTables\view()`                      | `Theme::view()`                                      |
 | `massActions()` table method                          | `bulkActions()`                                      |
+| `BrickNPC\EloquentTables\Actions\Capabilities\Style` | `Action::style()` and `ActionCollection::style()`   |
 | `pageName` table property                             | `eloquent-tables.pagination.page_query_name` config  |
 | `perPageName` table property                          | `eloquent-tables.pagination.per_page_query_name` config |
+| `Column::styles()` and the `styles` argument          | `Column::style()`                                    |
+| `Column::cellStyles()` and the `cellStyles` argument  | `Column::style()`                                    |
+| `Table::tableStyles()`                                | `Table::style()`                                     |
+| `Table::pageStyle()`                                  | `Table::accentStyle()`                               |
+| `BrickNPC\EloquentTables\Enums\PageStyle`            | `BrickNPC\EloquentTables\Enums\AccentStyle`         |
 
 The `Table::$builder` property was renamed to `Table::$renderer` along with them.
 
@@ -443,10 +510,14 @@ none of this affects you.
 
 Things that have no 1.x equivalent, and that you may want once you have upgraded:
 
-- [Action collections](actions/action-collections.md) — group actions, or collapse them into a dropdown
+- [Action collections](actions/action-collections.md): group actions, or collapse them into a dropdown
 - [Modal and HTTP modal intents](actions/action-definition.md#modal-intent)
 - [Custom intents](actions/action-definition.md#custom-intents) and
   [custom capabilities](actions/action-definition.md#custom-capabilities)
 - The [`When` capability](actions/action-definition.md#when), previously available only on row actions
-- [Table names](table-names.md) — a stable identity per table, so two tables on a page stay independent
-- [Saved preferences](preferences.md) — a visitor's per-page choice and multi-column sort survive navigating away and back
+- [Table names](table-names.md): a stable identity per table, so two tables on a page stay independent
+- [Saved preferences](preferences.md): a visitor's per-page choice and multi-column sort survive navigating away and back
+- [Cell styling](styling/cell-styling.md): backgrounds, text colours and weights, and styling a cell by its value
+- [Row styling](styling/table-styling.md): highlight a whole row, including its checkbox and action cells
+- [Conditional action styling](styling/action-styling.md#styling-an-action-by-its-row): the `Style` capability now
+  also takes closures, so an action can be styled per row

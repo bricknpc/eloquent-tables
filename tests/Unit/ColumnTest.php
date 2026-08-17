@@ -13,13 +13,17 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Enums\ColumnType;
-use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
 use PHPUnit\Framework\Attributes\DataProvider;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 
@@ -28,6 +32,12 @@ use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
  */
 #[CoversClass(Column::class)]
 #[UsesClass(Sort::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(CellContext::class)]
+#[UsesClass(CellStyle::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(TableRegion::class)]
 class ColumnTest extends TestCase
 {
     public function test_can_create_a_column_with_only_a_name(): void
@@ -430,32 +440,54 @@ class ColumnTest extends TestCase
         $this->assertSame(ColumnType::Checkbox, $column4->type);
     }
 
-    public function test_fluent_setters_set_correct_styles(): void
+    public function test_a_column_declares_no_styles_by_default(): void
     {
-        $column = new Column(name: 'name');
-        $this->assertEmpty($column->styles);
-
-        $column2 = new Column(name: 'name', styles: [TableStyle::Dark]);
-        $this->assertCount(1, $column2->styles);
-        $this->assertSame([TableStyle::Dark], $column2->styles);
-
-        $column3 = new Column(name: 'name', styles: [TableStyle::Dark])->styles(TableStyle::Striped, TableStyle::Active);
-        $this->assertCount(3, $column3->styles);
-        $this->assertSame([TableStyle::Dark, TableStyle::Striped, TableStyle::Active], $column3->styles);
+        $this->assertNull(new Column(name: 'name')->style);
     }
 
-    public function test_fluent_setters_set_correct_cell_styles(): void
+    public function test_styles_can_be_declared_through_the_constructor(): void
     {
-        $column = new Column(name: 'name');
-        $this->assertEmpty($column->cellStyles);
+        $column = new Column(name: 'name', style: new StyleSet(CellStyle::AlignRight));
 
-        $column2 = new Column(name: 'name', cellStyles: [CellStyle::AlignBetween]);
-        $this->assertCount(1, $column2->cellStyles);
-        $this->assertSame([CellStyle::AlignBetween], $column2->cellStyles);
+        $this->assertSame(
+            [CellStyle::AlignRight],
+            $column->style?->resolve($this->cellContext($column)),
+        );
+    }
 
-        $column3 = new Column(name: 'name', cellStyles: [CellStyle::AlignBetween])->cellStyles(CellStyle::AlignCenter, CellStyle::AlignMiddle);
-        $this->assertCount(3, $column3->cellStyles);
-        $this->assertSame([CellStyle::AlignBetween, CellStyle::AlignCenter, CellStyle::AlignMiddle], $column3->cellStyles);
+    public function test_styles_can_be_declared_fluently(): void
+    {
+        $column = new Column(name: 'name')->style(CellStyle::AlignRight, CellStyle::FontBold);
+
+        $this->assertSame(
+            [CellStyle::AlignRight, CellStyle::FontBold],
+            $column->style?->resolve($this->cellContext($column)),
+        );
+    }
+
+    public function test_declaring_styles_twice_merges_rather_than_replaces(): void
+    {
+        $column = new Column(name: 'name', style: new StyleSet(CellStyle::AlignRight))
+            ->style(CellStyle::FontBold)
+        ;
+
+        $this->assertSame(
+            [CellStyle::AlignRight, CellStyle::FontBold],
+            $column->style?->resolve($this->cellContext($column)),
+        );
+    }
+
+    public function test_a_closure_can_be_declared_alongside_static_styles(): void
+    {
+        $column = new Column(name: 'name')->style(
+            CellStyle::AlignRight,
+            fn () => CellStyle::BackgroundDanger,
+        );
+
+        $this->assertSame(
+            [CellStyle::AlignRight, CellStyle::BackgroundDanger],
+            $column->style?->resolve($this->cellContext($column)),
+        );
     }
 
     public function test_non_searchable_column_does_not_search_in_column(): void
@@ -506,5 +538,16 @@ class ColumnTest extends TestCase
         $builder->shouldReceive('where')->once()->with('other', '=', '%test%');
 
         $column->search($request, $builder, $searchQuery);
+    }
+
+    /**
+     * @param Column<TestModel> $column
+     */
+    private function cellContext(Column $column): CellContext
+    {
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return new CellContext($request, $column);
     }
 }

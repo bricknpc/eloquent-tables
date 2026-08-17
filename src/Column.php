@@ -8,11 +8,11 @@ use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
-use BrickNPC\EloquentTables\Enums\CellStyle;
+use BrickNPC\EloquentTables\Contracts\Style;
 use BrickNPC\EloquentTables\Enums\ColumnType;
-use BrickNPC\EloquentTables\Enums\TableStyle;
 use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
@@ -34,8 +34,6 @@ class Column
      * @param null|\Closure(Request $request, Builder $query): void|Sort                 $defaultSort
      * @param null|\Closure(Request $request, Builder $query, string $searchQuery): void $searchUsing
      * @param null|class-string<Formatter>|Formatter                                     $formatter
-     * @param TableStyle[]                                                               $styles
-     * @param CellStyle[]                                                                $cellStyles
      */
     public function __construct(
         public string $name,
@@ -48,8 +46,7 @@ class Column
         public ?\Closure $searchUsing = null,
         public Formatter|string|null $formatter = null,
         public ?ColumnType $type = ColumnType::Text,
-        public array $styles = [],
-        public array $cellStyles = [],
+        public ?StyleSet $style = null,
     ) {}
 
     /**
@@ -206,16 +203,9 @@ class Column
         return $this->type(ColumnType::Boolean);
     }
 
-    public function styles(TableStyle ...$styles): static
+    public function style(\Closure|Style ...$styles): static
     {
-        $this->styles = array_merge($this->styles, $styles);
-
-        return $this;
-    }
-
-    public function cellStyles(CellStyle ...$cellStyles): static
-    {
-        $this->cellStyles = array_merge($this->cellStyles, $cellStyles);
+        $this->style = $this->style?->with(...$styles) ?? new StyleSet(...$styles);
 
         return $this;
     }

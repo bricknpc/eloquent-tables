@@ -9,6 +9,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Contracts\StyleContext;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
@@ -28,6 +29,22 @@ class ActionContextTest extends TestCase
 
         $this->request = $this->app->make('request');
         $this->config  = $this->app->make(Config::class);
+    }
+
+    public function test_action_context_is_a_style_context(): void
+    {
+        $this->assertInstanceOf(
+            StyleContext::class,
+            new ActionContext($this->request, $this->config),
+        );
+    }
+
+    public function test_a_narrowed_action_context_is_still_a_style_context(): void
+    {
+        $context = new ActionContext($this->request, $this->config, new TestModel());
+
+        $this->assertInstanceOf(StyleContext::class, $context->asDropdown());
+        $this->assertInstanceOf(StyleContext::class, $context->isBulk());
     }
 
     public function test_action_context_is_final_class(): void

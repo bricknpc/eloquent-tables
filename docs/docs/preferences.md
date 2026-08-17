@@ -73,7 +73,8 @@ flowchart TB
 
 :::warning
 Because a query parameter is saved, a link shared between two people changes the recipient's saved preference too. This
-is deliberate — the URL is the source of truth — but it is worth knowing before you send someone a deep link.
+is deliberate, because the URL is the source of truth, but it is worth knowing before you send someone a deep
+link.
 :::
 
 ## Clearing a sort

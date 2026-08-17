@@ -10,14 +10,19 @@ use BrickNPC\EloquentTables\Enums\Theme;
 use Illuminate\Database\Eloquent\Builder;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
-use BrickNPC\EloquentTables\Enums\PageStyle;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
@@ -55,10 +60,15 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(FilterRenderer::class)]
 #[UsesClass(RouteModelBinder::class)]
 #[UsesClass(MissingMethodException::class)]
-#[UsesClass(PageStyle::class)]
 #[UsesClass(Theme::class)]
 #[UsesClass(ActionRenderer::class)]
 #[UsesClass(ActionContext::class)]
+#[UsesClass(StyleResolver::class)]
+#[UsesClass(CellStyle::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(AccentStyle::class)]
 class TableTest extends TestCase
 {
     public function test_default_authorisation_always_renders_the_table(): void

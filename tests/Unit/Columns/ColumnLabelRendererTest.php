@@ -11,14 +11,21 @@ use BrickNPC\EloquentTables\Enums\Sort;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
 /**
  * @internal
@@ -30,6 +37,14 @@ use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 #[UsesClass(Table::class)]
 #[UsesClass(TableParameters::class)]
 #[UsesClass(TablePreferences::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(CellContext::class)]
+#[UsesClass(CellStyle::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(TableRegion::class)]
+#[UsesClass(StyleResolver::class)]
+#[UsesClass(Theme::class)]
 class ColumnLabelRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -89,6 +104,52 @@ class ColumnLabelRendererTest extends TestCase
             Sort::Desc,
             null,
         ];
+    }
+
+    public function test_a_non_sortable_header_aligns_like_a_sortable_one(): void
+    {
+        // Covers AE1. This is issue #7's exact repro: the same column with and without sortable().
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $sortable = $builder->build(
+            $request,
+            new TestTable(),
+            new Column('total_items')->sortable()->style(CellStyle::AlignRight),
+        )->render();
+
+        $plain = $builder->build(
+            $request,
+            new TestTable(),
+            new Column('total_items')->style(CellStyle::AlignRight),
+        )->render();
+
+        $this->assertStringContainsString('justify-content-end', $sortable);
+        $this->assertStringContainsString('justify-content-end', $plain);
+        $this->assertStringNotContainsString('text-end', $plain);
+    }
+
+    public function test_it_splits_header_styles_by_their_target(): void
+    {
+        /** @var ColumnLabelRenderer $builder */
+        $builder = $this->app->make(ColumnLabelRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $column = new Column('name')->style(
+            CellStyle::AlignRight,
+            CellStyle::BackgroundSuccess,
+            CellStyle::AlignBetween,
+        );
+
+        $data = $builder->build($request, new TestTable(), $column)->getData();
+
+        $this->assertSame('table-success', $data['styles']);
+        $this->assertSame('justify-content-end justify-content-between', $data['cellStyles']);
     }
 
     public function test_the_sort_link_preserves_every_other_parameter(): void

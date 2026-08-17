@@ -41,7 +41,7 @@ readonly class FilterRenderer
             'theme'     => $theme,
             // The view is rendered on its own rather than included, so it inherits nothing from the
             // table's scope and needs the style passed explicitly.
-            'mainTableStyle' => $table->pageStyle()->toCssClass($theme),
+            'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
             'options'        => $filter->options(),
             'name'           => $filter->name,
             'value'          => $values[$filter->name] ?? null,

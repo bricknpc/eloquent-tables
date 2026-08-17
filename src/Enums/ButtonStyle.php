@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Enums;
 
-enum ButtonStyle: string
+use BrickNPC\EloquentTables\Contracts\Style;
+
+enum ButtonStyle: string implements Style
 {
     case Default           = '';
     case Primary           = 'primary';
@@ -33,14 +35,14 @@ enum ButtonStyle: string
      * A button style is rendered as text inside a dropdown, because a button inside a dropdown menu does not look
      * like the rest of the menu.
      */
-    public function toCssClass(Theme $theme, bool $inDropdown = false): string
+    public function toCssClass(Theme $theme, ActionRegion $region = ActionRegion::Button): string
     {
         return match ($theme) {
             Theme::Bootstrap5 => match (true) {
                 $this === self::Default => '',
                 // An outlined button has no meaning inside a dropdown menu, so only the colour of it is used.
-                $inDropdown             => sprintf('text-%s', str_replace('outline-', '', $this->value)),
-                default                 => sprintf('btn-%s', $this->value),
+                $region === ActionRegion::DropdownItem => sprintf('text-%s', str_replace('outline-', '', $this->value)),
+                default                                => sprintf('btn-%s', $this->value),
             },
         };
     }

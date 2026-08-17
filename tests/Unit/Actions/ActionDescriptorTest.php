@@ -8,7 +8,9 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -23,6 +25,7 @@ use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 #[UsesClass(Config::class)]
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
+#[UsesClass(StyleSet::class)]
 class ActionDescriptorTest extends TestCase
 {
     private ActionContext $context;
@@ -36,6 +39,21 @@ class ActionDescriptorTest extends TestCase
         $config = $this->app->make(Config::class);
 
         $this->context = new ActionContext($request, $config);
+    }
+
+    public function test_a_new_descriptor_has_no_style(): void
+    {
+        $this->assertNull(new ActionDescriptor()->style);
+    }
+
+    public function test_a_style_set_survives_emptying_the_buffers(): void
+    {
+        $descriptor        = new ActionDescriptor();
+        $descriptor->style = new StyleSet(ButtonStyle::Danger);
+
+        $descriptor->emptyBuffers();
+
+        $this->assertSame([ButtonStyle::Danger], $descriptor->style->resolve($this->context));
     }
 
     public function test_action_descriptor_is_final_class(): void

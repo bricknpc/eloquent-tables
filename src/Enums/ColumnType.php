@@ -10,6 +10,17 @@ enum ColumnType
     case Checkbox;
     case Boolean;
 
+    /**
+     * @return CellStyle[]
+     */
+    public function defaultStyles(): array
+    {
+        return match ($this) {
+            self::Text                    => [],
+            self::Checkbox, self::Boolean => [CellStyle::AlignCenter],
+        };
+    }
+
     public function getTdView(): string
     {
         return match ($this) {

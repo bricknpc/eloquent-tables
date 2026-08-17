@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Enums;
 
-enum TableStyle: string
+use BrickNPC\EloquentTables\Contracts\Style;
+
+enum TableStyle: string implements Style
 {
     case Default = 'default';
 

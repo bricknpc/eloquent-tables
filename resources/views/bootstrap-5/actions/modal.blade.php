@@ -7,11 +7,7 @@
 {!! $beforeContent->render() !!}
 
 <button type="button"
-        @if($context->asDropdown)
-            class="{{ trim('dropdown-item ' . ($attributes['class'] ?? '')) }}"
-        @else
-            class="{{ trim('btn ' . ($attributes['class'] ?? 'btn-primary')) }}"
-        @endif
+        class="{{ $classes }}"
         data-bs-toggle="modal"
         data-bs-target="#modal-{{ $id }}"
         @include('eloquent-tables::actions.attributes')

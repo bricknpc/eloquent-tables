@@ -13,10 +13,12 @@
 @endphp
 <tbody>
     @foreach($rows as $row)
-        <tr>
+        <tr class="{{ $rowStyles[$loop->index] ?? '' }}">
             @if($bulkActionCount > 0)
-                <td class="text-center">
-                    <input type="checkbox" name="selected[]" value="{{ $row->getKey() }}" />
+                <td>
+                    <div class="d-flex align-items-center w-100 {{ $bulkActionCellStyles }}">
+                        <input type="checkbox" name="selected[]" value="{{ $row->getKey() }}" />
+                    </div>
                 </td>
             @endif
             @foreach($columns as $column)
@@ -29,14 +31,16 @@
                 @php
                     $rowContext = new ActionContext($request, $config, $row);
                 @endphp
-                <td class="text-end">
-                    @if($actionRenderer->countRenderable($rowActions, $rowContext) > 0)
-                        <div class="btn-group">
-                            @foreach($rowActions as $action)
-                                {!! $actionRenderer->render($action, $rowContext) !!}
-                            @endforeach
-                        </div>
-                    @endif
+                <td>
+                    <div class="d-flex align-items-center w-100 {{ $rowActionCellStyles }}">
+                        @if($actionRenderer->countRenderable($rowActions, $rowContext) > 0)
+                            <div class="btn-group">
+                                @foreach($rowActions as $action)
+                                    {!! $actionRenderer->render($action, $rowContext) !!}
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 </td>
             @endif
         </tr>

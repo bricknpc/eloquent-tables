@@ -8,7 +8,7 @@
     /** @var ActionRenderer $actionRenderer */
 @endphp
 <div class="dropdown">
-    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <button class="{{ $toggleClasses }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         {{ $label }}
     </button>
     <ul class="dropdown-menu">

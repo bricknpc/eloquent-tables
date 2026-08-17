@@ -6,9 +6,11 @@ namespace BrickNPC\EloquentTables\Tests\Unit\Enums;
 
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Tests\TestCase;
+use BrickNPC\EloquentTables\Contracts\Style;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 
 /**
  * @internal
@@ -165,7 +167,7 @@ class ButtonStyleTest extends TestCase
         ButtonStyle $style,
         string $expected,
     ): void {
-        $result = $style->toCssClass($theme, true);
+        $result = $style->toCssClass($theme, ActionRegion::DropdownItem);
 
         $this->assertSame($expected, $result);
     }
@@ -209,10 +211,41 @@ class ButtonStyleTest extends TestCase
         ];
     }
 
+    public function test_a_button_style_is_a_style(): void
+    {
+        $this->assertInstanceOf(Style::class, ButtonStyle::Danger);
+    }
+
+    public function test_every_case_is_a_style(): void
+    {
+        foreach (ButtonStyle::cases() as $style) {
+            $this->assertInstanceOf(Style::class, $style);
+        }
+    }
+
+    #[DataProvider('buttonStyleProvider')]
+    public function test_a_dropdown_toggle_renders_the_button_variant(
+        Theme $theme,
+        ButtonStyle $style,
+        string $expected,
+    ): void {
+        $this->assertSame($expected, $style->toCssClass($theme, ActionRegion::DropdownToggle));
+    }
+
+    public function test_the_region_defaults_to_a_button(): void
+    {
+        foreach (ButtonStyle::cases() as $style) {
+            $this->assertSame(
+                $style->toCssClass(Theme::Bootstrap5, ActionRegion::Button),
+                $style->toCssClass(Theme::Bootstrap5),
+            );
+        }
+    }
+
     public function test_every_style_has_a_dropdown_variant_without_a_button_class(): void
     {
         foreach (ButtonStyle::cases() as $style) {
-            $this->assertStringNotContainsString('btn', $style->toCssClass(Theme::Bootstrap5, true));
+            $this->assertStringNotContainsString('btn', $style->toCssClass(Theme::Bootstrap5, ActionRegion::DropdownItem));
         }
     }
 }

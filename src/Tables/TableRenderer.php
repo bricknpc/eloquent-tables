@@ -13,17 +13,20 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Support\Htmlable;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Contracts\Filter;
-use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
@@ -61,6 +64,7 @@ readonly class TableRenderer
         private RouteModelBinder $methodInvoker,
         private ActionRenderer $actionRenderer,
         private TableParameters $parameters,
+        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -130,15 +134,14 @@ readonly class TableRenderer
                 'perPageKey' => $this->parameters->key($table, TableParameter::PerPage),
                 'sortKey'    => $this->parameters->key($table, TableParameter::Sort),
             ] : null,
-            'theme'         => $theme,
-            'dataNamespace' => $this->config->dataNamespace(),
-            'request'       => $request,
-            'tableStyles'   => collect($table->tableStyles())
-                ->map(fn (TableStyle $style) => $style->toCssClass($theme))
-                ->implode(' '),
+            'theme'                  => $theme,
+            'dataNamespace'          => $this->config->dataNamespace(),
+            'request'                => $request,
+            'tableStyles'            => $this->styleResolver->classes($table->style()),
             'columns'                => $columns,
             'columnLabelRenderer'    => $this->columnLabelRenderer,
             'rows'                   => $rows,
+            'rowStyles'              => $this->rowStyles($table, $rows, $request),
             'columnValueRenderer'    => $this->columnValueRenderer,
             'links'                  => $this->getLinks($table, $request),
             'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),
@@ -159,6 +162,8 @@ readonly class TableRenderer
             'bulkActionCount'        => $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()),
             'bulkActions'            => $bulkActions,
             'bulkActionColumnWidth'  => $table->bulkActionColumnWidth(),
+            'bulkActionCellStyles'   => $this->styleResolver->classes([CellStyle::AlignCenter], StyleTarget::Content),
+            'rowActionCellStyles'    => $this->styleResolver->classes([CellStyle::AlignRight], StyleTarget::Content),
             'filterCount'            => count($filters),
             'filters'                => $filters,
             'filterRenderer'         => $this->filterRenderer,
@@ -171,9 +176,11 @@ readonly class TableRenderer
             $viewData['layout'] = $layout;
         }
 
-        $viewData['mainTableStyle'] = $table->pageStyle()->toCssClass($theme);
-        $viewData['disabledStyle']  = $table->pageStyle()->toCssDisabledClass($theme);
-        $viewData['activeStyle']    = $table->pageStyle()->toCssActiveClass($theme);
+        $accent = $table->accentStyle();
+
+        $viewData['mainTableStyle'] = $accent->toCssClass($theme);
+        $viewData['disabledStyle']  = $accent->toCssDisabledClass($theme);
+        $viewData['activeStyle']    = $accent->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
             /* @var WithPagination|Table $table */
@@ -188,6 +195,27 @@ readonly class TableRenderer
         }
 
         return $viewData;
+    }
+
+    /**
+     * @param Table<TModel>          $table
+     * @param Collection<int, Model> $rows
+     *
+     * @return string[]
+     */
+    private function rowStyles(Table $table, Collection $rows, Request $request): array
+    {
+        $set = $table->rowStyle();
+
+        if ($set === null) {
+            return [];
+        }
+
+        return $rows
+            ->values()
+            ->map(fn (Model $row) => $this->styleResolver->classes($set->resolve(new RowContext($request, $row))))
+            ->all()
+        ;
     }
 
     /**
@@ -235,9 +263,9 @@ readonly class TableRenderer
         $theme = $this->config->theme();
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
-            'mainTableStyle' => $table->pageStyle()->toCssClass($theme),
-            'disabledStyle'  => $table->pageStyle()->toCssDisabledClass($theme),
-            'activeStyle'    => $table->pageStyle()->toCssActiveClass($theme),
+            'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
+            'disabledStyle'  => $table->accentStyle()->toCssDisabledClass($theme),
+            'activeStyle'    => $table->accentStyle()->toCssActiveClass($theme),
         ]);
     }
 

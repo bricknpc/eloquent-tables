@@ -13,21 +13,29 @@ use Illuminate\Contracts\View\View;
 use BrickNPC\EloquentTables\Enums\Theme;
 use BrickNPC\EloquentTables\Enums\Method;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\RowStyle;
 use BrickNPC\EloquentTables\Filters\Filter;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
-use BrickNPC\EloquentTables\Enums\PageStyle;
+use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Attributes\Layout;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\Intents\Http;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
@@ -41,6 +49,8 @@ use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
+use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
 use BrickNPC\EloquentTables\Actions\Capabilities\Authorize;
@@ -70,7 +80,6 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(FilterRenderer::class)]
 #[UsesClass(Filter::class)]
 #[UsesClass(RouteModelBinder::class)]
-#[UsesClass(PageStyle::class)]
 #[UsesClass(ActionRenderer::class)]
 #[UsesClass(Action::class)]
 #[UsesClass(ActionDescriptor::class)]
@@ -84,6 +93,17 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(ActionCapability::class)]
 #[UsesClass(ColumnType::class)]
 #[UsesClass(ActionCollection::class)]
+#[UsesClass(StyleResolver::class)]
+#[UsesClass(CellStyle::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(RowStyle::class)]
+#[UsesClass(RowContext::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(AccentStyle::class)]
+#[UsesClass(ActionRegion::class)]
+#[UsesClass(ButtonStyle::class)]
+#[UsesClass(ActionStyleResolver::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -553,7 +573,7 @@ class TableRendererTest extends TestCase
 
         // ...but only row A gets a button group. Row B keeps an empty cell so the table stays aligned.
         $this->assertSame(1, substr_count($html, '<div class="btn-group">'));
-        $this->assertSame(2, substr_count($html, '<td class="text-end">'));
+        $this->assertSame(2, substr_count($html, $view->getData()['rowActionCellStyles']));
     }
 
     public function test_a_collection_counts_as_a_single_action(): void
@@ -561,6 +581,92 @@ class TableRendererTest extends TestCase
         $view = $this->buildActionTable(allow: true, groupRowActions: true);
 
         $this->assertSame(1, $view->getData()['rowActionCount']);
+    }
+
+    public function test_a_conditional_row_style_lands_only_on_matching_rows(): void
+    {
+        // Covers AE7.
+        $html = $this->renderStyledRows(new StyleSet(
+            fn (RowContext $context) => $context->model->name === 'A' ? RowStyle::Danger : null,
+        ));
+
+        $this->assertSame(1, substr_count($html, '<tr class="table-danger">'));
+        $this->assertSame(1, substr_count($html, '<tr class="">'));
+    }
+
+    public function test_a_static_row_style_applies_to_every_row(): void
+    {
+        $html = $this->renderStyledRows(new StyleSet(RowStyle::Info));
+
+        $this->assertSame(2, substr_count($html, '<tr class="table-info">'));
+    }
+
+    public function test_a_table_without_row_styles_renders_rows_without_a_class(): void
+    {
+        $html = $this->renderStyledRows(null);
+
+        $this->assertSame(2, substr_count($html, '<tr class="">'));
+        $this->assertStringNotContainsString('table-danger', $html);
+    }
+
+    public function test_a_row_style_covers_the_cells_that_columns_cannot_reach(): void
+    {
+        // Covers AE7. The checkbox and action cells sit outside the column loop, so only a row-level
+        // style reaches them.
+        $html = $this->renderStyledRows(new StyleSet(RowStyle::Danger), withActions: true);
+
+        $styled = substr($html, strpos($html, '<tr class="table-danger">'));
+        $styled = substr($styled, 0, strpos($styled, '</tr>'));
+
+        $this->assertStringContainsString('name="selected[]"', $styled);
+        $this->assertStringContainsString('btn-group', $styled);
+    }
+
+    public function test_the_row_closure_receives_its_own_row(): void
+    {
+        $seen = [];
+
+        $this->renderStyledRows(new StyleSet(function (RowContext $context) use (&$seen) {
+            $seen[] = $context->model->name;
+
+            return null;
+        }));
+
+        $this->assertSame(['A', 'B'], $seen);
+    }
+
+    public function test_a_declared_table_style_reaches_the_table_element(): void
+    {
+        $html = $this->renderStyledTable([TableStyle::Striped, TableStyle::Hover]);
+
+        $this->assertStringContainsString('<table class="table table-striped table-hover">', $html);
+    }
+
+    public function test_a_table_declaring_nothing_keeps_its_default_appearance(): void
+    {
+        $this->assertStringContainsString('<table class="table ">', $this->renderStyledTable([TableStyle::Default]));
+    }
+
+    public function test_a_declared_accent_reaches_every_control(): void
+    {
+        $html = $this->renderAccentedTable(AccentStyle::Danger);
+
+        $this->assertStringContainsString('border-danger', $html);
+        $this->assertStringContainsString('text-danger', $html);
+    }
+
+    public function test_a_table_declaring_nothing_keeps_the_default_accent(): void
+    {
+        $this->assertStringContainsString('border-primary', $this->renderAccentedTable(AccentStyle::Primary));
+    }
+
+    public function test_the_accent_still_derives_its_disabled_and_active_variants(): void
+    {
+        $data = $this->accentedViewData(AccentStyle::Danger);
+
+        $this->assertSame('danger', $data['mainTableStyle']);
+        $this->assertSame('dark', $data['disabledStyle']);
+        $this->assertSame('light', $data['activeStyle']);
     }
 
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
@@ -601,6 +707,158 @@ class TableRendererTest extends TestCase
                 return $this->width ?? parent::bulkActionColumnWidth();
             }
         };
+
+        return $builder->build($table, $request)->render();
+    }
+
+    private function renderAccentedTable(AccentStyle $accent): string
+    {
+        return $this->accentedView($accent)->render();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function accentedViewData(AccentStyle $accent): array
+    {
+        return $this->accentedView($accent)->getData();
+    }
+
+    private function accentedView(AccentStyle $accent): View
+    {
+        DB::table('test_models')->insert(
+            collect(range(1, 20))
+                ->map(fn (int $i) => [
+                    'name'       => 'Row ' . $i,
+                    'email'      => 'row' . $i . '@test.com',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+                ->all(),
+        );
+
+        $table = new class($accent) extends Table {
+            use WithPagination;
+
+            public function __construct(private readonly AccentStyle $accent) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')->searchable()];
+            }
+
+            public function filters(): array
+            {
+                return [new Filter('name', [])];
+            }
+
+            public function accentStyle(): AccentStyle
+            {
+                return $this->accent;
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return $builder->build($table, $request);
+    }
+
+    /**
+     * @param TableStyle[] $style
+     */
+    private function renderStyledTable(array $style): string
+    {
+        $table = new class($style) extends Table {
+            /**
+             * @param TableStyle[] $tableStyle
+             */
+            public function __construct(private readonly array $tableStyle) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            /**
+             * @return TableStyle[]
+             */
+            public function style(): array
+            {
+                return $this->tableStyle;
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        return $builder->build($table, $request)->render();
+    }
+
+    private function renderStyledRows(?StyleSet $rowStyle, bool $withActions = false): string
+    {
+        DB::table('test_models')->insert([
+            ['name' => 'A', 'email' => 'a@test.com', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'B', 'email' => 'b@test.com', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $table = new class($rowStyle, $withActions) extends Table {
+            public function __construct(
+                private readonly ?StyleSet $rowStyle,
+                private readonly bool $withActions,
+            ) {}
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+
+            public function columns(): array
+            {
+                return [new Column('name')];
+            }
+
+            public function rowStyle(): ?StyleSet
+            {
+                return $this->rowStyle;
+            }
+
+            public function rowActions(): array
+            {
+                return $this->withActions
+                    ? [new Action()->label('R')->as(new Http('https://example.test'))]
+                    : [];
+            }
+
+            public function bulkActions(): array
+            {
+                return $this->withActions
+                    ? [new Action()->label('B')->as(new Http('https://example.test'))]
+                    : [];
+            }
+        };
+
+        /** @var TableRenderer $builder */
+        $builder = $this->app->make(TableRenderer::class);
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
 
         return $builder->build($table, $request)->render();
     }

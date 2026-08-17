@@ -1,6 +1,7 @@
 <td class="{{ $styles }}">
-    @include('eloquent-tables::bootstrap-5.table.column-type.' . $type->getTdView(), [
-        'value' => $value,
-        'cellStyles' => $cellStyles,
-    ])
+    <div class="d-flex align-items-center w-100 {{ $cellStyles }}">
+        @include('eloquent-tables::bootstrap-5.table.column-type.' . $type->getTdView(), [
+            'value' => $value,
+        ])
+    </div>
 </td>

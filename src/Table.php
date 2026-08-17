@@ -10,11 +10,12 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\PageStyle;
 use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\AccentStyle;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
@@ -101,7 +102,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      *
      * The name is derived from the class name with a trailing "Table" removed, so UserTable becomes
      * "user". Two instances of the same table class share a name, and therefore share both
-     * namespaces — override this to keep them independent.
+     * namespaces; override this to keep them independent.
      */
     public function name(): string
     {
@@ -116,19 +117,22 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         return Str::snake($stripped === '' ? $basename : $stripped);
     }
 
+    public function rowStyle(): ?StyleSet
+    {
+        return null;
+    }
+
     /**
      * @return TableStyle[]
      */
-    public function tableStyles(): array
+    public function style(): array
     {
-        return [
-            TableStyle::Default,
-        ];
+        return [TableStyle::Default];
     }
 
-    public function pageStyle(): PageStyle
+    public function accentStyle(): AccentStyle
     {
-        return PageStyle::Primary;
+        return AccentStyle::Primary;
     }
 
     /**

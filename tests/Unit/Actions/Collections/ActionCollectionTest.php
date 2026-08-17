@@ -10,7 +10,9 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
@@ -31,6 +33,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(Config::class)]
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
+#[UsesClass(StyleSet::class)]
 class ActionCollectionTest extends TestCase
 {
     private ActionContext $context;
@@ -44,6 +47,74 @@ class ActionCollectionTest extends TestCase
         $config = $this->app->make(Config::class);
 
         $this->context = new ActionContext($request, $config);
+    }
+
+    public function test_style_returns_the_collection_for_chaining(): void
+    {
+        $collection = new ActionCollection();
+
+        $this->assertSame($collection, $collection->style(ButtonStyle::Danger));
+    }
+
+    public function test_a_new_collection_has_no_style(): void
+    {
+        $this->assertNull(new ActionCollection()->style);
+    }
+
+    public function test_style_keeps_the_declared_styles(): void
+    {
+        $collection = new ActionCollection()->style(ButtonStyle::Danger);
+
+        $this->assertSame([ButtonStyle::Danger], $collection->style?->resolve($this->context));
+    }
+
+    public function test_a_second_style_call_merges_rather_than_replaces(): void
+    {
+        $collection = new ActionCollection()->style(ButtonStyle::Danger)->style(ButtonStyle::Link);
+
+        $this->assertSame([ButtonStyle::Danger, ButtonStyle::Link], $collection->style?->resolve($this->context));
+    }
+
+    public function test_style_accepts_a_closure_that_receives_the_context(): void
+    {
+        $received = null;
+
+        $collection = new ActionCollection()->style(function ($given) use (&$received) {
+            $received = $given;
+
+            return ButtonStyle::Danger;
+        });
+
+        $this->assertSame([ButtonStyle::Danger], $collection->style?->resolve($this->context));
+        $this->assertSame($this->context, $received);
+    }
+
+    public function test_style_survives_becoming_a_dropdown(): void
+    {
+        $collection = new ActionCollection()->style(ButtonStyle::Danger)->dropdown();
+
+        $this->assertSame([ButtonStyle::Danger], $collection->style?->resolve($this->context));
+    }
+
+    public function test_style_cannot_be_set_from_outside_the_collection(): void
+    {
+        $collection = new ActionCollection();
+
+        $this->expectException(\Error::class);
+
+        // @phpstan-ignore-next-line
+        $collection->style = new StyleSet(ButtonStyle::Danger);
+    }
+
+    public function test_a_filtered_collection_keeps_neither_its_type_nor_its_style(): void
+    {
+        // Covers R-4. A transform builds a plain collection, so style it after transforming, not before.
+        $collection = new ActionCollection([new Action()])->dropdown()->style(ButtonStyle::Danger);
+
+        $filtered = $collection->filter(fn () => true);
+
+        $this->assertSame(ActionCollectionType::Normal, $filtered->type);
+        $this->assertNull($filtered->style);
     }
 
     public function test_action_collection_is_a_laravel_collection(): void

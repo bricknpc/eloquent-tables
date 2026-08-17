@@ -9,11 +9,12 @@ use BrickNPC\EloquentTables\Column;
 use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
-use BrickNPC\EloquentTables\Enums\TableStyle;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
 use BrickNPC\EloquentTables\Contracts\Formatter;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
 /**
  * @template TModel of Model
@@ -24,6 +25,7 @@ readonly class ColumnValueRenderer
         private Factory $viewFactory,
         private FormatterFactory $formatterFactory,
         private Config $config,
+        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -47,12 +49,15 @@ readonly class ColumnValueRenderer
             $value = $formatter->format($value, $model);
         }
 
+        $styles = $column->style?->resolve(new CellContext($request, $column, $model)) ?? [];
+
+        $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
+
         return $this->viewFactory->make('eloquent-tables::table.td', [
             'theme'          => $theme,
             'value'          => $value,
-            'styles'         => collect($column->styles)->map(fn (TableStyle $style) => $style->toCssClass($theme))->implode(' '),
-            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
-            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
+            'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
+            'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
             'type'           => $column->type,
             'checkIcon'      => $this->config->checkIcon(),
             'crossIcon'      => $this->config->crossIcon(),

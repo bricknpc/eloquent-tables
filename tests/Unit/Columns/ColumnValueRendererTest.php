@@ -15,9 +15,16 @@ use BrickNPC\EloquentTables\Services\Config;
 use BrickNPC\EloquentTables\Enums\ColumnType;
 use BrickNPC\EloquentTables\Enums\TableStyle;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\StyleFamily;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
@@ -36,6 +43,12 @@ use BrickNPC\EloquentTables\Tests\Resources\TestFormatter;
 #[UsesClass(CurrencyFormatter::class)]
 #[UsesClass(NumberFormatter::class)]
 #[UsesClass(DateTimeFormatter::class)]
+#[UsesClass(StyleSet::class)]
+#[UsesClass(CellContext::class)]
+#[UsesClass(StyleTarget::class)]
+#[UsesClass(StyleFamily::class)]
+#[UsesClass(TableRegion::class)]
+#[UsesClass(StyleResolver::class)]
 class ColumnValueRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -112,13 +125,13 @@ class ColumnValueRendererTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
         $model   = new class extends Model {};
-        $column  = new Column('name')->styles(TableStyle::Active, TableStyle::Dark);
+        $column  = new Column('name')->style(CellStyle::BackgroundSuccess, CellStyle::FontBold);
 
         $view = $builder->build($request, $column, $model);
 
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('styles', $view->getData());
-        $this->assertSame('table-active table-dark', $view->getData()['styles']);
+        $this->assertSame('table-success fw-bold', $view->getData()['styles']);
     }
 
     public function test_it_renders_the_correct_cell_styles(): void
@@ -129,15 +142,73 @@ class ColumnValueRendererTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
         $model   = new class extends Model {};
-        $column  = new Column('name')->cellStyles(CellStyle::AlignCenter, CellStyle::AlignBetween);
+        $column  = new Column('name')->style(CellStyle::AlignCenter, CellStyle::AlignBetween);
 
         $view = $builder->build($request, $column, $model);
 
         $this->assertIsArray($view->getData());
         $this->assertArrayHasKey('cellStyles', $view->getData());
-        $this->assertSame('text-center ', $view->getData()['cellStyles']);
-        $this->assertArrayHasKey('cellStylesFlex', $view->getData());
-        $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStylesFlex']);
+        $this->assertSame('justify-content-center justify-content-between', $view->getData()['cellStyles']);
+    }
+
+    public function test_a_boolean_column_honours_a_declared_alignment(): void
+    {
+        // Covers AE2.
+        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::AlignRight));
+
+        $this->assertStringContainsString('justify-content-end', $html);
+        $this->assertStringNotContainsString('justify-content-center', $html);
+    }
+
+    public function test_a_checkbox_column_honours_a_declared_alignment(): void
+    {
+        // Covers AE2.
+        $html = $this->renderCell(new Column('name')->checkbox()->style(CellStyle::AlignRight));
+
+        $this->assertStringContainsString('justify-content-end', $html);
+        $this->assertStringNotContainsString('justify-content-center', $html);
+    }
+
+    public function test_a_boolean_column_still_centres_by_default(): void
+    {
+        // Covers AE3.
+        $this->assertStringContainsString('justify-content-center', $this->renderCell(new Column('name')->boolean()));
+    }
+
+    public function test_a_declared_alignment_displaces_the_type_default(): void
+    {
+        // Covers AE3.
+        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::AlignLeft));
+
+        $this->assertStringContainsString('justify-content-start', $html);
+        $this->assertStringNotContainsString('justify-content-center', $html);
+    }
+
+    public function test_a_declared_background_does_not_displace_the_type_default(): void
+    {
+        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::BackgroundSuccess));
+
+        $this->assertStringContainsString('justify-content-center', $html);
+        $this->assertStringContainsString('table-success', $html);
+    }
+
+    public function test_a_closure_colours_only_the_rows_that_match(): void
+    {
+        // Covers AE4.
+        $column = new Column('name')->style(
+            CellStyle::AlignRight,
+            fn (CellContext $context) => $context->model?->name === 'negative'
+                ? CellStyle::TextDanger
+                : null,
+        );
+
+        $matching = $this->renderCell($column, 'negative');
+        $other    = $this->renderCell($column, 'positive');
+
+        $this->assertStringContainsString('text-danger', $matching);
+        $this->assertStringContainsString('justify-content-end', $matching);
+        $this->assertStringNotContainsString('text-danger', $other);
+        $this->assertStringContainsString('justify-content-end', $other);
     }
 
     public function test_it_renders_the_correct_type(): void
@@ -229,6 +300,19 @@ class ColumnValueRendererTest extends TestCase
         $column = new Column('amount')->currency('GBP', 'en_GB');
 
         $this->assertStringContainsString('£5.00', $this->render($column, $this->modelWith(['amount' => 5])));
+    }
+
+    private function renderCell(Column $column, string $name = 'Ada'): string
+    {
+        /** @var ColumnValueRenderer $builder */
+        $builder = $this->app->make(ColumnValueRenderer::class);
+
+        /** @var Request $request */
+        $request     = $this->app->make('request');
+        $model       = new TestModel();
+        $model->name = $name;
+
+        return $builder->build($request, $column, $model)->render();
     }
 
     private function modelWith(array $attributes): Model

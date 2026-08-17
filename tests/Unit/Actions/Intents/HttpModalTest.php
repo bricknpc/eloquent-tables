@@ -10,12 +10,15 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Services\Config;
 use PHPUnit\Framework\Attributes\CoversClass;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\Enums\ActionRegion;
 use BrickNPC\EloquentTables\Actions\ActionIntent;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\ValueObjects\LazyValue;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Actions\Intents\HttpModal;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
+use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 
@@ -32,6 +35,9 @@ use BrickNPC\EloquentTables\Actions\ValueObjects\RenderBuffer;
 #[UsesClass(LazyValue::class)]
 #[UsesClass(RenderBuffer::class)]
 #[UsesClass(Theme::class)]
+#[UsesClass(ActionRegion::class)]
+#[UsesClass(ButtonStyle::class)]
+#[UsesClass(ActionStyleResolver::class)]
 class HttpModalTest extends TestCase
 {
     private ActionContext $context;

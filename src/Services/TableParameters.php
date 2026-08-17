@@ -101,7 +101,7 @@ readonly class TableParameters
      * The current query string as flat name/value pairs in bracket notation, minus the given names.
      *
      * A GET form replaces the whole query string with its own fields, so every control re-emits this
-     * as hidden inputs. Without it, changing one control discards the rest of the page's state —
+     * as hidden inputs. Without it, changing one control discards the rest of the page's state,
      * including the other tables'.
      *
      * @param string[] $except fully-qualified names to omit, e.g. "users[filter][active]"; everything

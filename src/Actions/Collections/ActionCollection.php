@@ -6,6 +6,8 @@ namespace BrickNPC\EloquentTables\Actions\Collections;
 
 use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Actions\Action;
+use BrickNPC\EloquentTables\Enums\ButtonStyle;
+use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
 
@@ -23,6 +25,10 @@ class ActionCollection extends Collection
      */
     public protected(set) \Closure|string|null $label = null {
         get => $this->label;
+    }
+
+    public protected(set) ?StyleSet $style = null {
+        get => $this->style;
     }
 
     /**
@@ -49,6 +55,13 @@ class ActionCollection extends Collection
     public function label(\Closure|string $label): static
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function style(ButtonStyle|\Closure ...$styles): static
+    {
+        $this->style = $this->style?->with(...$styles) ?? new StyleSet(...$styles);
 
         return $this;
     }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Enums;
 
-enum PageStyle: string
+use BrickNPC\EloquentTables\Contracts\Style;
+
+enum AccentStyle: string implements Style
 {
     case Primary    = 'primary';
     case Secondary  = 'secondary';

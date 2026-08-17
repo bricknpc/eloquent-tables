@@ -11,10 +11,13 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Contracts\View\Factory;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
-use BrickNPC\EloquentTables\Enums\CellStyle;
 use BrickNPC\EloquentTables\Services\Config;
+use BrickNPC\EloquentTables\Enums\StyleTarget;
+use BrickNPC\EloquentTables\Enums\TableRegion;
 use BrickNPC\EloquentTables\Enums\TableParameter;
+use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Services\TableParameters;
+use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 
 /**
  * @template TModel of Model
@@ -28,6 +31,7 @@ readonly class ColumnLabelRenderer
         private Factory $viewFactory,
         private Config $config,
         private TableParameters $parameters,
+        private StyleResolver $styleResolver,
     ) {}
 
     /**
@@ -39,6 +43,12 @@ readonly class ColumnLabelRenderer
         $theme             = $this->config->theme();
         $sortDirection     = $this->sortDirectionForColumn($request, $table, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
+
+        $styles = $column->style?->resolve(
+            new CellContext($request, $column, null, TableRegion::Header),
+        ) ?? [];
+
+        $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
 
         return $this->viewFactory->make('eloquent-tables::table.th', [
             'theme'          => $theme,
@@ -52,8 +62,8 @@ readonly class ColumnLabelRenderer
             'iconAsc'        => $this->config->sortAscIcon(),
             'iconDesc'       => $this->config->sortDescIcon(),
             'type'           => $column->type,
-            'cellStylesFlex' => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, true))->implode(' '),
-            'cellStyles'     => collect($column->cellStyles)->map(fn (CellStyle $style) => $style->toCssClass($theme, false))->implode(' '),
+            'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
+            'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
         ]);
     }
 
