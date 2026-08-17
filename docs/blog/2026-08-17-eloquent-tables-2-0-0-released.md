@@ -3,7 +3,6 @@ slug: eloquent-tables-2-0-0-released
 title: Eloquent Tables 2.0.0 Released
 authors: [bricknpc]
 tags: [eloquent, laravel, table, release]
-draft: true
 ---
 
 Version `2.0.0` of Eloquent Tables is here 🎉. This is our first major release since `1.0.0`, and it is a big one. It

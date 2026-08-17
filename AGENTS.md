@@ -316,12 +316,15 @@ when something will silently do the wrong thing rather than fail loudly.
 whole release — actions, table identity, styling and footers — so anything further that lands needs adding to
 both. `docs/docs/supported-versions.md` holds the version matrix and the branching policy.
 
-The release post is still `draft: true`, which is deliberate: flipping it publishes the announcement, so it
-happens when the tag is cut. Two things to do at that point — un-draft it, and rename the file to the real
-release date, since Docusaurus takes the post date from the filename.
+The 2.0 release post is published: the `draft: true` flag is gone and the file is dated `2026-08-17`. Worth
+remembering for the next release post, since both bit here: Docusaurus takes the post date from the **filename**,
+not from any frontmatter field, and the `slug` is what fixes the permalink, so renaming the file for the real
+release date does not move the published URL.
 
 Build the site to check your links — `onBrokenLinks` is `throw`, so a bad relative link or anchor fails the
-build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated.
+build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated,
+and its tags and authors are not resolved either. Un-drafting is therefore the first real check of a post, so
+build straight after flipping the flag rather than assuming a green build beforehand covered it.
 
 ### Agent plans are published
 
