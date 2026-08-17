@@ -742,6 +742,139 @@ class RowsBuilderTest extends TestCase
         $this->assertSame($rows[49]->name, $rows2[49]->name);
     }
 
+    public function test_the_narrowed_query_is_null_before_build_has_run(): void
+    {
+        /** @var RowsBuilder $builder */
+        $builder = $this->app->make(RowsBuilder::class);
+
+        $this->assertNull($builder->narrowedQuery());
+    }
+
+    public function test_the_narrowed_query_ignores_the_page_limit(): void
+    {
+        $this->seedAmounts(10, 20, 30, 40, 50);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->paginatedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertCount(2, $rows);
+        $this->assertSame(150, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_reflects_an_applied_search(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->searchableAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['search' => 'Row 0']);
+
+        $builder->build($table, $request);
+
+        $this->assertSame(10, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_reflects_an_applied_filter(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->filteredAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+        $request->query->set('table', ['filter' => ['amount' => '30']]);
+
+        $builder->build($table, $request);
+
+        $this->assertSame(30, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_survives_a_sorted_table(): void
+    {
+        // An aggregate over an ordered query is invalid SQL on strict databases, so this pins that
+        // the order is dropped rather than carried into the aggregate.
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->sortedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $builder->build($table, $request);
+
+        $this->assertSame(60, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_running_an_aggregate_does_not_disturb_the_rows(): void
+    {
+        // Covers R7.
+        $this->seedAmounts(10, 20, 30, 40, 50);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->paginatedAmountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $totalBefore = $rows->total();
+
+        $builder->narrowedQuery()?->sum('amount');
+        $builder->narrowedQuery()?->count('amount');
+        $builder->narrowedQuery()?->max('amount');
+
+        $this->assertCount(2, $rows);
+        $this->assertSame($totalBefore, $rows->total());
+        $this->assertSame(150, $builder->narrowedQuery()?->sum('amount'));
+    }
+
+    public function test_each_call_returns_an_independent_query(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->amountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $builder->build($table, $request);
+
+        $first  = $builder->narrowedQuery();
+        $second = $builder->narrowedQuery();
+
+        $this->assertNotSame($first, $second);
+        $this->assertSame(60, $first?->sum('amount'));
+        $this->assertSame(60, $second?->sum('amount'));
+    }
+
+    public function test_the_narrowed_query_is_available_without_pagination(): void
+    {
+        $this->seedAmounts(10, 20, 30);
+
+        $builder = $this->app->make(RowsBuilder::class);
+        $table   = $this->amountTable();
+
+        /** @var Request $request */
+        $request = $this->app->make('request');
+
+        $rows = $builder->build($table, $request);
+
+        $this->assertInstanceOf(Collection::class, $rows);
+        $this->assertSame(60, $builder->narrowedQuery()?->sum('amount'));
+    }
+
     private function seedTestModel(): void
     {
         for ($i = 0; $i < 50; ++$i) {
@@ -807,6 +940,106 @@ class RowsBuilderTest extends TestCase
                     new Column('created_at')->sortable(($this->record)('created_at')),
                     new Column('not_sortable'),
                 ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function seedAmounts(int ...$amounts): void
+    {
+        foreach ($amounts as $index => $amount) {
+            $model         = new TestModel();
+            $model->name   = 'Row ' . $index;
+            $model->email  = 'row' . $index . '@example.com';
+            $model->amount = $amount;
+            $model->save();
+        }
+    }
+
+    private function amountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function paginatedAmountTable(): Table
+    {
+        return new class extends Table {
+            use WithPagination;
+
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function perPage(Request $request): int
+            {
+                return 2;
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function searchableAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('name', searchable: true), new Column('amount')];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function filteredAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount')];
+            }
+
+            public function filters(): array
+            {
+                return [
+                    new Filter('amount', []),
+                ];
+            }
+
+            public function query(): Builder
+            {
+                return TestModel::query();
+            }
+        };
+    }
+
+    private function sortedAmountTable(): Table
+    {
+        return new class extends Table {
+            public function columns(): array
+            {
+                return [new Column('amount', sortable: true, defaultSort: Sort::Desc)];
             }
 
             public function query(): Builder

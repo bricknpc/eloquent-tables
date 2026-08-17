@@ -64,3 +64,13 @@ You can approximate this by giving every column the same conditional style, but 
 trailing actions cell sit outside the column loop, so they would stay uncoloured and the row would look broken at both
 ends.
 :::
+
+## Styling a footer row
+
+A [footer](../footers.md) row takes the same `RowStyle` cases a body row does, declared on the row itself:
+
+```php
+new FooterRow(new Sum(), AggregateScope::Total, __('All invoices'), styles: [RowStyle::Primary]);
+```
+
+There is no closure form, because a footer row aggregates many rows and has no single model to vary on.

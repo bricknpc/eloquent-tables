@@ -10,6 +10,7 @@ use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 use BrickNPC\EloquentTables\Exceptions\InvalidValueException;
 
@@ -251,5 +252,20 @@ class DateTimeFormatterTest extends TestCase
         $this->expectException(InvalidValueException::class);
 
         $formatter->format(new \DateTimeImmutable(), $model);
+    }
+
+    public function test_it_formats_the_same_value_with_and_without_a_model(): void
+    {
+        $formatter = new DateTimeFormatter('en_US', 'UTC');
+
+        $this->assertSame(
+            (string) $formatter->format(Carbon::parse('2026-08-17 12:00:00'), new TestModel()),
+            (string) $formatter->format(Carbon::parse('2026-08-17 12:00:00')),
+        );
+    }
+
+    public function test_it_formats_a_value_with_no_model_at_all(): void
+    {
+        $this->assertNotSame('', (string) new DateTimeFormatter('en_US', 'UTC')->format(Carbon::parse('2026-08-17 12:00:00')));
     }
 }

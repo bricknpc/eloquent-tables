@@ -21,8 +21,10 @@ final readonly class LazyValue
             return null;
         }
 
+        // Not is_callable: a label like "Log" or "Key" names a PHP function, and function names are
+        // case-insensitive, so is_callable would call it instead of returning the label.
         /** @var string $result */
-        $result = is_callable($this->value) ? call_user_func($this->value, $context) : $this->value;
+        $result = $this->value instanceof \Closure ? call_user_func($this->value, $context) : $this->value;
 
         return $result;
     }

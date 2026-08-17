@@ -18,11 +18,11 @@ readonly class DateTimeFormatter implements Formatter
     /**
      * @template TModel of Model
      *
-     * @param TModel $model
+     * @param null|TModel $model
      *
      * @throws InvalidValueException
      */
-    public function format(mixed $value, Model $model): \Stringable
+    public function format(mixed $value, ?Model $model = null): \Stringable
     {
         $formatter = new \IntlDateFormatter(
             locale: $this->locale,

@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Contracts\Translation\Translator;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
+use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
@@ -133,6 +134,14 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     public function accentStyle(): AccentStyle
     {
         return AccentStyle::Primary;
+    }
+
+    /**
+     * @return FooterRow[]
+     */
+    public function footer(): array
+    {
+        return [];
     }
 
     /**

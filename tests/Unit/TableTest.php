@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
 use BrickNPC\EloquentTables\Enums\Theme;
 use Illuminate\Database\Eloquent\Builder;
+use BrickNPC\EloquentTables\Aggregates\Sum;
 use BrickNPC\EloquentTables\Tests\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
 use BrickNPC\EloquentTables\Enums\CellStyle;
@@ -19,14 +20,19 @@ use BrickNPC\EloquentTables\Enums\StyleFamily;
 use BrickNPC\EloquentTables\Enums\StyleTarget;
 use Symfony\Component\HttpFoundation\Response;
 use BrickNPC\EloquentTables\Builders\RowsBuilder;
+use BrickNPC\EloquentTables\Enums\AggregateScope;
 use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Tables\TableRenderer;
 use BrickNPC\EloquentTables\Services\LayoutFinder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Actions\ActionRenderer;
 use BrickNPC\EloquentTables\Filters\FilterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterRenderer;
+use BrickNPC\EloquentTables\Footers\FooterResolver;
+use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
@@ -34,8 +40,10 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTable;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use BrickNPC\EloquentTables\Actions\Contexts\ActionContext;
+use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 use BrickNPC\EloquentTables\Exceptions\MissingMethodException;
 use BrickNPC\EloquentTables\Tests\Resources\ArchivedTestTable;
 use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFails;
@@ -69,8 +77,37 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(StyleFamily::class)]
 #[UsesClass(StyleSet::class)]
 #[UsesClass(AccentStyle::class)]
+#[UsesClass(Sum::class)]
+#[UsesClass(FooterRow::class)]
+#[UsesClass(AggregateScope::class)]
+#[UsesClass(AggregatesValues::class)]
+#[UsesClass(FooterRenderer::class)]
+#[UsesClass(FooterResolver::class)]
+#[UsesClass(ResolvedFooter::class)]
+#[UsesClass(ResolvedFooterRow::class)]
 class TableTest extends TestCase
 {
+    public function test_a_table_declares_no_footer_rows_by_default(): void
+    {
+        $this->assertSame([], new TestTable()->footer());
+    }
+
+    public function test_a_table_may_declare_its_own_footer_rows(): void
+    {
+        $table = new class extends Table {
+            public function footer(): array
+            {
+                return [new FooterRow(new Sum(), AggregateScope::Total, 'All rows')];
+            }
+        };
+
+        $footer = $table->footer();
+
+        $this->assertCount(1, $footer);
+        $this->assertSame('All rows', $footer[0]->resolveLabel());
+        $this->assertSame(AggregateScope::Total, $footer[0]->scope);
+    }
+
     public function test_default_authorisation_always_renders_the_table(): void
     {
         /** @var TestTable $table */

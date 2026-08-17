@@ -355,6 +355,19 @@ If you followed the 2.0 alpha, styling was briefly a `Style` capability. That ca
 
 :::
 
+## 16. `Formatter::format()` takes an optional model
+
+Only relevant if you wrote your own formatter. The model argument is now optional, because a table footer formats a
+value aggregated across many rows and so has no single row behind it.
+
+```php
+public function format(mixed $value, Model $model): string|\Stringable;          // 1.x
+public function format(mixed $value, ?Model $model = null): string|\Stringable;  // 2.0
+```
+
+Update the signature on every class implementing the interface. None of the formatters the package ships reads the
+argument, so no bodies changed; if yours does, guard for null.
+
 ## Full example
 
 A 1.x table with all three action types:
@@ -520,5 +533,7 @@ Things that have no 1.x equivalent, and that you may want once you have upgraded
 - [Saved preferences](preferences.md): a visitor's per-page choice and multi-column sort survive navigating away and back
 - [Cell styling](styling/cell-styling.md): backgrounds, text colours and weights, and styling a cell by its value
 - [Row styling](styling/table-styling.md): highlight a whole row, including its checkbox and action cells
+- [Footers](footers.md) with per-column aggregates: sum, average, median, count, min and max, for the current page or
+  the whole filtered result set, and a contract so you can add your own
 - [Conditional action styling](styling/action-styling.md#styling-an-action-by-its-row): the `Style` capability now
   also takes closures, so an action can be styled per row

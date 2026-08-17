@@ -69,6 +69,27 @@ class LazyValueTest extends TestCase
         $this->assertSame('12345', $result);
     }
 
+    public function test_resolve_does_not_call_a_string_that_names_a_php_function(): void
+    {
+        // 'Log' resolved through is_callable calls log($context) and throws.
+        $this->assertSame('Log', new LazyValue('Log')->resolve($this->createActionContext()));
+    }
+
+    public function test_resolve_does_not_silently_rewrite_a_string_that_names_a_php_function(): void
+    {
+        // 'Key' resolved through is_callable calls key($context) and returns its first property name.
+        $this->assertSame('Key', new LazyValue('Key')->resolve($this->createActionContext()));
+    }
+
+    public function test_resolve_returns_every_function_named_string_verbatim(): void
+    {
+        $context = $this->createActionContext();
+
+        foreach (['Log', 'log', 'Key', 'Sort', 'Count', 'Reset', 'Compact', 'Range'] as $label) {
+            $this->assertSame($label, new LazyValue($label)->resolve($context));
+        }
+    }
+
     public function test_resolve_executes_closure_and_returns_result(): void
     {
         $lazyValue = new LazyValue(function (ActionContext $context): string {
