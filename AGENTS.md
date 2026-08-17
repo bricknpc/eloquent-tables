@@ -5,16 +5,21 @@ definitions. A user defines a `Table` subclass — a query, some columns, option
 searching, and pagination — and the package produces the markup, accessibility attributes, and JavaScript. The
 selling point is that no front-end work is required: everything is expressed in PHP.
 
-- **Requires** PHP `^8.4|^8.5` and Laravel `^12.0`. Bootstrap 5 is the only theme so far.
-- **Depends on** `illuminate/database`, `illuminate/support`, and `illuminate/http`. Any `illuminate/*` package
-  is fair game — this is a Laravel package and Laravel is built on illuminate — but only require one when you
-  actually need it. If you use a class from a package that is not required yet, add it to `composer.json` in the
-  same change rather than relying on it arriving transitively.
+- **Requires** PHP `^8.4|^8.5` and Laravel `^12.0|^13.0`. Bootstrap 5 is the only theme so far.
+- **Depends on** `illuminate/database`, `illuminate/support`, `illuminate/http`, and `illuminate/cookie`. Any
+  `illuminate/*` package is fair game — this is a Laravel package and Laravel is built on illuminate — but only
+  require one when you actually need it. If you use a class from a package that is not required yet, add it to
+  `composer.json` in the same change rather than relying on it arriving transitively.
 - **Releases are cut from release branches** — `release/2.x`, `release/2.1`, `release/3.x`, and so on. Feature
   work branches off the release branch it targets and merges back into it. `main` tracks the latest release, so
-  it is the released state rather than a development branch. The current released version is 1.1; once
-  `release/2.x` is merged and released, 1.1 is no longer supported. **Only the latest version is supported**, so
+  it is the released state rather than a development branch. The current released version is 1.2; once
+  `release/2.x` is merged and released, 1.2 is no longer supported. **Only the latest version is supported**, so
   assume there is nowhere to backport a fix to.
+- **The version lives only in the git tag.** `composer.json` deliberately carries no `version` field, since
+  `composer validate` warns about one for a Packagist package, so there is nothing to bump at release time and it
+  must not be added back. Related trap: `composer.lock` stores a `content-hash` of `composer.json`, so *any* edit
+  to that file makes the lock stale. Refresh it with `composer update --lock`, which rewrites the hash without
+  moving a single dependency — a bare `composer update` would.
 
 ## Hard rule: never commit, never push
 
@@ -134,21 +139,24 @@ Views `trim()` composed class attributes, so expect no stray whitespace when ass
 ```
 src/
   Actions/          the actions system (see below)
+  Aggregates/       Sum, Average, Median, Count, Min, Max — the bundled Aggregate implementations
   Attributes/       Layout — the #[Layout] attribute
   Builders/         RowsBuilder — builds row data (Collection|Paginator), not markup
-  Columns/          ColumnLabelRenderer, ColumnValueRenderer
-  Concerns/         WithPagination — an opt-in trait on a Table
+  Columns/          ColumnLabelRenderer, ColumnValueRenderer, ColumnValue
+  Concerns/         WithPagination — an opt-in trait on a Table; AggregatesValues — shared by the aggregates
   Console/Commands/ MakeTableCommand
-  Contracts/        Filter, Formatter — user-implementable interfaces
-  Enums/            Theme, ColumnType, Method, Sort, and the *Style enums
+  Contracts/        Aggregate, Filter, Formatter, Style, StyleContext — user-implementable interfaces
+  Enums/            Theme, ColumnType, Method, Sort, AggregateScope, and the *Style enums
   Exceptions/
   Factories/        FormatterFactory — resolves formatters out of the container
   Filters/          Filter base class, FilterRenderer
+  Footers/          FooterResolver — resolves declared footer rows into cells; FooterRenderer
   Formatters/       Date, DateTime, Number, Currency
   Providers/        EloquentTablesServiceProvider
-  Services/         Config, LayoutFinder, RouteModelBinder
+  Services/         Config, LayoutFinder, RouteModelBinder, TableParameters, TablePreferences
+  Styles/           StyleResolver, ActionStyleResolver, and the CellContext / RowContext closure contexts
   Tables/           TableRenderer — assembles the whole table view
-  ValueObjects/     LazyValue
+  ValueObjects/     LazyValue, StyleSet, FooterRow, ResolvedFooter, ResolvedFooterRow
   Column.php  
   Table.php  
   helpers.php
@@ -159,7 +167,9 @@ docs/               Docusaurus site, published to GitHub Pages from main
 
 **Naming:** anything producing markup is a `*Renderer` and lives in a folder named for its domain
 (`Tables/TableRenderer`, `Columns/ColumnValueRenderer`, `Actions/ActionRenderer`). `RowsBuilder` is
-deliberately still a `Builder` because it returns data, not markup. Follow this when adding classes.
+deliberately still a `Builder` because it returns data, not markup, and a `*Resolver` (`FooterResolver`,
+`StyleResolver`) turns a declaration into the data or class strings a renderer then emits. Follow this when
+adding classes.
 
 ## How a table renders
 
@@ -174,10 +184,12 @@ deliberately still a `Builder` because it returns data, not markup. Follow this 
    binding on those hooks), assembles ~30 view variables, and picks `table` or `table-with-layout`.
 5. The Blade views render, calling back into the renderers that were passed in as view variables.
 
-Optional hooks a user may define on their table: `tableActions()`, `rowActions()`, `bulkActions()`,
-`filters()`, `layout()`, plus overridable `tableStyles()`, `pageStyle()` and `bulkActionColumnWidth()`.
-Presentational per-table settings belong on `Table` as overridable methods; `config/eloquent-tables.php` is for
-infrastructure (namespaces, query parameter names, icons).
+Optional hooks a user may *add* to their table, each guarded by a `method_exists` check: `tableActions()`,
+`rowActions()`, `bulkActions()`, `filters()`, `layout()`. On top of those, `Table` itself defines methods to
+*override*: `name()`, `style()`, `rowStyle()`, `accentStyle()`, `footer()`, `bulkActionColumnWidth()`, and the
+`authorize()` / `unauthorizedMessage()` / `unauthorizedResponseCode()` trio. Presentational per-table settings
+belong on `Table` as overridable methods; `config/eloquent-tables.php` is for infrastructure (namespaces, query
+parameter names, icons).
 
 ## The actions system
 
@@ -265,9 +277,13 @@ Pages live in `docs/docs/**`, are ordered by a `sidebar_position` in the frontma
 `_category_.json`. Admonitions (`:::note`, `:::info`, `:::warning`) are used throughout — reach for `:::warning`
 when something will silently do the wrong thing rather than fail loudly.
 
-`docs/docs/upgrading.md` is the 1.x → 2.0 guide and stays a living document until 2.0 is tagged. The 2.0 release
-post in `docs/blog/` is still `draft: true`; both currently describe the actions rewrite as the release's only
-feature, which stops being true as more work lands.
+`docs/docs/upgrading.md` is the 1.x → 2.0 guide and stays a living document until 2.0 is tagged. Both it and the
+2.0 release post in `docs/blog/` now cover the whole release — actions, table identity, styling and footers — so
+anything further that lands needs adding to both.
+
+The release post is still `draft: true`, which is deliberate: flipping it publishes the announcement, so it
+happens when the tag is cut. Two things to do at that point — un-draft it, and rename the file to the real
+release date, since Docusaurus takes the post date from the filename.
 
 Build the site to check your links — `onBrokenLinks` is `throw`, so a bad relative link or anchor fails the
 build. A post with `draft: true` is excluded from a production build, which means its links are *not* validated.
@@ -334,7 +350,6 @@ update painful. The commit and push override lives in this file precisely so the
 
 True at the time of writing — confirm before relying on any of it.
 
-- `composer.json` carries an explicit `version` field, currently `2.0.0-alpha`, which needs bumping at release.
 - `ActionIntent::after()` is inconsistent: writes to the render buffers reach the output, but writes to
   `$descriptor->attributes` do not, because attributes are copied into the view data before it runs. Use
   `before()` for anything that must affect the markup.
