@@ -520,3 +520,14 @@ class UserTable extends Table
 Navigating to `http://my-app.test/1/users` will automatically try to load the Team with ID 1 and inject it into the
 `columns` method. If there is no team with the given key, a `404 model not found` exception is thrown just like for 
 normal route model binding in Laravel.
+
+## Aggregating a column
+
+A column can offer aggregates for the table's [footer](footers.md), so a total or an average appears beneath it:
+
+```php
+new Column('total')->currency()->aggregate(new Sum(), new Average());
+```
+
+Declaring an aggregate does not render anything on its own. The table's `footer()` method decides which aggregates
+appear and at which scope. See [footers](footers.md).
