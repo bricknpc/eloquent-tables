@@ -16,6 +16,7 @@
 /.php-cs-fixer.php    export-ignore
 /AGENTS.md            export-ignore
 /CLAUDE.md            export-ignore
+/codecov.yml          export-ignore
 /composer.lock        export-ignore
 /docker-compose.yml   export-ignore
 /eloquent-tables.png  export-ignore
