@@ -32,11 +32,11 @@ use BrickNPC\EloquentTables\Footers\FooterResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Columns\ColumnLabelRenderer;
 use BrickNPC\EloquentTables\Columns\ColumnValueRenderer;
@@ -80,7 +80,7 @@ use BrickNPC\EloquentTables\Tests\Resources\TestTableAuthorisationFailsCustomCal
 #[UsesClass(Sum::class)]
 #[UsesClass(FooterRow::class)]
 #[UsesClass(AggregateScope::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 #[UsesClass(FooterRenderer::class)]
 #[UsesClass(FooterResolver::class)]
 #[UsesClass(ResolvedFooter::class)]

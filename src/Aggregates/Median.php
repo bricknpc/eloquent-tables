@@ -7,7 +7,7 @@ namespace BrickNPC\EloquentTables\Aggregates;
 use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Contracts\Aggregate;
 use Illuminate\Contracts\Database\Query\Builder;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 
 /**
  * The middle value of a column, over the current page only.
@@ -16,17 +16,17 @@ use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
  */
 final readonly class Median implements Aggregate
 {
-    use IgnoresNullValues;
+    use AggregatesValues;
 
     /**
      * @param Collection<int, mixed> $values
      */
-    public function forPage(Collection $values): mixed
+    public function forPage(Collection $values): float|int|string|\Stringable|null
     {
-        return $this->present($values)->median();
+        return $this->presentable($this->present($values)->median());
     }
 
-    public function forQuery(Builder $query, string $column): mixed
+    public function forQuery(Builder $query, string $column): null
     {
         return null;
     }

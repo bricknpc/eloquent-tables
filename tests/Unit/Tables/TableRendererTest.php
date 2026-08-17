@@ -50,11 +50,11 @@ use BrickNPC\EloquentTables\Actions\ActionCapability;
 use BrickNPC\EloquentTables\Actions\ActionDescriptor;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Actions\Capabilities\When;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
 use BrickNPC\EloquentTables\Services\TablePreferences;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
 use BrickNPC\EloquentTables\Tests\Resources\TestTable;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Styles\ActionStyleResolver;
 use BrickNPC\EloquentTables\Styles\Contexts\RowContext;
@@ -122,7 +122,7 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 #[UsesClass(FooterResolver::class)]
 #[UsesClass(ResolvedFooter::class)]
 #[UsesClass(ResolvedFooterRow::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 class TableRendererTest extends TestCase
 {
     public function test_it_returns_the_correct_view(): void
@@ -782,6 +782,42 @@ class TableRendererTest extends TestCase
         $this->assertSame($body, $footer, 'footer cell count must match a body row');
     }
 
+    public function test_an_unlabelled_footer_row_renders_no_label_text(): void
+    {
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page)],
+            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
+        );
+
+        $this->assertStringContainsString('<th colspan="1"></th>', $html);
+    }
+
+    public function test_an_aggregated_first_column_never_emits_a_zero_colspan(): void
+    {
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
+            columns: [new Column('amount')->aggregate(new Sum()), new Column('name')],
+        );
+
+        $this->assertStringNotContainsString('colspan="0"', $html);
+    }
+
+    public function test_an_aggregated_first_column_keeps_the_footer_cell_count(): void
+    {
+        $this->seedAmounts(10, 20);
+
+        $html = $this->renderFooterTable(
+            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
+            columns: [new Column('amount')->aggregate(new Sum()), new Column('name')],
+        );
+
+        $this->assertSame(
+            $this->cellsInFirst($html, '<tbody>'),
+            $this->cellsInFirst($html, '<tfoot>'),
+            'a footer whose first column is aggregated must still match a body row',
+        );
+    }
+
     private function renderTableWithBulkActions(?string $width = null, bool $overrideWithNull = false): string
     {
         /** @var TableRenderer $builder */
@@ -1071,7 +1107,7 @@ class TableRendererTest extends TestCase
      */
     private function renderFooterTable(array $footer, ?array $columns = null, ?int $perPage = null): string
     {
-        $columns ??= [new Column('amount')->aggregate(new Sum())];
+        $columns ??= [new Column('name'), new Column('amount')->aggregate(new Sum())];
 
         /** @var Request $request */
         $request = $this->app->make('request');

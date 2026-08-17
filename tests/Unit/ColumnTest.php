@@ -24,7 +24,7 @@ use BrickNPC\EloquentTables\Contracts\Formatter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\ValueObjects\StyleSet;
 use BrickNPC\EloquentTables\Formatters\DateFormatter;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Formatters\NumberFormatter;
 use BrickNPC\EloquentTables\Styles\Contexts\CellContext;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
@@ -43,7 +43,7 @@ use BrickNPC\EloquentTables\Formatters\DateTimeFormatter;
 #[UsesClass(TableRegion::class)]
 #[UsesClass(Sum::class)]
 #[UsesClass(Count::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 class ColumnTest extends TestCase
 {
     public function test_can_create_a_column_with_only_a_name(): void

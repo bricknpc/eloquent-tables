@@ -15,12 +15,12 @@ final readonly class DoubledSum implements Aggregate
     /**
      * @param Collection<int, mixed> $values
      */
-    public function forPage(Collection $values): mixed
+    public function forPage(Collection $values): float|int|string|\Stringable|null
     {
         return $values->sum() * $this->factor;
     }
 
-    public function forQuery(Builder $query, string $column): mixed
+    public function forQuery(Builder $query, string $column): float|int|string|\Stringable|null
     {
         return $query->sum($column) * $this->factor;
     }

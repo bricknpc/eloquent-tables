@@ -10,14 +10,14 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Enums\AggregateScope;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 
 /**
  * @internal
  */
 #[CoversClass(FooterRow::class)]
 #[UsesClass(Sum::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 #[UsesClass(AggregateScope::class)]
 class FooterRowTest extends TestCase
 {
@@ -69,5 +69,13 @@ class FooterRowTest extends TestCase
                 new FooterRow(new Sum(), AggregateScope::Page, $label)->resolveLabel(),
             );
         }
+    }
+
+    public function test_a_row_may_go_without_a_label(): void
+    {
+        $row = new FooterRow(new Sum(), AggregateScope::Page);
+
+        $this->assertNull($row->label);
+        $this->assertNull($row->resolveLabel());
     }
 }

@@ -92,7 +92,7 @@ readonly class FooterResolver
         Column $column,
         Collection $rows,
         ?Builder $query,
-    ): mixed {
+    ): float|int|string|\Stringable|null {
         if ($scope === AggregateScope::Page) {
             return $aggregate->forPage($rows->map(
                 // Column's TModel is invariant, so a Column<TModel> cannot be handed to a method
@@ -114,7 +114,7 @@ readonly class FooterResolver
     /**
      * @param Column<TModel> $column
      */
-    private function render(Column $column, Aggregate $aggregate, mixed $value): string
+    private function render(Column $column, Aggregate $aggregate, float|int|string|\Stringable|null $value): string
     {
         if ($value === null) {
             return '';
@@ -137,9 +137,9 @@ readonly class FooterResolver
         return (string) $formatter->format($value);
     }
 
-    private function toString(mixed $value): string
+    private function toString(float|int|string|\Stringable $value): string
     {
-        return is_scalar($value) || $value instanceof \Stringable ? (string) $value : '';
+        return (string) $value;
     }
 
     /**

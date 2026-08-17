@@ -13,7 +13,7 @@ final readonly class ResolvedFooterRow
      *                                       spans the leading columns instead
      */
     public function __construct(
-        public string $label,
+        public ?string $label,
         public array $values,
         public ?int $labelIndex = null,
         public string $styles = '',

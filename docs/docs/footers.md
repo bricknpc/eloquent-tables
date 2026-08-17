@@ -126,8 +126,37 @@ The footer renders that value unformatted rather than refusing to aggregate it.
 
 ## The label
 
+A label is optional. A single sum or count under a column usually speaks for itself, and a row without one renders an
+empty cell in its place:
+
+```php
+new FooterRow(new Sum(), AggregateScope::Page);
+```
+
+Label a row when the footer holds more than one, because two anonymous numbers stacked on top of each other tell a
+reader nothing about which is which.
+
 By default a row's label sits in a cell spanning the columns to the left of the aggregated ones. Every row spans the
 same width, decided by the leftmost column any row in the footer aggregates, so stacked figures stay comparable.
+
+Labels belong to rows rather than to columns. Two aggregated columns side by side each get their own value cell, with a
+single label to the left of both:
+
+```text
+| Name       | Amount | Quantity |
+|------------|--------|----------|
+| ...        |  10,00 |        2 |
+| ...        |  20,00 |        3 |
+| This page  |  30,00 |        5 |   <- one label, two values
+```
+
+:::note
+
+A spanning label needs a column to its left. If the leftmost column of the table is itself aggregated there is no cell
+for the label, so none is rendered. Either accept that, put a non-aggregated column first, or name a column with
+`labelColumn` and give up that column's value.
+
+:::
 
 To put a label somewhere else, name the column it should sit in:
 
@@ -171,14 +200,21 @@ use Illuminate\Contracts\Database\Query\Builder;
 
 final readonly class Range implements Aggregate
 {
-    public function forPage(Collection $values): mixed
+    public function __construct(private int $precision = 0) {}
+
+    public function forPage(Collection $values): float|int|null
     {
-        return $values->max() - $values->min();
+        return $values->isEmpty()
+            ? null
+            : round($values->max() - $values->min(), $this->precision);
     }
 
-    public function forQuery(Builder $query, string $column): mixed
+    public function forQuery(Builder $query, string $column): float|int|null
     {
-        return $query->max($column) - $query->min($column);
+        $max = $query->max($column);
+        $min = $query->min($column);
+
+        return $max === null || $min === null ? null : round($max - $min, $this->precision);
     }
 
     public function carriesColumnUnit(): bool
@@ -192,6 +228,10 @@ Three things to know:
 
 - **Return null for a scope you cannot answer.** That cell renders empty. This is how `Median` declines the whole
   result set, and it is how you decline a scope that would be too expensive or has no SQL form.
+- **The return type is a value for presentation, not for arithmetic.** The contract allows
+  `float|int|string|\Stringable|null`, and an implementation may narrow that further, as `Average` narrows to `?float`.
+  Numbers stay numbers rather than becoming strings, because a unit-carrying result still has to pass through the
+  column's formatter.
 - **`forQuery()` receives the query with search, filters and sorting already applied**, and a fresh copy each time, so
   you can run whatever you need on it without affecting the rows or another aggregate.
 - **The column's instance does the work.** A footer row names which aggregate it wants by class, and the instance the

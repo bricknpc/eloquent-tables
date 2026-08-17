@@ -11,18 +11,19 @@ use BrickNPC\EloquentTables\Enums\AggregateScope;
 final readonly class FooterRow
 {
     /**
-     * @param (\Closure(): string)|string $label
-     * @param RowStyle[]                  $styles
+     * @param null|(\Closure(): string)|string $label  a sum or a count often speaks for itself, so a
+     *                                                 row may go without one
+     * @param RowStyle[]                       $styles
      */
     public function __construct(
         public Aggregate $aggregate,
         public AggregateScope $scope,
-        public \Closure|string $label,
+        public \Closure|string|null $label = null,
         public ?string $labelColumn = null,
         public array $styles = [],
     ) {}
 
-    public function resolveLabel(): string
+    public function resolveLabel(): ?string
     {
         // Tested against is_callable, which would call a label that happens to name a PHP function.
         return $this->label instanceof \Closure

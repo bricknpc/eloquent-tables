@@ -21,8 +21,8 @@ use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Footers\FooterRenderer;
 use BrickNPC\EloquentTables\Footers\FooterResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
 use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
@@ -41,7 +41,7 @@ use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 #[UsesClass(RowStyle::class)]
 #[UsesClass(Sum::class)]
 #[UsesClass(Count::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 #[UsesClass(StyleResolver::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(Table::class)]

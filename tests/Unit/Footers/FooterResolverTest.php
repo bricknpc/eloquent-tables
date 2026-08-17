@@ -20,13 +20,12 @@ use BrickNPC\EloquentTables\Enums\AggregateScope;
 use BrickNPC\EloquentTables\Styles\StyleResolver;
 use BrickNPC\EloquentTables\Footers\FooterResolver;
 use BrickNPC\EloquentTables\ValueObjects\FooterRow;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 use BrickNPC\EloquentTables\Factories\FormatterFactory;
 use BrickNPC\EloquentTables\Tests\Resources\DoubledSum;
 use BrickNPC\EloquentTables\ValueObjects\ResolvedFooter;
 use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
-use BrickNPC\EloquentTables\Tests\Resources\ArrayAggregate;
 use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 
 /**
@@ -44,11 +43,10 @@ use BrickNPC\EloquentTables\ValueObjects\ResolvedFooterRow;
 #[UsesClass(Median::class)]
 #[UsesClass(Count::class)]
 #[UsesClass(Max::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 #[UsesClass(CurrencyFormatter::class)]
 #[UsesClass(FormatterFactory::class)]
 #[UsesClass(DoubledSum::class)]
-#[UsesClass(ArrayAggregate::class)]
 #[UsesClass(StyleResolver::class)]
 #[UsesClass(Config::class)]
 class FooterResolverTest extends TestCase
@@ -340,15 +338,6 @@ class FooterResolverTest extends TestCase
 
         $this->assertStringContainsString('30', $footer->rows[0]->values[0]);
         $this->assertStringContainsString('$', $footer->rows[0]->values[0]);
-    }
-
-    public function test_a_value_that_cannot_become_a_string_renders_empty(): void
-    {
-        $columns = [new Column('amount')->aggregate(new ArrayAggregate())];
-
-        $footer = $this->resolve($columns, new FooterRow(new ArrayAggregate(), AggregateScope::Page, 'Odd'));
-
-        $this->assertSame('', $footer->rows[0]->values[0]);
     }
 
     private function resolver(): FooterResolver

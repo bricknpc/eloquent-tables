@@ -10,7 +10,9 @@
         @foreach($footer->rows as $footerRow)
             <tr class="{{ $footerRow->styles }}">
                 @if($footerRow->labelIndex === null)
-                    <th colspan="{{ $footer->labelSpan }}">{{ $footerRow->label }}</th>
+                    @if($footer->labelSpan > 0)
+                        <th colspan="{{ $footer->labelSpan }}">{{ $footerRow->label }}</th>
+                    @endif
                     @foreach($columns as $index => $column)
                         @if($index >= $footer->firstValueIndex)
                             <td>{{ $footerRow->values[$index] ?? '' }}</td>

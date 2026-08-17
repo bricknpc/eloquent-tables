@@ -7,21 +7,21 @@ namespace BrickNPC\EloquentTables\Aggregates;
 use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Contracts\Aggregate;
 use Illuminate\Contracts\Database\Query\Builder;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 
 final readonly class Average implements Aggregate
 {
-    use IgnoresNullValues;
+    use AggregatesValues;
 
     /**
      * @param Collection<int, mixed> $values
      */
-    public function forPage(Collection $values): mixed
+    public function forPage(Collection $values): ?float
     {
         return $this->toFloat($this->present($values)->avg());
     }
 
-    public function forQuery(Builder $query, string $column): mixed
+    public function forQuery(Builder $query, string $column): ?float
     {
         return $this->toFloat($query->avg($column));
     }

@@ -10,14 +10,14 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use BrickNPC\EloquentTables\Aggregates\Average;
 use BrickNPC\EloquentTables\Contracts\Aggregate;
+use BrickNPC\EloquentTables\Concerns\AggregatesValues;
 use BrickNPC\EloquentTables\Tests\Resources\TestModel;
-use BrickNPC\EloquentTables\Concerns\IgnoresNullValues;
 
 /**
  * @internal
  */
 #[CoversClass(Average::class)]
-#[UsesClass(IgnoresNullValues::class)]
+#[UsesClass(AggregatesValues::class)]
 class AverageTest extends TestCase
 {
     public function test_an_empty_page_has_no_rows_to_aggregate(): void
