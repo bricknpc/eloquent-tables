@@ -23,8 +23,8 @@ composer require bricknpc/eloquent-tables
 
 ### Requirements
 
-- PHP `^8.4`
-- Laravel `^12.0`
+- PHP `^8.4|^8.5`
+- Laravel `^12.0|^13.0`
 
 This package builds eloquent tables for you with the frontend framework of your choice. You need to install the 
 frontend framework yourself in your Laravel project.

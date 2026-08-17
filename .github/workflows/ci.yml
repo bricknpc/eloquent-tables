@@ -9,11 +9,10 @@ on:
   pull_request:
     branches: [ "**" ]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Every job gets read-only access. The Pages deployment raises its own permissions,
+# so a compromised third-party action in a test job has nothing worth stealing.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -23,16 +22,26 @@ concurrency:
 
 jobs:
   phpunit:
+    name: PHPUnit (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
+
+    # id-token lets the Codecov upload authenticate with a short-lived OIDC token
+    # instead of a stored secret.
+    permissions:
+      contents: read
+      id-token: write
+
     strategy:
+      fail-fast: false
       matrix:
         php-version: ['8.4', '8.5']
+        laravel: ['12', '13']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
@@ -40,30 +49,30 @@ jobs:
 
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Install dependencies against Laravel ${{ matrix.laravel }}
+        run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPUnit tests with coverage
         run: vendor/bin/phpunit --coverage-text --coverage-cobertura=coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.php-version == '8.5'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
 
       - name: Get coverage percentage
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         id: coverage
         run: |
           COVERAGE=$(php -r "
@@ -76,8 +85,8 @@ jobs:
           echo "Current coverage: $COVERAGE%"
 
       - name: Download previous coverage
-        if: matrix.php-version == '8.5'
-        uses: actions/cache@v3
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: previous-coverage.txt
           key: coverage-${{ github.ref }}-${{ github.sha }}
@@ -85,7 +94,7 @@ jobs:
             coverage-${{ github.ref }}-
 
       - name: Compare coverage
-        if: matrix.php-version == '8.5'
+        if: matrix.php-version == '8.5' && matrix.laravel == '12'
         run: |
           CURRENT_COVERAGE=${{ steps.coverage.outputs.current }}
           
@@ -107,60 +116,65 @@ jobs:
           echo "$CURRENT_COVERAGE" > previous-coverage.txt
 
       - name: Save current coverage
-        if: matrix.php-version == '8.5' && always()
-        uses: actions/cache/save@v3
+        if: matrix.php-version == '8.5' && matrix.laravel == '12' && always()
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: previous-coverage.txt
           key: coverage-${{ github.ref }}-${{ github.sha }}
 
   phpstan:
+    name: PHPStan (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         php-version: ['8.4', '8.5']
+        laravel: ['12', '13']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
 
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Install dependencies against Laravel ${{ matrix.laravel }}
+        run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPStan
         run: vendor/bin/phpstan analyse --error-format=github
 
   php-cs-fixer:
+    name: PHP-CS-Fixer (PHP ${{ matrix.php-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         php-version: ['8.4', '8.5']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
 
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
@@ -174,20 +188,26 @@ jobs:
         run: vendor/bin/php-cs-fixer fix --dry-run --diff --verbose --allow-risky=yes --config=.php-cs-fixer.php
 
   deploy-docs:
+    name: Deploy documentation
     runs-on: ubuntu-latest
     # Only deploy on push to main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [phpunit, phpstan, php-cs-fixer]
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '20'
           cache: 'npm'
@@ -202,13 +222,13 @@ jobs:
         run: npm run build
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: ./docs/build
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
