@@ -11,10 +11,11 @@ selling point is that no front-end work is required: everything is expressed in 
   require one when you actually need it. If you use a class from a package that is not required yet, add it to
   `composer.json` in the same change rather than relying on it arriving transitively.
 - **Every long-lived branch is named after a version.** There is no `main` and there are no `release/*` branches.
-  The default branch is the current major, `2.x` today, and it **tracks the released state**: the only thing that
-  lands on it directly is a hotfix, and a hotfix is tagged the moment it merges, so the branch never drifts far
-  from the latest tag. One leftover `release/2.x` branch still exists; see the transition bullet at the end of
-  this list.
+  The default branch is the current major, `2.x` today, and it **tracks the released state**: the only *shipped
+  code* that lands on it directly is a hotfix, and a hotfix is tagged the moment it merges, so what users install
+  never drifts from the latest tag. Repository infrastructure that has to live on the default branch to work at
+  all is the exception and lands untagged: CI config, `.github/dependabot.yml`, `SECURITY.md`, `AGENTS.md`. None
+  of it reaches the published package, so none of it needs a version.
 - **Ordinary work goes on a next release branch, never on the major branch.** It is named after the version it
   will become, so `2.1` for a minor or `3.x` for a major, and it is cut from the current major branch the first
   time something is proposed for that release. **Only one exists at a time.** Both `feature/*` and `bugfix/*`
@@ -29,11 +30,18 @@ selling point is that no front-end work is required: everything is expressed in 
   the current major branch and tags that: `2.1` merges into `2.x`, `2.x` is tagged `2.1.0`, and `2.1` is retired.
   A major keeps its own branch: `3.x` comes off `2.x`, and when ready it becomes the default branch and is tagged
   `3.0.0`, leaving `2.x` as the previous major taking hotfixes until its support ends.
+- **Cutting a next release branch means updating two literal branch names**, both stored outside the branch they
+  name, so neither moves on its own. `target-branch` in `.github/dependabot.yml`, three times, once per ecosystem;
+  and the deployment branch policy on the `github-pages` environment, which is a repo setting no agent can reach
+  (it is on the pattern `*.x`, so it only needs attention if a major is ever named differently). Dependabot in
+  particular reads its config from the **default branch only**, so that edit has to land on `2.x` and is a
+  legitimate untagged commit there, the same as a CI or `AGENTS.md` change. Merging it does not cut a release;
+  only a hotfix does.
 - **At most three majors exist at once**, each with one role: the **active** major, one **older** major that may
   still take hotfixes, and one **next** major that may be in progress. Once an older major's support ends it
   accepts no more PRs.
-- **1.x is not carried forward.** The last 1.x release is 1.2.0, and rather than staying on as the supported older
-  major it reaches end of life the moment 2.0 lands. So 2.0 is the only supported version, there is no `1.x`
+- **1.x was not carried forward.** The last 1.x release was 1.2.0, and rather than staying on as the supported
+  older major it reached end of life when 2.0 shipped. So 2.0 is the only supported version, there is no `1.x`
   branch, and there is nowhere to backport a 1.x fix to. The user-facing matrix and policy live in
   `docs/docs/supported-versions.md`, which is the source of truth to update when any of this changes; the README
   and `.github/SECURITY.md` carry shortened copies of the same table and have to move with it.
@@ -42,14 +50,11 @@ selling point is that no front-end work is required: everything is expressed in 
   must not be added back. Related trap: `composer.lock` stores a `content-hash` of `composer.json`, so *any* edit
   to that file makes the lock stale. Refresh it with `composer update --lock`, which rewrites the hash without
   moving a single dependency — a bare `composer update` would.
-- **Mid-transition, so confirm the branch state before trusting any of the above.** `main` was renamed to `2.x`
-  and still points at the 1.2.0 release commit, which is what a branch tracking the released state should do. The
-  2.0 work sits on `release/2.x`, the legacy name for what the model above calls the next release branch; under
-  the new naming it would be `2.0`. Merging it into `2.x` and tagging `2.0.0` *is* the release procedure above,
-  only with the old branch name, and no `release/*` branch should exist afterwards. Run `git branch -avv` rather
-  than assuming any of this is done. **The published documentation is deliberately ahead of the tag**: the README,
-  the docs site and `SECURITY.md` are all written as though 2.0.0 is already out, because they ship with it and
-  the tag follows immediately. Do not "correct" them back to a pre-release voice.
+- **Where things actually stand:** 2.0.0 was released on 2026-08-17 and 2.0.1 followed as a hotfix, so `2.x` is
+  the default branch sitting on the 2.0.1 tag, and `2.1` is the next release branch where all current work goes.
+  The transition off the old `release/*` naming is complete and no such branch remains. Still, run
+  `git branch -avv` rather than trusting this paragraph, since it is the sentence in this file most likely to be
+  out of date.
 
 ## Hard rule: never commit, never push
 

@@ -1,10 +1,19 @@
 version: 2
 
+# Dependabot reads this file from the DEFAULT branch only, so a change here has no effect
+# until it is committed to the current major version branch. Editing it on a next release
+# branch does nothing until that release merges.
+#
+# target-branch points every update at the next release branch, because the default branch
+# tracks the released state and takes hotfixes only. It is a literal branch name, so it has
+# to be bumped when a new next release branch is cut. See "Releases" in AGENTS.md.
+
 updates:
   # Actions are pinned to a commit SHA, so this is what keeps them current.
   # Dependabot rewrites both the SHA and the version comment.
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "2.1"
     schedule:
       interval: "weekly"
     groups:
@@ -14,6 +23,7 @@ updates:
 
   - package-ecosystem: "composer"
     directory: "/"
+    target-branch: "2.1"
     schedule:
       interval: "weekly"
     groups:
@@ -22,9 +32,21 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/docs"
+    target-branch: "2.1"
     schedule:
       interval: "weekly"
     groups:
+      # Every @docusaurus/* package has to move together, @docusaurus/faster included:
+      # it is coupled to core's bundler internals and a version skew breaks the build.
       docusaurus:
         patterns:
           - "@docusaurus/*"
+
+      # react and react-dom must move as a pair. React refuses to run on mismatched
+      # versions, and grouping them is what stops one being merged without the other.
+      # Named exactly rather than by wildcard, so @mdx-js/react and prism-react-renderer
+      # keep coming through as their own PRs.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
