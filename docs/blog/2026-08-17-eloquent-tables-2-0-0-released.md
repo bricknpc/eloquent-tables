@@ -11,6 +11,8 @@ consistent shape, and adds footers that can total a column.
 
 It also widens the requirements: PHP `^8.4|^8.5` and Laravel `^12.0|^13.0`.
 
+This release is a breaking change from the previous version, so make sure you read the [upgrade guide](/docs/upgrading).
+
 ## What's new
 
 **One action to rule them all.** The actions are rebuilt from the ground up, giving you even more control over what they
