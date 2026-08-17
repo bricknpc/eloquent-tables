@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  # Actions are pinned to a commit SHA, so this is what keeps them current.
+  # Dependabot rewrites both the SHA and the version comment.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+    groups:
+      docusaurus:
+        patterns:
+          - "@docusaurus/*"
