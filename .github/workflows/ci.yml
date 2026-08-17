@@ -44,16 +44,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
-      - name: Install dependencies
-        if: matrix.laravel == '12'
-        run: composer install --prefer-dist --no-progress
-
       - name: Install dependencies against Laravel ${{ matrix.laravel }}
-        if: matrix.laravel != '12'
         run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPUnit tests with coverage
@@ -140,16 +135,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php-version }}-laravel-${{ matrix.laravel }}-
 
-      - name: Install dependencies
-        if: matrix.laravel == '12'
-        run: composer install --prefer-dist --no-progress
-
       - name: Install dependencies against Laravel ${{ matrix.laravel }}
-        if: matrix.laravel != '12'
         run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
       - name: Run PHPStan
