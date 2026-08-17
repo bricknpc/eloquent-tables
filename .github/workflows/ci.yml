@@ -9,11 +9,10 @@ on:
   pull_request:
     branches: [ "**" ]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Every job gets read-only access. The Pages deployment raises its own permissions,
+# so a compromised third-party action in a test job has nothing worth stealing.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -187,6 +186,11 @@ jobs:
     # Only deploy on push to main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [phpunit, phpstan, php-cs-fixer]
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
