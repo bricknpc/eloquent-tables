@@ -25,6 +25,7 @@ final readonly class FooterRow
 
     public function resolveLabel(): ?string
     {
+        // @mago-expect analysis:redundant-cast -- the closure is only typed in a docblock, which PHP does not enforce, so the cast guards a user callable returning the wrong type
         // Tested against is_callable, which would call a label that happens to name a PHP function.
         return $this->label instanceof \Closure ? (string) call_user_func($this->label) : $this->label;
     }

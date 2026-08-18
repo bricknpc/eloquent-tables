@@ -85,6 +85,7 @@ class Filter implements FilterContract
         if ($option instanceof Model) {
             $key   = $this->optionKey ?? $option->getKeyName();
             $label = $this->optionLabel ?? $option->getKeyName();
+            // @mago-expect analysis:string-member-selector(2) -- the member name is data, not a literal; this is the dynamic-option design
 
             return [(string) $option->{$key} => (string) $option->{$label}];
         }

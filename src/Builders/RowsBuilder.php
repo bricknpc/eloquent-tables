@@ -76,6 +76,7 @@ class RowsBuilder
         // Retained before pagination, so a footer aggregate can run against the same narrowed
         // set the rows came from without the page limit.
         $this->narrowedQuery = clone $query;
+        // @mago-expect analysis:possibly-non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()

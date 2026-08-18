@@ -21,12 +21,12 @@ enum AccentStyle: string implements Style
 
     public function toCssClass(Theme $theme): string
     {
-        return match ($theme) { Theme::Bootstrap5 => match ($this) { default => $this->value } };
+        return match ($theme) { Theme::Bootstrap5 => $this->value };
     }
 
     public function toCssDisabledClass(Theme $theme): string
     {
-        return match ($theme) { Theme::Bootstrap5 => match ($this) { default => 'dark' } };
+        return match ($theme) { Theme::Bootstrap5 => 'dark' };
     }
 
     public function toCssActiveClass(Theme $theme): string

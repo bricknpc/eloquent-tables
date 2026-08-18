@@ -36,6 +36,17 @@ space-around-concatenation-binary-operator = true
 trailing-comma = true
 
 [analyzer]
+# Whole checks held off, as opposed to the per-site pragmas in src. These fire on a pattern that is
+# inherent to using Laravel rather than on anything this package chooses: the container, the
+# translator and the request helpers all hand back `mixed`, so every assignment from one of them
+# reports. Roughly 18 findings, none actionable without annotating every such assignment.
+#
+# redundant-docblock-type is here for a different reason: the five @var annotations it flags are
+# kept on purpose. They document what an untyped container call or attribute instantiation hands
+# back, which is worth stating for a reader even where the analyzer can work it out. Removing @var
+# annotations is also what broke the analysis during this migration, so they are left alone.
+ignore = ["mixed-assignment", "mixed-operand", "redundant-docblock-type"]
+
 # tests are deliberately unanalysed. Pointing the analyzer at them adds ~1000 findings, most of
 # them the fixture-nullability pattern that kept tests out of PHPStan too. Closing that gap is
 # its own issue; do not widen this without taking that work on.
@@ -87,4 +98,42 @@ enabled = false
 # well-known signatures: json_decode($cookie, associative: true) and str_repeat('x', times: 100).
 # 46 findings, none of which would improve a line.
 [linter.rules.literal-named-argument]
+enabled = false
+
+# Off because its auto-fix is destructive: converting a closure to an arrow function deletes any
+# comment inside it and drops a declared return type, turning
+# `static function (X $c): bool { ... }` into `static fn (X $c) => ...`. The style itself is a
+# matter of taste; silently losing a return type is not.
+[linter.rules.prefer-arrow-function]
+enabled = false
+
+# Off for the same class of reason: rewriting an explicit two-parameter closure to `$this->m(...)`
+# changes the callable's arity contract.
+[linter.rules.prefer-first-class-callable]
+enabled = false
+
+# Off because todo comments are used deliberately here to mark known trade-offs, and a rule that
+# flags every one of them just adds noise to the ones already written down.
+[linter.rules.tagged-todo]
+enabled = false
+
+# Off because the functions it flags, dropdownActions() and groupedActions(), are public API in an
+# autoloaded src/helpers.php. Renaming them to satisfy a naming convention would break consumers.
+[linter.rules.function-name]
+enabled = false
+
+# Off as a style opinion this codebase does not share: `glob(...) ?: []` is the idiomatic guard for
+# a function returning array|false, and spelling it out in full reads worse.
+[linter.rules.no-shorthand-ternary]
+enabled = false
+
+# Off as a design opinion. A defaulted bool flag such as build(..., bool $forceReload = false) is a
+# reasonable API here, and the alternative the rule pushes towards is a larger change than it is
+# worth.
+[linter.rules.no-boolean-flag-parameter]
+enabled = false
+
+# Off because the sites it flags are genuine two-way branches, not guard clauses. Early return is
+# the better shape when one arm is an exit; when both arms do work, `else` says what is meant.
+[linter.rules.no-else-clause]
 enabled = false

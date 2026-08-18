@@ -238,8 +238,10 @@ class ActionTest extends TestCase
 
         try {
             $action->as($this->createIntent());
+
+            // @mago-expect lint:no-empty-catch-clause -- swallowing it is the point: the test asserts what survives
+            // the failed second call, not the throw itself, which its own test already covers
         } catch (ActionIntentAlreadySet) {
-            // Expected
         }
 
         $this->assertSame($intent, $action->descriptor($this->context)?->intent);

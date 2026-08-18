@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use BrickNPC\EloquentTables\Table;
 use Illuminate\Database\Eloquent\Model;
 
+// @mago-expect analysis:unused-template-parameter -- TModel is used by the @mixin below, which Mago does not count as a use
+
 /**
  * @template TModel of Model
  *

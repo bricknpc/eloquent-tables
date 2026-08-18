@@ -18,6 +18,7 @@ final class Authorize extends ActionCapability
     ) {}
 
     public function check(ActionDescriptor $descriptor, ActionContext $context): bool
+    // @mago-expect analysis:redundant-cast -- the closure is only typed in a docblock, which PHP does not enforce, so the cast guards a user callable returning the wrong type
     {
         return (bool) call_user_func($this->authorize, $context);
     }

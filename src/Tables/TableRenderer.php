@@ -274,6 +274,7 @@ readonly class TableRenderer
 
         $theme = $this->config->theme();
         // @mago-expect analysis:mixed-return-statement -- the paginator's links() returns mixed
+        // @mago-expect analysis:non-documented-method(2) -- AbstractPaginator declares links() ambiguously across its subclasses
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
