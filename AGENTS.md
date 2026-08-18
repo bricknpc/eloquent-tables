@@ -160,6 +160,11 @@ docker compose run --rm -T -w /app docs rm -rf build  # created root-owned, remo
 serialised every run repo-wide, so a push to one branch queued behind another branch's tests. Do not move it back
 up: one deployment at a time is the intent, not one CI run at a time.
 
+It must also exist in exactly one of the two places, never both. Declaring the same group at workflow level and on
+the job deadlocks the run: the workflow takes the group, the job then waits for a group its own run is holding and
+can never release, and GitHub cancels with `a deadlock was detected for concurrency group: 'pages'`. This shipped
+in 2.0.2, where the job-level key was added and the workflow-level one was not removed.
+
 ### `composer cs` rewrites your code
 
 It is a fixer, not a checker, and it runs with `--allow-risky=yes`. It will reformat what you just wrote — most
