@@ -36,13 +36,14 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 /**
  * @template TModel of Model
  *
- * <todo>
- * All the ignore comments for PHPStan in this class are because of the fact that the WithPagination trait is
- * optional for tables. PHPStan does not have a valid way to handle this, so instead of writing a bunch of
- * unnecessary code I choose to ignore PHPStan in this regard, even though it is not best practice.
+ * TODO: the suppressions in this class all trace to one cause, that the WithPagination trait is optional for a
+ * table. A static analyser cannot see whether a given table uses it, so calls the trait provides are unprovable
+ * from the Table type alone. Suppressing is the cheaper trade against writing code that exists only to satisfy
+ * the analyser. If a better solution exists or arrives, a PR is welcome.
  *
- * If a better solution exists or is implemented in the future, feel free to open a PR.
- * </todo>
+ * Do not reintroduce angle-bracket pseudo-tags such as a todo element here. Mago parses a docblock's angle
+ * brackets as a type expression, so one of those produced fifteen unresolvable-class errors from this comment
+ * alone.
  */
 readonly class TableRenderer
 {

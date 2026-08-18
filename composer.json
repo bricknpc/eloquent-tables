@@ -25,7 +25,8 @@
     "phpunit/phpunit": "^11.5.3",
     "friendsofphp/php-cs-fixer": "^3.89",
     "orchestra/testbench": "^10.6|^11.0",
-    "phpstan/phpstan": "^2.1"
+    "phpstan/phpstan": "^2.1",
+    "carthage-software/mago": "^1.47"
   },
   "autoload": {
     "psr-4": {
@@ -43,6 +44,10 @@
   "scripts": {
     "cs": "php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --allow-risky=yes",
     "ps": "php vendor/bin/phpstan analyse --memory-limit=2G -c phpstan.neon",
+    "mago:format": "php vendor/bin/mago format",
+    "mago:format:check": "php vendor/bin/mago format --dry-run",
+    "mago:lint": "php vendor/bin/mago lint",
+    "mago:analyze": "php vendor/bin/mago analyze",
     "test": "php vendor/bin/phpunit -c phpunit.xml --colors=always --coverage-html tests/coverage/html"
   },
   "extra": {

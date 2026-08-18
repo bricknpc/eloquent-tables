@@ -1,0 +1,71 @@
+# Mago is the single tool enforcing formatting, linting and static analysis here. It replaced
+# PHP-CS-Fixer and PHPStan. See "The quality gate" in AGENTS.md.
+#
+# Nothing here is specific to this package beyond the paths, so the file can be lifted to
+# another Laravel codebase by changing [source] alone.
+
+# The language floor, not the ceiling: composer.json allows ^8.4|^8.5. Analysing against the
+# floor is what catches syntax the lowest supported version would reject. CI overrides this
+# per matrix job with --php-version, because Laravel 12 and 13 resolve different vendor code.
+php-version = "8.4"
+
+[source]
+# Formatting and linting cover everything PHP-CS-Fixer covered. The analyzer is narrowed
+# separately below, because paths here apply to every tool.
+paths = ["src", "tests", "config"]
+
+# vendor is a symbol source, never an analysis target. Without it the analyzer cannot resolve
+# a single Illuminate class and reports 616 issues against src rather than 90.
+includes = ["vendor"]
+
+[formatter]
+# 120 matches what the code already does: 99% of lines are under 107 characters and only 42
+# exceed 120. PHP-CS-Fixer enforced no width, so this is a new choice rather than a port.
+print-width = 120
+
+# Ports 'ordered_imports' => ['sort_algorithm' => 'length'].
+sort-uses = "length-ascending"
+
+# Ports 'binary_operator_spaces' => ['default' => 'align'].
+align-assignment-like = true
+
+# Ports 'concat_space' => ['spacing' => 'one'].
+space-around-concatenation-binary-operator = true
+
+# Ports 'trailing_comma_in_multiline'. Mago defaults this on; stated so the port is visible.
+trailing-comma = true
+
+[analyzer]
+# tests are deliberately unanalysed. Pointing the analyzer at them adds ~1000 findings, most of
+# them the fixture-nullability pattern that kept tests out of PHPStan too. Closing that gap is
+# its own issue; do not widen this without taking that work on.
+excludes = ["tests", "config"]
+
+[linter]
+
+# PHPUnit methods here are snake_case. Ports 'php_unit_method_casing' => ['case' => 'snake_case'],
+# which was an active rule, so the Mago rule is enabled rather than left at its default off.
+[linter.rules.method-name]
+enabled = true
+use-snake-case-for-tests = true
+
+# Complexity metrics are off on purpose. Neither PHP-CS-Fixer nor PHPStan enforced them, and
+# they report 15 errors against existing src. Turning them on is a refactor, not a tooling
+# swap. Enable them as their own change, with the refactoring that implies.
+[linter.rules.too-many-methods]
+enabled = false
+
+[linter.rules.cyclomatic-complexity]
+enabled = false
+
+[linter.rules.kan-defect]
+enabled = false
+
+[linter.rules.halstead]
+enabled = false
+
+[linter.rules.excessive-parameter-list]
+enabled = false
+
+[linter.rules.too-many-enum-cases]
+enabled = false
