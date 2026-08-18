@@ -91,13 +91,14 @@ The docs site runs in the `docs` service (Node 20). Building it is the only way 
 links, because `onBrokenLinks` is set to `throw`:
 
 ```bash
-docker compose run --rm -T -w /app docs npx docusaurus build
+docker compose run --rm -T -w /app docs npm run build  # the same command the docs-build CI job runs
 docker compose run --rm -T -w /app docs rm -rf build   # build/ is created root-owned; remove it the same way
 ```
 
 ## The quality gate
 
-All four must hold before work is considered done. CI runs the first three on PHP 8.4 **and** 8.5.
+All five must hold before work is considered done. In CI the four PHP gates each run on PHP 8.4 **and** 8.5, and
+PHPUnit and PHPStan additionally run against Laravel 12 and 13. The docs build runs once, on Node 20.
 
 | Gate | Requirement |
 |---|---|
@@ -105,6 +106,10 @@ All four must hold before work is considered done. CI runs the first three on PH
 | Coverage | **100%** lines, methods and classes. CI additionally fails if coverage drops versus the previous run |
 | PHPStan | `level: max` over `src` only (tests are not analysed) |
 | PHP-CS-Fixer | clean; run it until it reports `Fixed 0 of N files` |
+| Docs build | green, which also validates every internal link, since `onBrokenLinks` is `throw` |
+
+One thing none of them covers: **the JavaScript**, which is shipped browser-facing code that no gate parses. It has
+broken silently before. See the subsection below and check it by hand whenever you touch it.
 
 ### Coverage metadata is strict — this is the most common trip-up
 
@@ -118,7 +123,7 @@ All four must hold before work is considered done. CI runs the first three on PH
 
 ### The gate does not check the JavaScript
 
-`resources/views/js.blade.php` is shipped, browser-facing code, and nothing in the four gates parses it. A syntax
+`resources/views/js.blade.php` is shipped, browser-facing code, and no gate parses it. A syntax
 error there breaks every table's JavaScript silently while the suite stays green — this has already happened once.
 After touching it, strip the Blade echoes and parse the result:
 
@@ -131,6 +136,29 @@ docker compose run --rm -T -w /app docs node --check et-check.js && rm docs/et-c
 Substring assertions on the rendered markup also hit this file: it names every `data-{namespace}-*` attribute it
 reads, so `assertStringNotContainsString('data-et-preferences-cookie', $html)` matches the script rather than the
 markup. Assert on the attribute form (`data-et-preferences-cookie="`) instead.
+
+### The docs build is a fifth gate, and CI runs it
+
+The `docs-build` job builds the Docusaurus site on every push and PR, which also validates every internal link
+and anchor because `onBrokenLinks` is `throw`. It exists because a dependency bump can break the site without
+touching a line of PHP: the Docusaurus 3.9 to 3.10 bump broke it three separate ways at once and sat undetected on
+`2.1`, because the deploy job is the only other place that builds and it only runs on the default branch.
+
+It cannot publish anything. No `environment`, no `pages: write`, and no upload or deploy step, so it inherits
+`contents: read` and has no route to Pages. It also has no `needs`, so it runs alongside the PHP jobs rather than
+adding wall clock.
+
+Still build locally before handing work over, rather than using CI as the first check:
+
+```bash
+docker compose run --rm -T -w /app docs npm ci        # only when the lockfile moved
+docker compose run --rm -T -w /app docs npm run build
+docker compose run --rm -T -w /app docs rm -rf build  # created root-owned, remove it the same way
+```
+
+**Deployment concurrency is scoped to the `deploy-docs` job, not the workflow.** As a workflow-level key it
+serialised every run repo-wide, so a push to one branch queued behind another branch's tests. Do not move it back
+up: one deployment at a time is the intent, not one CI run at a time.
 
 ### `composer cs` rewrites your code
 
@@ -394,7 +422,7 @@ update painful. The commit and push override lives in this file precisely so the
 - Work targets the **next release branch**, not the major branch, on a `feature/*` or `bugfix/*` branch that
   merges back into it via a PR. Only a `hotfix/*` or a `task/*` targets the major branch. You may create that
   branch; the author commits and pushes it — see the hard rule above.
-- After finishing a change, report the four gate results and hand over a commit message.
+- After finishing a change, report the five gate results and hand over a commit message.
 - Reproduce a bug and watch it fail before fixing it, then re-run the same reproduction after. A passing new
   test proves nothing until you have seen it fail.
 - Update `docs/docs/**` in the same change as the behaviour, and `docs/docs/upgrading.md` for anything that

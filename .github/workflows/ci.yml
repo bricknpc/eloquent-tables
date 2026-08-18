@@ -192,6 +192,35 @@ jobs:
       - name: Run PHP-CS-Fixer (dry-run)
         run: vendor/bin/php-cs-fixer fix --dry-run --diff --verbose --allow-risky=yes --config=.php-cs-fixer.php
 
+  # Builds the site and nothing else: no environment, no pages permission, no upload or
+  # deploy step, so it cannot touch what is published. onBrokenLinks is 'throw', so this is
+  # also what validates every internal link and anchor.
+  #
+  # It exists because a dependency bump can break the build without touching a line of PHP,
+  # and the deploy job only builds on the default branch, so a break would otherwise stay
+  # hidden until release. Runs in parallel with the PHP jobs, so it costs no wall clock.
+  docs-build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Build Docusaurus
+        working-directory: ./docs
+        run: npm run build
+
   deploy-docs:
     name: Deploy documentation
     runs-on: ubuntu-latest
@@ -201,6 +230,14 @@ jobs:
     # keeps unreleased documentation on the next release branch out of the published site.
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     needs: [phpunit, phpstan, php-cs-fixer]
+
+    # Scoped to this job on purpose. As a workflow-level key it serialised every run of the
+    # whole workflow repo-wide, so a push to one branch queued behind another branch's tests.
+    # Here it does what the intent always was: one deployment at a time, tests still parallel.
+    # In-progress runs are not cancelled, so a deployment already going always finishes.
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
 
     permissions:
       contents: read
