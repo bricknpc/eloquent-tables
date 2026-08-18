@@ -64,12 +64,12 @@ class Filter implements FilterContract
     public function options(): array
     // @mago-expect analysis:less-specific-nested-argument-type,template-constraint-violation
     {
-        $options = $this->options instanceof Collection ? $this->options : collect($this->options); // @phpstan-ignore-line
+        $options = $this->options instanceof Collection ? $this->options : collect($this->options);
 
         /** @var array<string, string> $result */
         // @mago-expect analysis:mixed-argument
         $result = $options
-            ->mapWithKeys(fn(mixed $option, int|string $key) => $this->getOption($option, $key)) // @phpstan-ignore-line
+            ->mapWithKeys(fn(mixed $option, int|string $key) => $this->getOption($option, $key))
             ->toArray();
 
         return $result;
@@ -86,7 +86,7 @@ class Filter implements FilterContract
             $key   = $this->optionKey ?? $option->getKeyName();
             $label = $this->optionLabel ?? $option->getKeyName();
 
-            return [(string) $option->{$key} => (string) $option->{$label}]; // @phpstan-ignore-line
+            return [(string) $option->{$key} => (string) $option->{$label}];
         }
 
         if ($option instanceof \BackedEnum) {

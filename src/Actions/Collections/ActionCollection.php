@@ -37,7 +37,7 @@ class ActionCollection extends Collection
     public function __construct(array $items = [], ?ActionCollectionType $type = null)
     // @mago-expect analysis:less-specific-argument
     {
-        parent::__construct($items); // @phpstan-ignore-line
+        parent::__construct($items);
 
         $this->type = $type ?? ActionCollectionType::Normal;
     }

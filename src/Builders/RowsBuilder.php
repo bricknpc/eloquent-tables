@@ -49,7 +49,7 @@ class RowsBuilder
      *
      * @return Collection<int, Model>|Paginator<int, Model>
      */
-    public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator // @phpstan-ignore-line
+    public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator
     {
         if ($this->result !== null && !$forceReload) {
             return $this->result;
@@ -83,7 +83,7 @@ class RowsBuilder
             ? $query
                 ->paginate(
                     // @mago-expect analysis:possibly-invalid-argument
-                    perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
+                    perPage: $this->parameters->perPage($table, $request, $table->perPage($request)),
                     pageName: $this->parameters->key($table, TableParameter::Page),
                     // Laravel resolves the current page with $request->input($pageName), which reads dot
                     // notation and cannot see a bracketed key, so the page is resolved here instead.
@@ -179,7 +179,7 @@ class RowsBuilder
 
                     // @mago-expect analysis:possibly-null-argument
                 } else {
-                    $query->orderBy($column->name, $column->defaultSort?->value); // @phpstan-ignore-line
+                    $query->orderBy($column->name, $column->defaultSort?->value);
                 }
             });
     }

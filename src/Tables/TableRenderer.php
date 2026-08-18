@@ -194,10 +194,10 @@ readonly class TableRenderer
         if ($table->withPagination()) {
             // @mago-expect analysis:mixed-argument,non-existent-method
             /* @var WithPagination|Table $table */
-            $viewData['perPage'] = $this->parameters->perPage($table, $request, $table->perPage($request)); // @phpstan-ignore-line
+            $viewData['perPage'] = $this->parameters->perPage($table, $request, $table->perPage($request));
             // @mago-expect analysis:non-existent-method
-            $viewData['perPageName']    = $this->parameters->key($table, TableParameter::PerPage);
-            $viewData['perPageOptions'] = $table->perPageOptions(); // @phpstan-ignore-line
+            $viewData['perPageName']         = $this->parameters->key($table, TableParameter::PerPage);
+            $viewData['perPageOptions']      = $table->perPageOptions();
             $viewData['perPageHiddenInputs'] = $this->parameters->hiddenInputs($request, [
                 $this->parameters->key($table, TableParameter::PerPage),
                 // Changing the page size returns the table to its first page.
@@ -275,7 +275,7 @@ readonly class TableRenderer
         $theme = $this->config->theme();
         // @mago-expect analysis:mixed-return-statement
 
-        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
+        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
             'disabledStyle'  => $table->accentStyle()->toCssDisabledClass($theme),
             'activeStyle'    => $table->accentStyle()->toCssActiveClass($theme),

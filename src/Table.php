@@ -165,7 +165,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
     {
         // @mago-expect analysis:mixed-return-statement
         // @todo Create own wrapper around the Laravel translator so we can ensure type-safety
-        return $this->trans->get('You are not authorized to view this table.'); // @phpstan-ignore-line
+        return $this->trans->get('You are not authorized to view this table.');
     }
 
     protected function unauthorizedResponseCode(): int

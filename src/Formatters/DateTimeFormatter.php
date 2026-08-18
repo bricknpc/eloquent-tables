@@ -32,7 +32,7 @@ readonly class DateTimeFormatter implements Formatter
         );
         // @mago-expect analysis:mixed-argument
 
-        $formatted = $formatter->format($value); // @phpstan-ignore argument.type
+        $formatted = $formatter->format($value);
 
         if ($formatted === false) {
             throw InvalidValueException::forInvalidValue($value, $this);

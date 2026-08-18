@@ -15,8 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int        $perPage        The number of items to show per page.
  * @property array<int> $perPageOptions The available options for the number of items to show per page. If you don't want to show this option, set it to an empty array.
- *
- * @phpstan-ignore trait.unused
  */
 trait WithPagination
 {

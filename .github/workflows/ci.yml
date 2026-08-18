@@ -126,8 +126,11 @@ jobs:
           path: previous-coverage.txt
           key: coverage-${{ github.ref }}-${{ github.sha }}
 
-  phpstan:
-    name: PHPStan (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
+  # Keeps the matrix PHPStan ran under. The analyzer resolves symbols from vendor/, so Laravel 12
+  # and Laravel 13 can genuinely produce different findings; running once would only check one of
+  # them. Formatting and linting are the opposite case and run once in mago-check.
+  mago-analyze:
+    name: Mago analyze (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -156,8 +159,16 @@ jobs:
       - name: Install dependencies against Laravel ${{ matrix.laravel }}
         run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --error-format=github
+      # MAGO_PHP_VERSION overrides the floor pinned in mago.toml so each entry is analysed as the
+      # version it claims to be. It is set as an environment variable rather than the equivalent
+      # --php-version flag because that flag is global and must precede the subcommand, which is
+      # an easy thing to get wrong when editing this later. GITHUB_TOKEN only avoids the
+      # anonymous rate limit when the cached binary is missing.
+      - name: Run Mago analyzer
+        env:
+          MAGO_PHP_VERSION: ${{ matrix.php-version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: vendor/bin/mago analyze --reporting-format=github
 
   # Formatting and linting, once rather than per matrix entry. Neither reads vendor/, so the PHP
   # and Laravel combination cannot change their verdict. Analysis is the opposite case and keeps
@@ -237,7 +248,7 @@ jobs:
     # hardcoded name means the next major taking over as default needs no change here, and
     # keeps unreleased documentation on the next release branch out of the published site.
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
-    needs: [phpunit, phpstan, mago-check]
+    needs: [phpunit, mago-analyze, mago-check]
 
     # Scoped to this job on purpose. As a workflow-level key it serialised every run of the
     # whole workflow repo-wide, so a push to one branch queued behind another branch's tests.

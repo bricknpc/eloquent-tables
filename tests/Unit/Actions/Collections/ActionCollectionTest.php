@@ -106,7 +106,6 @@ class ActionCollectionTest extends TestCase
 
         $this->expectException(\Error::class);
 
-        // @phpstan-ignore-next-line
         $collection->style = new StyleSet(ButtonStyle::Danger);
     }
 

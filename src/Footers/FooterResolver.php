@@ -102,7 +102,7 @@ readonly class FooterResolver
                 // Column's TModel is invariant, so a Column<TModel> cannot be handed to a method
                 // @mago-expect analysis:possibly-invalid-argument
                 // that binds its template from the model argument.
-                fn(Model $model) => $this->columnValue->resolve($column, $model), // @phpstan-ignore argument.type
+                fn(Model $model) => $this->columnValue->resolve($column, $model),
             ));
         }
 
