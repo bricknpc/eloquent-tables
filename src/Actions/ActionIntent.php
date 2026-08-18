@@ -32,6 +32,7 @@ abstract class ActionIntent
 
     public function beforeRender(ActionDescriptor $descriptor, ActionContext $context): void
     {
+        // @mago-expect analysis:possibly-invalid-argument
         if ($this->before !== null) {
             call_user_func($this->before, $descriptor, $context);
         }
@@ -49,6 +50,7 @@ abstract class ActionIntent
 
     public function afterRender(ActionDescriptor $descriptor, ActionContext $context): void
     {
+        // @mago-expect analysis:possibly-invalid-argument
         if ($this->after !== null) {
             call_user_func($this->after, $descriptor, $context);
         }

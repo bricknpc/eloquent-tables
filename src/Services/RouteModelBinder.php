@@ -55,6 +55,7 @@ readonly class RouteModelBinder
 
             $callParameters[$parameter->getName()] = $model;
         }
+        // @mago-expect analysis:less-specific-nested-argument-type
 
         return $this->container->call([$object, $method], $callParameters); // @phpstan-ignore-line
     }

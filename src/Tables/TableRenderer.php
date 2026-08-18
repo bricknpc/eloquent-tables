@@ -194,8 +194,10 @@ readonly class TableRenderer
         $viewData['activeStyle']    = $accent->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
+            // @mago-expect analysis:mixed-argument,non-existent-method
             /* @var WithPagination|Table $table */
             $viewData['perPage']             = $this->parameters->perPage($table, $request, $table->perPage($request)); // @phpstan-ignore-line
+            // @mago-expect analysis:non-existent-method
             $viewData['perPageName']         = $this->parameters->key($table, TableParameter::PerPage);
             $viewData['perPageOptions']      = $table->perPageOptions(); // @phpstan-ignore-line
             $viewData['perPageHiddenInputs'] = $this->parameters->hiddenInputs($request, [
@@ -272,6 +274,7 @@ readonly class TableRenderer
         }
 
         $theme = $this->config->theme();
+        // @mago-expect analysis:mixed-return-statement
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),

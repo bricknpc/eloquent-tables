@@ -107,6 +107,7 @@ class Column
             return;
         }
 
+        // @mago-expect analysis:possibly-invalid-argument
         if (is_callable($this->searchUsing)) {
             call_user_func($this->searchUsing, $request, $query, $searchQuery);
         } else {

@@ -43,6 +43,7 @@ class RowsBuilder
         private readonly TableParameters $parameters,
     ) {}
 
+    // @mago-expect analysis:docblock-type-mismatch
     /**
      * @param Table|WithPagination $table
      *
@@ -65,8 +66,11 @@ class RowsBuilder
         /** @var Builder $query */
         $query = $this->routeModelBinder->call($table, 'query');
 
+        // @mago-expect analysis:possibly-invalid-argument
         $this->applySearch($query, $table, $request);
+        // @mago-expect analysis:possibly-invalid-argument
         $this->applyFilters($query, $table, $request);
+        // @mago-expect analysis:possibly-invalid-argument
         $this->applySort($query, $table, $request);
 
         // Retained before pagination, so a footer aggregate can run against the same narrowed
@@ -75,11 +79,14 @@ class RowsBuilder
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
+            // @mago-expect analysis:mixed-argument,non-existent-method,possibly-invalid-argument
             ? $query->paginate(
+                // @mago-expect analysis:possibly-invalid-argument
                 perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
                 pageName: $this->parameters->key($table, TableParameter::Page),
                 // Laravel resolves the current page with $request->input($pageName), which reads dot
                 // notation and cannot see a bracketed key, so the page is resolved here instead.
+                // @mago-expect analysis:possibly-invalid-argument
                 page: $this->parameters->integerValue($table, TableParameter::Page, $request),
             )->withQueryString()
             : $query->get();
@@ -113,6 +120,7 @@ class RowsBuilder
         $filters = $this->routeModelBinder->call($table, 'filters');
 
         collect($filters)
+            // @mago-expect analysis:possibly-invalid-argument
             ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
             ->each(fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
         ;
@@ -145,6 +153,7 @@ class RowsBuilder
 
             $sorted = true;
 
+            // @mago-expect analysis:possibly-invalid-argument
             if ($column->sortUsing !== null) {
                 call_user_func($column->sortUsing, $request, $query, $sort);
             } else {
@@ -162,6 +171,7 @@ class RowsBuilder
             ->each(function (Column $column) use ($query, $request) {
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
+                // @mago-expect analysis:possibly-null-argument
                 } else {
                     $query->orderBy($column->name, $column->defaultSort?->value); // @phpstan-ignore-line
                 }

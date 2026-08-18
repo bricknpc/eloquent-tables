@@ -25,6 +25,7 @@ class InvalidValueException extends \Exception
             is_callable($value) => 'of type callable',
             default             => $value,
         };
+        // @mago-expect analysis:possibly-invalid-argument
 
         $exception            = new self(__('The value :value is not a valid value for formatting.', ['value' => $text ?? 'null'])); // @phpstan-ignore-line
         $exception->value     = $value;

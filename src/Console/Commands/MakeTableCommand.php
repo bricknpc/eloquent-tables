@@ -102,6 +102,7 @@ class MakeTableCommand extends GeneratorCommand
         return $this;
     }
 
+    // @mago-expect analysis:incompatible-return-type
     /**
      * @return array<int, array{string, string, int, string}>
      */

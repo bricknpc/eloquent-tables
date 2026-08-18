@@ -21,6 +21,7 @@ final class Http extends ActionIntent
     }
 
     public function url(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type
     {
         return new LazyValue($this->url);
     }

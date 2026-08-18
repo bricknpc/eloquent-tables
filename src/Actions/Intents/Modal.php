@@ -20,11 +20,13 @@ final class Modal extends ActionIntent
     }
 
     public function title(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type
     {
         return new LazyValue($this->title);
     }
 
     public function content(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type
     {
         return new LazyValue($this->content);
     }

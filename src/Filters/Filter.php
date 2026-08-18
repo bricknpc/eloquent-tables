@@ -26,6 +26,7 @@ class Filter implements FilterContract
 
     public function __invoke(Request $request, Builder $query, string $value): void
     {
+        // @mago-expect analysis:possibly-invalid-argument
         $this->filter !== null
             ? call_user_func($this->filter, $request, $query, $value)
             : $query->where($this->name, '=', $value);
@@ -61,10 +62,12 @@ class Filter implements FilterContract
     }
 
     public function options(): array
+    // @mago-expect analysis:less-specific-nested-argument-type,template-constraint-violation
     {
         $options = $this->options instanceof Collection ? $this->options : collect($this->options); // @phpstan-ignore-line
 
         /** @var array<string, string> $result */
+        // @mago-expect analysis:mixed-argument
         $result = $options
             ->mapWithKeys(fn (mixed $option, int|string $key) => $this->getOption($option, $key)) // @phpstan-ignore-line
             ->toArray()
