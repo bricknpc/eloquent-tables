@@ -102,14 +102,15 @@ class MakeTableCommand extends GeneratorCommand
         return $this;
     }
 
+    // @mago-expect analysis:incompatible-return-type -- Symfony declares a looser return shape than this command returns
     /**
      * @return array<int, array{string, string, int, string}>
      */
     protected function getOptions(): array
     {
         return [
-            ['model', 'm', InputOption::VALUE_OPTIONAL, 'The model that the table is for'],
-            ['with-pagination', 'p', InputOption::VALUE_NONE, 'Add pagination to the table'],
+            ['model',           'm', InputOption::VALUE_OPTIONAL, 'The model that the table is for'],
+            ['with-pagination', 'p', InputOption::VALUE_NONE,     'Add pagination to the table'],
         ];
     }
 }

@@ -76,10 +76,22 @@ complete run here, not an unfinished one.
 **There is no PHP on the host.** Everything runs in Docker via the `php` service:
 
 ```bash
-docker compose run --rm -T php composer test # PHPUnit + HTML coverage into tests/coverage/html
-docker compose run --rm -T php composer ps   # PHPStan
-docker compose run --rm -T php composer cs   # PHP-CS-Fixer — WRITES to your files
+docker compose run --rm -T php composer test              # PHPUnit + HTML coverage into tests/coverage/html
+docker compose run --rm -T php composer mago:analyze      # static analysis
+docker compose run --rm -T php composer mago:format       # WRITES to your files
+docker compose run --rm -T php composer mago:format:check # the read-only form CI runs
+docker compose run --rm -T php composer mago:lint         # WRITES to your files — applies safe fixes
+docker compose run --rm -T php composer mago:lint:check   # the read-only form CI runs
 ```
+
+Those are the canonical names and the ones to use in writing. Three aliases also exist, carried over from the
+PHP-CS-Fixer and PHPStan era so the maintainer's muscle memory still works: `cs` for `mago:format`, `ps` for
+`mago:analyze`, and `c` for both in that order, failing if either does.
+
+**Agents: prefer `mago:format:check` and `mago:lint:check` when reporting gate results.** The two writing forms
+modify the tree, and a check that silently rewrites code is not a check — it hides the very thing it was asked to
+report. Run the writing forms only when the task is to fix formatting or apply lint fixes, and say so when you do.
+`mago:format` is safe to run blindly; `mago:lint` is not, because it can change behaviour.
 
 For a coverage summary you need the text report, since `composer test` only emits HTML:
 
@@ -97,16 +109,21 @@ docker compose run --rm -T -w /app docs rm -rf build   # build/ is created root-
 
 ## The quality gate
 
-All five must hold before work is considered done. In CI the four PHP gates each run on PHP 8.4 **and** 8.5, and
-PHPUnit and PHPStan additionally run against Laravel 12 and 13. The docs build runs once, on Node 20.
+All five must hold before work is considered done. In CI, PHPUnit and the analyzer each run against PHP 8.4 **and**
+8.5 crossed with Laravel 12 and 13. Formatting and linting run once: neither reads `vendor/`, so no combination can
+change their verdict. The docs build runs once, on Node 20.
 
 | Gate | Requirement |
 |---|---|
 | PHPUnit | green, and **no risky or warning tests** — `failOnRisky` and `failOnWarning` are on |
 | Coverage | **100%** lines, methods and classes. CI additionally fails if coverage drops versus the previous run |
-| PHPStan | `level: max` over `src` only (tests are not analysed) |
-| PHP-CS-Fixer | clean; run it until it reports `Fixed 0 of N files` |
+| Mago analyze | no errors over `src` only (tests are not analysed) |
+| Mago format | clean; `mago:format:check` reports every file already formatted |
 | Docs build | green, which also validates every internal link, since `onBrokenLinks` is `throw` |
+
+`mago lint` is deliberately **not** a gate. It reports style findings but no enabled rule sits at `Error`, so it
+never fails a build. Read it, act on what is worth acting on, and raise a rule's `level` to `"Error"` in
+`mago.toml` if you want it enforced.
 
 One thing none of them covers: **the JavaScript**, which is shipped browser-facing code that no gate parses. It has
 broken silently before. See the subsection below and check it by hand whenever you touch it.
@@ -120,6 +137,20 @@ broken silently before. See the subsection below and check it by hand whenever y
   and the suite fails. Adding an assertion that renders more markup routinely drags in new classes.
 - A risky test's coverage is not credited, so undeclared classes show up as a coverage *drop* too. If coverage
   falls unexpectedly, check the risky list first — it is usually the same root cause.
+
+### What the analyzer deliberately does not cover
+
+Two exclusions are decisions, not oversights. Both live in `mago.toml` with their reasoning; change them
+knowingly.
+
+- **`tests/` is not analysed.** `analyzer.excludes` holds it out. Pointing the analyzer at 15k lines of tests adds
+  roughly a thousand findings, most of them one pattern: a fixture the author knows is non-null but the analyzer
+  cannot prove. That is the same wall that kept `tests` out of PHPStan. Closing it is its own issue, not a thing
+  to do in passing. Note that `source.paths` is global, so formatting and linting *do* cover `tests` — only the
+  analyzer is narrowed.
+- **The complexity-metric rules are off**: `too-many-methods`, `cyclomatic-complexity`, `kan-defect`, `halstead`,
+  `excessive-parameter-list`, `too-many-enum-cases`. Neither replaced tool enforced them and they fire 15 errors
+  against existing `src`. Enabling any of them is a refactor, and should be taken on as one.
 
 ### The gate does not check the JavaScript
 
@@ -165,11 +196,35 @@ the job deadlocks the run: the workflow takes the group, the job then waits for 
 can never release, and GitHub cancels with `a deadlock was detected for concurrency group: 'pages'`. This shipped
 in 2.0.2, where the job-level key was added and the workflow-level one was not removed.
 
-### `composer cs` rewrites your code
+### `composer mago:format` rewrites your code, and may need two passes
 
-It is a fixer, not a checker, and it runs with `--allow-risky=yes`. It will reformat what you just wrote — most
-visibly it **sorts imports by length**, and it will reflow escaping inside strings and regexes. Always re-run
-the tests after it, and re-verify anything subtle it touched.
+It is a formatter, not a checker. It will reflow what you just wrote — most visibly it **sorts imports by
+length** and breaks any line over 120 characters. Always re-run the tests after it.
+
+It is also **not idempotent in a single pass**. Formatting the whole tree has twice left a handful of files that a
+second run then changed again, so `mago:format` once followed by a CI `mago:format:check` can still fail you. Run
+it until it reports `All files are already formatted`.
+
+Two more traps it creates:
+
+- Breaking a long signature across lines **moves any trailing comment on it**. A suppression pragma that was on
+  the declaration line ends up on the closing brace, where it no longer applies.
+- **`composer mago:lint` writes too**, and unlike the formatter it can change behaviour — it rewrites closures to
+  `static fn`, drops redundant `else` branches, and so on. Re-run the tests and the analyser after it. It applies
+  only Mago's **safe** fix tier and reformats afterwards.
+
+### Mago's fix tiers, and why only the safe one is used
+
+`mago lint --fix` has three tiers: safe (the default), `--potentially-unsafe`, and `--unsafe`. Only the first is
+wired into `composer mago:lint`. Do not reach for the other two casually — on this codebase the potentially-unsafe
+tier **deletes comments inside closures, drops declared return types** (`static function (X $c): bool` becomes
+`static fn (X $c) =>`, losing the `: bool`), and rewrites an explicit two-parameter closure into a first-class
+callable, changing its arity contract.
+
+Safe does not mean harmless either. The `inline-variable-return` fix is in the safe tier, and it collapses
+`$x = expr(); return $x;` while leaving the `/** @var T $x */` above it — orphaning the annotation and dropping
+the narrowing. Applying it across `src` produced 28 PHPStan errors. That rule is disabled in `mago.toml` for
+exactly this reason. The test suite does **not** catch this class of breakage; the analyser does.
 
 ## Writing tests
 
@@ -332,8 +387,12 @@ Anything on that list changing needs an entry in `docs/docs/upgrading.md` in the
 - Tests use `orchestra/testbench`; `tests/TestCase.php` creates the `test_models` schema in `setUp`.
 - **Keep comments sparse.** Docblocks carry `@param`/`@return`/`@throws` for types PHP cannot express, not
   prose restating the code. A comment should explain something non-obvious that the reader cannot see.
-- PHPStan is at max, so generics matter: `Table`, `Column`, `ColumnValueRenderer` and friends are templated on
-  `TModel of Model`.
+- The analyzer reads Psalm and PHPStan annotations, so generics matter: `Table`, `Column`, `ColumnValueRenderer`
+  and friends are templated on `TModel of Model`.
+- Suppress an analyzer finding with `// @mago-expect analysis:<code>` on the line above it, and say why. Prefer
+  `@mago-expect` over `@mago-ignore`: it reports itself as stale once the finding goes away, which is how the
+  previous suppressions rotted into 20 dead `@phpstan-ignore` comments. A declaration-level finding needs the
+  pragma **above the docblock**, not between the docblock and the signature.
 
 ## Documentation
 

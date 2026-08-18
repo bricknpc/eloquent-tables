@@ -131,7 +131,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_does_not_render_an_action_that_is_not_allowed(): void
     {
-        $action = new Action()->label('Edit')->with($this->createCapability(false));
+        $action = new Action()
+            ->label('Edit')
+            ->with($this->createCapability(false));
 
         $this->assertNull($this->renderer->render($action, $this->context));
     }
@@ -157,10 +159,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_resolves_a_closure_label_against_the_context(): void
     {
-        $action = new Action()
-            ->label(fn (ActionContext $context) => $context->isBulk ? 'Delete selected' : 'Delete')
-            ->as($this->createIntent())
-        ;
+        $action = new Action()->label(static fn(ActionContext $context) => $context->isBulk
+            ? 'Delete selected'
+            : 'Delete')->as($this->createIntent());
 
         $data = $this->renderer->render($action, $this->context->isBulk())?->getData();
 
@@ -172,10 +173,9 @@ class ActionRendererTest extends TestCase
         $action = new Action()
             ->label('Delete')
             ->as($this->createIntent())
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+            ->with($this->createCapability(apply: static function (ActionDescriptor $descriptor): void {
                 $descriptor->attributes['class'] = 'btn-danger';
-            }))
-        ;
+            }));
 
         $data = $this->renderer->render($action, $this->context)?->getData();
 
@@ -187,11 +187,10 @@ class ActionRendererTest extends TestCase
         $action = new Action()
             ->label('Delete')
             ->as(new Http('https://example.com/users/1/delete'))
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+            ->with($this->createCapability(apply: static function (ActionDescriptor $descriptor): void {
                 $descriptor->attributes['title']     = 'Delete this user';
                 $descriptor->attributes['data-test'] = 'yes';
-            }))
-        ;
+            }));
 
         $rendered = $this->renderer->render($action, $this->context)?->render();
 
@@ -204,10 +203,9 @@ class ActionRendererTest extends TestCase
         $action = new Action()
             ->label('Delete')
             ->as(new Http('https://example.com/users/1/delete'))
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+            ->with($this->createCapability(apply: static function (ActionDescriptor $descriptor): void {
                 $descriptor->attributes['title'] = 'Delete "this" & that';
-            }))
-        ;
+            }));
 
         $rendered = $this->renderer->render($action, $this->context)?->render();
 
@@ -231,14 +229,14 @@ class ActionRendererTest extends TestCase
     {
         $calls = [];
 
-        $intent = $this->createIntent()
-            ->before(function () use (&$calls): void {
+        $intent = $this
+            ->createIntent()
+            ->before(static function () use (&$calls): void {
                 $calls[] = 'before';
             })
-            ->after(function () use (&$calls): void {
+            ->after(static function () use (&$calls): void {
                 $calls[] = 'after';
-            })
-        ;
+            });
 
         $this->renderer->render(new Action()->label('Edit')->as($intent), $this->context);
 
@@ -247,7 +245,7 @@ class ActionRendererTest extends TestCase
 
     public function test_the_before_hook_can_still_change_the_data_of_the_view(): void
     {
-        $intent = $this->createIntent()->before(function (ActionDescriptor $descriptor): void {
+        $intent = $this->createIntent()->before(static function (ActionDescriptor $descriptor): void {
             $descriptor->attributes['class'] = 'btn-danger';
         });
 
@@ -260,11 +258,14 @@ class ActionRendererTest extends TestCase
     {
         $called = false;
 
-        $intent = $this->createIntent()->before(function () use (&$called): void {
+        $intent = $this->createIntent()->before(static function () use (&$called): void {
             $called = true;
         });
 
-        $action = new Action()->label('Edit')->as($intent)->with($this->createCapability(false));
+        $action = new Action()
+            ->label('Edit')
+            ->as($intent)
+            ->with($this->createCapability(false));
 
         $this->renderer->render($action, $this->context);
 
@@ -316,8 +317,7 @@ class ActionRendererTest extends TestCase
         $action = new Action()
             ->label('Delete')
             ->as(new Http('https://example.com/users', Method::Delete))
-            ->with(new Confirmation('Are you sure?'))
-        ;
+            ->with(new Confirmation('Are you sure?'));
 
         $rendered = $this->renderer->render($action, $this->context->isBulk())?->render();
 
@@ -366,10 +366,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_renders_a_grouped_collection_with_the_group_view(): void
     {
-        $collection = new ActionCollection(
-            [new Action()->label('Edit')->as($this->createIntent())],
-            ActionCollectionType::Grouped,
-        );
+        $collection = new ActionCollection([new Action()->label('Edit')->as(
+            $this->createIntent(),
+        )], ActionCollectionType::Grouped);
 
         $this->assertSame(
             'eloquent-tables::actions.collection.group',
@@ -379,10 +378,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_renders_a_dropdown_collection_with_the_dropdown_view(): void
     {
-        $collection = new ActionCollection(
-            [new Action()->label('Edit')->as($this->createIntent())],
-            ActionCollectionType::Dropdown,
-        );
+        $collection = new ActionCollection([new Action()->label('Edit')->as(
+            $this->createIntent(),
+        )], ActionCollectionType::Dropdown);
 
         $this->assertSame(
             'eloquent-tables::actions.collection.dropdown',
@@ -392,9 +390,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_passes_the_rendering_data_to_the_collection_view(): void
     {
-        $collection = new ActionCollection([new Action()->label('Edit')->as($this->createIntent())])
-            ->label('User actions')
-        ;
+        $collection = new ActionCollection([new Action()->label('Edit')->as($this->createIntent())])->label(
+            'User actions',
+        );
 
         $data = $this->renderer->render($collection, $this->context)?->getData();
 
@@ -408,9 +406,9 @@ class ActionRendererTest extends TestCase
 
     public function test_it_resolves_a_closure_collection_label(): void
     {
-        $collection = new ActionCollection([new Action()->label('Edit')->as($this->createIntent())])
-            ->label(fn (ActionContext $context) => $context->isBulk ? 'Bulk actions' : 'Row actions')
-        ;
+        $collection = new ActionCollection([new Action()->label('Edit')->as($this->createIntent())])->label(
+            static fn(ActionContext $context) => $context->isBulk ? 'Bulk actions' : 'Row actions',
+        );
 
         $data = $this->renderer->render($collection, $this->context)?->getData();
 
@@ -425,7 +423,9 @@ class ActionRendererTest extends TestCase
     public function test_it_does_not_render_a_collection_without_renderable_actions(): void
     {
         $collection = new ActionCollection([
-            new Action()->label('Edit')->with($this->createCapability(false)),
+            new Action()
+                ->label('Edit')
+                ->with($this->createCapability(false)),
         ]);
 
         $this->assertNull($this->renderer->render($collection, $this->context));
@@ -448,7 +448,8 @@ class ActionRendererTest extends TestCase
     {
         $collection = new ActionCollection([
             new Action()->label('Edit')->as(new Http('https://example.com/users/1/edit')),
-            new Action()->label('Delete')
+            new Action()
+                ->label('Delete')
                 ->as(new Http('https://example.com/users/1', Method::Delete))
                 ->with($this->createCapability(false)),
         ]);
@@ -525,9 +526,7 @@ class ActionRendererTest extends TestCase
 
     public function test_can_render_is_evaluated_per_context(): void
     {
-        $action = new Action()->with($this->createCapability(
-            fn (ActionContext $context) => $context->isBulk,
-        ));
+        $action = new Action()->with($this->createCapability(static fn(ActionContext $context) => $context->isBulk));
 
         $this->assertFalse($this->renderer->canRender($action, $this->context));
         $this->assertTrue($this->renderer->canRender($action, $this->context->isBulk()));
@@ -576,8 +575,7 @@ class ActionRendererTest extends TestCase
         $action = new Action()
             ->label('Delete')
             ->as(new Http('https://example.com/users/1', Method::Delete))
-            ->style(ButtonStyle::Danger)
-        ;
+            ->style(ButtonStyle::Danger);
 
         $rendered = (string) $this->renderer->render($action, $this->context)?->render();
 
@@ -586,7 +584,7 @@ class ActionRendererTest extends TestCase
 
     public function test_it_styles_a_rendered_action_from_a_closure(): void
     {
-        $rendered = $this->renderStyled(fn () => ButtonStyle::DangerOutline);
+        $rendered = $this->renderStyled(static fn() => ButtonStyle::DangerOutline);
 
         $this->assertStringContainsString('class="btn btn-outline-danger"', $rendered);
     }
@@ -598,8 +596,7 @@ class ActionRendererTest extends TestCase
             ->label('Delete')
             ->as(new Http('https://example.com/users/1/delete'))
             ->style(ButtonStyle::Danger)
-            ->style(ButtonStyle::Link)
-        ;
+            ->style(ButtonStyle::Link);
 
         $rendered = (string) $this->renderer->render($action, $this->context)?->render();
 
@@ -608,10 +605,15 @@ class ActionRendererTest extends TestCase
 
     public function test_it_renders_no_class_attribute_from_the_attributes_bag(): void
     {
-        $data = $this->renderer->render(
-            new Action()->label('Delete')->as(new Http('https://example.com/users/1/delete'))->style(ButtonStyle::Danger),
-            $this->context,
-        )?->getData();
+        $data = $this->renderer
+            ->render(
+                new Action()
+                    ->label('Delete')
+                    ->as(new Http('https://example.com/users/1/delete'))
+                    ->style(ButtonStyle::Danger),
+                $this->context,
+            )
+            ?->getData();
 
         $this->assertArrayNotHasKey('class', $data['attributes']);
         $this->assertSame('btn btn-danger', $data['classes']);
@@ -654,7 +656,9 @@ class ActionRendererTest extends TestCase
                 ->label('Delete')
                 ->as(new Http('https://example.com/users/1/delete'))
                 ->style(ButtonStyle::Warning),
-        ])->dropdown()->style(ButtonStyle::Danger);
+        ])
+            ->dropdown()
+            ->style(ButtonStyle::Danger);
 
         $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
 
@@ -666,8 +670,7 @@ class ActionRendererTest extends TestCase
     {
         $collection = new ActionCollection([$this->deleteAction()])
             ->dropdown()
-            ->style(fn (ActionContext $context) => $context->isBulk ? ButtonStyle::Danger : ButtonStyle::Link)
-        ;
+            ->style(static fn(ActionContext $context) => $context->isBulk ? ButtonStyle::Danger : ButtonStyle::Link);
 
         $rendered = (string) $this->renderer->render($collection, $this->context->isBulk())?->render();
 
@@ -679,8 +682,7 @@ class ActionRendererTest extends TestCase
         // Covers AE10.
         $collection = new ActionCollection([$this->deleteAction()])
             ->group()
-            ->style(ButtonStyle::Danger)
-        ;
+            ->style(ButtonStyle::Danger);
 
         $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
 
@@ -691,9 +693,7 @@ class ActionRendererTest extends TestCase
     public function test_a_style_on_a_normal_collection_changes_nothing(): void
     {
         // Covers AE10.
-        $collection = new ActionCollection([$this->deleteAction()])
-            ->style(ButtonStyle::Danger)
-        ;
+        $collection = new ActionCollection([$this->deleteAction()])->style(ButtonStyle::Danger);
 
         $rendered = (string) $this->renderer->render($collection, $this->context)?->render();
 

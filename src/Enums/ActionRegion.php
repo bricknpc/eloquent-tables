@@ -14,8 +14,8 @@ enum ActionRegion
     {
         return match ($theme) {
             Theme::Bootstrap5 => match ($this) {
-                self::Button         => 'btn',
-                self::DropdownItem   => 'dropdown-item',
+                self::Button => 'btn',
+                self::DropdownItem => 'dropdown-item',
                 self::DropdownToggle => 'btn dropdown-toggle',
             },
         };
@@ -25,7 +25,7 @@ enum ActionRegion
     {
         return match ($this) {
             self::Button, self::DropdownToggle => ButtonStyle::Primary,
-            self::DropdownItem                 => null,
+            self::DropdownItem => null,
         };
     }
 }

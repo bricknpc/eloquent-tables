@@ -48,9 +48,11 @@ readonly class TablePreferences
 
         // The stored order is the precedence the visitor built up, so it is preserved as-is.
         foreach ($sort as $column => $direction) {
-            if (is_string($direction) && $direction !== '') {
-                $values[(string) $column] = $direction;
+            if (!(is_string($direction) && $direction !== '')) {
+                continue;
             }
+
+            $values[(string) $column] = $direction;
         }
 
         return $values;

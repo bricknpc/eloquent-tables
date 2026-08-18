@@ -10,13 +10,13 @@ use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\AbstractPaginator as Paginator;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
-use Illuminate\Pagination\AbstractPaginator as Paginator;
 
 /**
  * @template TModel of Model
@@ -43,12 +43,13 @@ class RowsBuilder
         private readonly TableParameters $parameters,
     ) {}
 
+    // @mago-expect analysis:docblock-type-mismatch -- WithPagination is a trait, so it cannot be half of a union type
     /**
      * @param Table|WithPagination $table
      *
      * @return Collection<int, Model>|Paginator<int, Model>
      */
-    public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator // @phpstan-ignore-line
+    public function build(Table $table, Request $request, bool $forceReload = false): Collection|Paginator
     {
         if ($this->result !== null && !$forceReload) {
             return $this->result;
@@ -65,23 +66,32 @@ class RowsBuilder
         /** @var Builder $query */
         $query = $this->routeModelBinder->call($table, 'query');
 
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applySearch($query, $table, $request);
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applyFilters($query, $table, $request);
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applySort($query, $table, $request);
 
         // Retained before pagination, so a footer aggregate can run against the same narrowed
         // set the rows came from without the page limit.
         $this->narrowedQuery = clone $query;
+        // @mago-expect analysis:possibly-non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
-            ? $query->paginate(
-                perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
-                pageName: $this->parameters->key($table, TableParameter::Page),
-                // Laravel resolves the current page with $request->input($pageName), which reads dot
-                // notation and cannot see a bracketed key, so the page is resolved here instead.
-                page: $this->parameters->integerValue($table, TableParameter::Page, $request),
-            )->withQueryString()
+            // @mago-expect analysis:mixed-argument,non-existent-method,possibly-invalid-argument -- WithPagination is optional, so a trait method is unprovable on Table
+            ? $query
+                ->paginate(
+                    // @mago-expect analysis:possibly-invalid-argument -- WithPagination is optional, so a trait method is unprovable on Table
+                    perPage: $this->parameters->perPage($table, $request, $table->perPage($request)),
+                    pageName: $this->parameters->key($table, TableParameter::Page),
+                    // Laravel resolves the current page with $request->input($pageName), which reads dot
+                    // notation and cannot see a bracketed key, so the page is resolved here instead.
+                    // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
+                    page: $this->parameters->integerValue($table, TableParameter::Page, $request),
+                )
+                ->withQueryString()
             : $query->get();
 
         return $this->result = $result;
@@ -113,9 +123,14 @@ class RowsBuilder
         $filters = $this->routeModelBinder->call($table, 'filters');
 
         collect($filters)
-            ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
-            ->each(fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
-        ;
+            // @mago-expect analysis:possibly-invalid-argument -- the filter callback is user-supplied, so its signature is unprovable here
+            ->filter(static fn(Filter $filter) => array_key_exists($filter->name, $filterRequest))
+            ->each(static fn(Filter $filter) => call_user_func(
+                $filter,
+                $request,
+                $query,
+                $filterRequest[$filter->name],
+            ));
     }
 
     /**
@@ -126,9 +141,8 @@ class RowsBuilder
         $sortRequest = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
         $sortable = $this->columns
-            ->filter(fn (Column $column) => $column->sortable)
-            ->keyBy(fn (Column $column) => $column->name)
-        ;
+            ->filter(static fn(Column $column) => $column->sortable)
+            ->keyBy(static fn(Column $column) => $column->name);
 
         $sorted = false;
 
@@ -145,6 +159,7 @@ class RowsBuilder
 
             $sorted = true;
 
+            // @mago-expect analysis:possibly-invalid-argument -- sortUsing is user-supplied, so its signature is unprovable here
             if ($column->sortUsing !== null) {
                 call_user_func($column->sortUsing, $request, $query, $sort);
             } else {
@@ -158,15 +173,16 @@ class RowsBuilder
 
         // Nothing usable came from the visitor, so fall back to whatever the columns declare.
         $this->columns
-            ->filter(fn (Column $column) => $column->sortable && $column->defaultSort !== null)
-            ->each(function (Column $column) use ($query, $request) {
+            ->filter(static fn(Column $column) => $column->sortable && $column->defaultSort !== null)
+            ->each(static function (Column $column) use ($query, $request) {
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
+
+                    // @mago-expect analysis:possibly-null-argument -- defaultSort is non-null on this branch, which the analyzer does not carry from the filter above
                 } else {
-                    $query->orderBy($column->name, $column->defaultSort?->value); // @phpstan-ignore-line
+                    $query->orderBy($column->name, $column->defaultSort?->value);
                 }
-            })
-        ;
+            });
     }
 
     /**
@@ -182,11 +198,10 @@ class RowsBuilder
 
         $query->where(function (Builder $query) use ($search, $request) {
             $this->columns
-                ->filter(fn (Column $column) => $column->searchable)
-                ->each(function (Column $column) use ($search, $request, $query) {
-                    $query->orWhere(fn (Builder $query) => $column->search($request, $query, $search));
-                })
-            ;
+                ->filter(static fn(Column $column) => $column->searchable)
+                ->each(static function (Column $column) use ($search, $request, $query) {
+                    $query->orWhere(static fn(Builder $query) => $column->search($request, $query, $search));
+                });
         });
     }
 }

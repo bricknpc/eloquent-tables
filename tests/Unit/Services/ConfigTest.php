@@ -173,27 +173,39 @@ class ConfigTest extends TestCase
     public static function iconProvider(): \Generator
     {
         yield [
-            'searchIcon', 'search', new HtmlString('&#x1F50E;&#xFE0E;'),
+            'searchIcon',
+            'search',
+            new HtmlString('&#x1F50E;&#xFE0E;'),
         ];
 
         yield [
-            'sortAscIcon', 'sort-asc', new HtmlString('&#x25B2;'),
+            'sortAscIcon',
+            'sort-asc',
+            new HtmlString('&#x25B2;'),
         ];
 
         yield [
-            'sortDescIcon', 'sort-desc', new HtmlString('&#x25BC;'),
+            'sortDescIcon',
+            'sort-desc',
+            new HtmlString('&#x25BC;'),
         ];
 
         yield [
-            'sortNoneIcon', 'sort-none', new HtmlString('&#x25C0;'),
+            'sortNoneIcon',
+            'sort-none',
+            new HtmlString('&#x25C0;'),
         ];
 
         yield [
-            'checkIcon', 'check', new HtmlString('&check;'),
+            'checkIcon',
+            'check',
+            new HtmlString('&check;'),
         ];
 
         yield [
-            'crossIcon', 'cross', new HtmlString('&cross;'),
+            'crossIcon',
+            'cross',
+            new HtmlString('&cross;'),
         ];
     }
 }

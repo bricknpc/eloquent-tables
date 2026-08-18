@@ -18,6 +18,7 @@ readonly class ColumnValue
     public function resolve(Column $column, Model $model): mixed
     {
         return $column->valueUsing instanceof \Closure
+            // @mago-expect analysis:string-member-selector -- the member name is data, not a literal; this is the dynamic-option design
             ? call_user_func($column->valueUsing, $model)
             : $model->{$column->name};
     }

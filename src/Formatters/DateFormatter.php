@@ -30,8 +30,9 @@ readonly class DateFormatter implements Formatter
             timeType: \IntlDateFormatter::NONE,
             timezone: $this->timezone(),
         );
+        // @mago-expect analysis:mixed-argument -- the Formatter contract takes mixed; the guard above narrows it at runtime
 
-        $formatted = $formatter->format($value);  // @phpstan-ignore argument.type
+        $formatted = $formatter->format($value);
 
         if ($formatted === false) {
             throw InvalidValueException::forInvalidValue($value, $this);

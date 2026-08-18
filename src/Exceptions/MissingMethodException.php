@@ -10,7 +10,11 @@ class MissingMethodException extends \Exception
 
     public static function forMethod(string $method): self
     {
-        $exception         = new self(sprintf('Method %s not found. The %s method is required on Table classes.', $method, $method));
+        $exception = new self(sprintf(
+            'Method %s not found. The %s method is required on Table classes.',
+            $method,
+            $method,
+        ));
         $exception->method = $method;
 
         return $exception;

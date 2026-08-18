@@ -16,10 +16,7 @@ class AggregateScopeTest extends TestCase
 {
     public function test_it_has_a_scope_for_the_page_and_for_the_whole_result_set(): void
     {
-        $this->assertSame(
-            [AggregateScope::Page, AggregateScope::Total],
-            AggregateScope::cases(),
-        );
+        $this->assertSame([AggregateScope::Page, AggregateScope::Total], AggregateScope::cases());
     }
 
     public function test_it_has_no_other_scopes(): void

@@ -107,6 +107,7 @@ class Column
             return;
         }
 
+        // @mago-expect analysis:possibly-invalid-argument -- searchUsing is user-supplied, so its signature is unprovable here
         if (is_callable($this->searchUsing)) {
             call_user_func($this->searchUsing, $request, $query, $searchQuery);
         } else {
@@ -128,8 +129,10 @@ class Column
      * @param null|(\Closure(TModel $model): string)|string                               $locale
      * @param null|(\Closure(TModel $model): (\DateTimeZone|string))|\DateTimeZone|string $timezone
      */
-    public function date(\Closure|string|null $locale = null, \Closure|\DateTimeZone|string|null $timezone = null): static
-    {
+    public function date(
+        \Closure|string|null $locale = null,
+        \Closure|\DateTimeZone|string|null $timezone = null,
+    ): static {
         $this->formatterParameters = $this->dateParameters($locale, $timezone);
 
         return $this->format(DateFormatter::class);
@@ -139,8 +142,10 @@ class Column
      * @param null|(\Closure(TModel $model): string)|string                               $locale
      * @param null|(\Closure(TModel $model): (\DateTimeZone|string))|\DateTimeZone|string $timezone
      */
-    public function dateTime(\Closure|string|null $locale = null, \Closure|\DateTimeZone|string|null $timezone = null): static
-    {
+    public function dateTime(
+        \Closure|string|null $locale = null,
+        \Closure|\DateTimeZone|string|null $timezone = null,
+    ): static {
         $this->formatterParameters = $this->dateParameters($locale, $timezone);
 
         return $this->format(DateTimeFormatter::class);

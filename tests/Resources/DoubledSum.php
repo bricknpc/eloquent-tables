@@ -10,7 +10,9 @@ use Illuminate\Contracts\Database\Query\Builder;
 
 final readonly class DoubledSum implements Aggregate
 {
-    public function __construct(private int $factor = 2) {}
+    public function __construct(
+        private int $factor = 2,
+    ) {}
 
     /**
      * @param Collection<int, mixed> $values

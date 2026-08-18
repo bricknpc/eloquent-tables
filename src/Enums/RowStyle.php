@@ -21,8 +21,6 @@ enum RowStyle: string implements Style
 
     public function toCssClass(Theme $theme): string
     {
-        return match ($theme) {
-            Theme::Bootstrap5 => sprintf('table-%s', $this->value),
-        };
+        return match ($theme) { Theme::Bootstrap5 => sprintf('table-%s', $this->value) };
     }
 }

@@ -20,11 +20,13 @@ final class Modal extends ActionIntent
     }
 
     public function title(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type -- LazyValue's template is invariant, so the narrower value type is rejected
     {
         return new LazyValue($this->title);
     }
 
     public function content(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type -- LazyValue's template is invariant, so the narrower value type is rejected
     {
         return new LazyValue($this->content);
     }

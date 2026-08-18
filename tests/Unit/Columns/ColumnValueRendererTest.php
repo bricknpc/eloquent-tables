@@ -156,7 +156,11 @@ class ColumnValueRendererTest extends TestCase
     public function test_a_boolean_column_honours_a_declared_alignment(): void
     {
         // Covers AE2.
-        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::AlignRight));
+        $html = $this->renderCell(
+            new Column('name')
+                ->boolean()
+                ->style(CellStyle::AlignRight),
+        );
 
         $this->assertStringContainsString('justify-content-end', $html);
         $this->assertStringNotContainsString('justify-content-center', $html);
@@ -165,7 +169,11 @@ class ColumnValueRendererTest extends TestCase
     public function test_a_checkbox_column_honours_a_declared_alignment(): void
     {
         // Covers AE2.
-        $html = $this->renderCell(new Column('name')->checkbox()->style(CellStyle::AlignRight));
+        $html = $this->renderCell(
+            new Column('name')
+                ->checkbox()
+                ->style(CellStyle::AlignRight),
+        );
 
         $this->assertStringContainsString('justify-content-end', $html);
         $this->assertStringNotContainsString('justify-content-center', $html);
@@ -180,7 +188,11 @@ class ColumnValueRendererTest extends TestCase
     public function test_a_declared_alignment_displaces_the_type_default(): void
     {
         // Covers AE3.
-        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::AlignLeft));
+        $html = $this->renderCell(
+            new Column('name')
+                ->boolean()
+                ->style(CellStyle::AlignLeft),
+        );
 
         $this->assertStringContainsString('justify-content-start', $html);
         $this->assertStringNotContainsString('justify-content-center', $html);
@@ -188,7 +200,11 @@ class ColumnValueRendererTest extends TestCase
 
     public function test_a_declared_background_does_not_displace_the_type_default(): void
     {
-        $html = $this->renderCell(new Column('name')->boolean()->style(CellStyle::BackgroundSuccess));
+        $html = $this->renderCell(
+            new Column('name')
+                ->boolean()
+                ->style(CellStyle::BackgroundSuccess),
+        );
 
         $this->assertStringContainsString('justify-content-center', $html);
         $this->assertStringContainsString('table-success', $html);
@@ -197,12 +213,11 @@ class ColumnValueRendererTest extends TestCase
     public function test_a_closure_colours_only_the_rows_that_match(): void
     {
         // Covers AE4.
-        $column = new Column('name')->style(
-            CellStyle::AlignRight,
-            fn (CellContext $context) => $context->model?->name === 'negative'
-                ? CellStyle::TextDanger
-                : null,
-        );
+        $column = new Column(
+            'name',
+        )->style(CellStyle::AlignRight, static fn(CellContext $context) => $context->model?->name === 'negative'
+            ? CellStyle::TextDanger
+            : null);
 
         $matching = $this->renderCell($column, 'negative');
         $other    = $this->renderCell($column, 'positive');
@@ -253,14 +268,11 @@ class ColumnValueRendererTest extends TestCase
     {
         $received = [];
 
-        $column = new Column('amount')->currency(
-            function (Model $model) use (&$received): string {
-                $received[] = $model;
+        $column = new Column('amount')->currency(static function (Model $model) use (&$received): string {
+            $received[] = $model;
 
-                return $model->currency;
-            },
-            'en_US',
-        );
+            return $model->currency;
+        }, 'en_US');
 
         $dollars = $this->render($column, $this->modelWith(['amount' => 5, 'currency' => 'USD']));
         $yen     = $this->render($column, $this->modelWith(['amount' => 5, 'currency' => 'JPY']));
@@ -276,15 +288,21 @@ class ColumnValueRendererTest extends TestCase
 
     public function test_a_closure_can_supply_the_number_of_decimals(): void
     {
-        $column = new Column('amount')->number(fn (Model $model) => $model->decimals, 'en_US');
+        $column = new Column('amount')->number(static fn(Model $model) => $model->decimals, 'en_US');
 
-        $this->assertStringContainsString('1.500', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 3])));
-        $this->assertStringContainsString('2', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 0])));
+        $this->assertStringContainsString('1.500', $this->render($column, $this->modelWith([
+            'amount'   => 1.5,
+            'decimals' => 3,
+        ])));
+        $this->assertStringContainsString('2', $this->render($column, $this->modelWith([
+            'amount'   => 1.5,
+            'decimals' => 0,
+        ])));
     }
 
     public function test_a_closure_can_supply_the_timezone_as_a_string(): void
     {
-        $column = new Column('moment')->dateTime('en_US', fn (Model $model) => $model->timezone);
+        $column = new Column('moment')->dateTime('en_US', static fn(Model $model) => $model->timezone);
 
         $moment = new \DateTimeImmutable('2026-01-01 11:00:00', new \DateTimeZone('UTC'));
 

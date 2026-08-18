@@ -36,7 +36,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method($unnamed)
             {
@@ -63,7 +65,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method(RouteModelBinder $notModel): string
             {
@@ -94,7 +98,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method(TestModel $model): string
             {
@@ -132,7 +138,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method(TestModel $model): string
             {
@@ -149,15 +157,18 @@ class RouteModelBinderTest extends TestCase
         $request->shouldReceive('route')->with()->once()->andReturn($route);
 
         $container->shouldReceive('make')->once()->with(TestModel::class)->andReturn($model);
-        $container->shouldReceive('call')->withArgs(function (array $callable, array $parameters) {
-            $this->assertIsArray($parameters);
-            $this->assertArrayHasKey('model', $parameters);
-            $this->assertInstanceOf(TestModel::class, $parameters['model']);
-            $this->assertTrue($parameters['model']->exists);
-            $this->assertSame(1, $parameters['model']->getKey());
+        $container
+            ->shouldReceive('call')
+            ->withArgs(function (array $callable, array $parameters) {
+                $this->assertIsArray($parameters);
+                $this->assertArrayHasKey('model', $parameters);
+                $this->assertInstanceOf(TestModel::class, $parameters['model']);
+                $this->assertTrue($parameters['model']->exists);
+                $this->assertSame(1, $parameters['model']->getKey());
 
-            return true;
-        })->andReturn('result');
+                return true;
+            })
+            ->andReturn('result');
 
         $result = $service->call($object, 'method');
 
@@ -184,7 +195,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method(TestModel $model): string
             {
@@ -201,15 +214,18 @@ class RouteModelBinderTest extends TestCase
         $request->shouldReceive('route')->with()->once()->andReturn($route);
 
         $container->shouldReceive('make')->once()->with(TestModel::class)->andReturn($model);
-        $container->shouldReceive('call')->withArgs(function (array $callable, array $parameters) {
-            $this->assertIsArray($parameters);
-            $this->assertArrayHasKey('model', $parameters);
-            $this->assertInstanceOf(TestModel::class, $parameters['model']);
-            $this->assertTrue($parameters['model']->exists);
-            $this->assertSame(1, $parameters['model']->getKey());
+        $container
+            ->shouldReceive('call')
+            ->withArgs(function (array $callable, array $parameters) {
+                $this->assertIsArray($parameters);
+                $this->assertArrayHasKey('model', $parameters);
+                $this->assertInstanceOf(TestModel::class, $parameters['model']);
+                $this->assertTrue($parameters['model']->exists);
+                $this->assertSame(1, $parameters['model']->getKey());
 
-            return true;
-        })->andReturn('result');
+                return true;
+            })
+            ->andReturn('result');
 
         $result = $service->call($object, 'method');
 
@@ -234,7 +250,9 @@ class RouteModelBinderTest extends TestCase
         ]);
 
         $object = new class($this) {
-            public function __construct(private readonly TestCase $test) {}
+            public function __construct(
+                private readonly TestCase $test,
+            ) {}
 
             public function method(TestModel $model): string
             {
@@ -251,13 +269,16 @@ class RouteModelBinderTest extends TestCase
         $request->shouldReceive('route')->with()->once()->andReturn($route);
 
         $container->shouldReceive('make')->once()->with(TestModel::class)->andReturn(new TestModel());
-        $container->shouldReceive('call')->withArgs(function (array $callable, array $parameters) use ($model) {
-            $this->assertArrayHasKey('model', $parameters);
-            $this->assertSame($model, $parameters['model']);
-            $this->assertFalse($parameters['model']->exists);
+        $container
+            ->shouldReceive('call')
+            ->withArgs(function (array $callable, array $parameters) use ($model) {
+                $this->assertArrayHasKey('model', $parameters);
+                $this->assertSame($model, $parameters['model']);
+                $this->assertFalse($parameters['model']->exists);
 
-            return true;
-        })->andReturn('result');
+                return true;
+            })
+            ->andReturn('result');
 
         $result = $service->call($object, 'method');
 

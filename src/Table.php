@@ -44,6 +44,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * @var TableRenderer<TModel>
      */
     public TableRenderer $renderer {
+        // @mago-expect analysis:invalid-property-assignment-value -- the property hook cannot carry TModel across the assignment
         set(TableRenderer $value) {
             $this->renderer = $value;
         }
@@ -111,9 +112,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         // to the parent before taking the basename.
         $basename = class_basename(Str::before(static::class, '@anonymous'));
 
-        $stripped = str_ends_with($basename, 'Table')
-            ? substr($basename, 0, -strlen('Table'))
-            : $basename;
+        $stripped = str_ends_with($basename, 'Table') ? substr($basename, 0, -strlen('Table')) : $basename;
 
         return Str::snake($stripped === '' ? $basename : $stripped);
     }
@@ -164,8 +163,9 @@ abstract class Table implements LoggerAwareInterface, \Stringable
 
     protected function unauthorizedMessage(): string
     {
+        // @mago-expect analysis:mixed-return-statement -- Laravel's translator returns mixed, per the todo below
         // @todo Create own wrapper around the Laravel translator so we can ensure type-safety
-        return $this->trans->get('You are not authorized to view this table.'); // @phpstan-ignore-line
+        return $this->trans->get('You are not authorized to view this table.');
     }
 
     protected function unauthorizedResponseCode(): int
@@ -183,9 +183,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      */
     protected function unauthorized(): void
     {
-        throw new HttpException(
-            statusCode: $this->unauthorizedResponseCode(),
-            message: $this->unauthorizedMessage(),
-        );
+        throw new HttpException(statusCode: $this->unauthorizedResponseCode(), message: $this->unauthorizedMessage());
     }
 }

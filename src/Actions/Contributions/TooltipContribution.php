@@ -19,10 +19,8 @@ final class TooltipContribution extends CapabilityContribution
         $this->id = md5(uniqid(more_entropy: true));
     }
 
-    public function renderAttributes(
-        ActionDescriptor $descriptor,
-        ActionContext $context,
-    ): View {
+    public function renderAttributes(ActionDescriptor $descriptor, ActionContext $context): View
+    {
         return \view('eloquent-tables::actions.contribution.tooltip-attributes', [
             'text'          => $this->text,
             'theme'         => $context->config->theme(),

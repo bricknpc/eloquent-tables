@@ -71,7 +71,9 @@ class ActionTest extends TestCase
 
     public function test_a_second_style_call_merges_rather_than_replaces(): void
     {
-        $action = new Action()->style(ButtonStyle::Danger)->style(ButtonStyle::Link);
+        $action = new Action()
+            ->style(ButtonStyle::Danger)
+            ->style(ButtonStyle::Link);
 
         $this->assertSame(
             [ButtonStyle::Danger, ButtonStyle::Link],
@@ -81,7 +83,7 @@ class ActionTest extends TestCase
 
     public function test_style_accepts_a_closure_alongside_the_static_cases(): void
     {
-        $action = new Action()->style(ButtonStyle::Danger, fn () => ButtonStyle::Link);
+        $action = new Action()->style(ButtonStyle::Danger, static fn() => ButtonStyle::Link);
 
         $this->assertSame(
             [ButtonStyle::Danger, ButtonStyle::Link],
@@ -91,7 +93,9 @@ class ActionTest extends TestCase
 
     public function test_a_closure_may_be_declared_before_the_static_cases(): void
     {
-        $action = new Action()->style(fn () => ButtonStyle::Link)->style(ButtonStyle::Danger);
+        $action = new Action()
+            ->style(static fn() => ButtonStyle::Link)
+            ->style(ButtonStyle::Danger);
 
         $this->assertSame(
             [ButtonStyle::Danger, ButtonStyle::Link],
@@ -110,7 +114,7 @@ class ActionTest extends TestCase
 
     public function test_the_style_set_resolves_fresh_for_every_context(): void
     {
-        $action = new Action()->style(fn (ActionContext $context) => $context->model === null
+        $action = new Action()->style(static fn(ActionContext $context) => $context->model === null
             ? ButtonStyle::Link
             : ButtonStyle::Danger);
 
@@ -151,22 +155,32 @@ class ActionTest extends TestCase
 
     public function test_a_string_label_ends_up_on_the_descriptor(): void
     {
-        $descriptor = new Action()->label('Edit')->descriptor($this->context);
+        $descriptor = new Action()
+            ->label('Edit')
+            ->descriptor($this->context);
 
         $this->assertSame('Edit', $descriptor?->label->resolve($this->context));
     }
 
     public function test_a_closure_label_is_resolved_with_the_context(): void
     {
-        $action = new Action()->label(fn (ActionContext $context) => $context->isBulk ? 'Delete selected' : 'Delete');
+        $action = new Action()->label(static fn(ActionContext $context) => $context->isBulk
+            ? 'Delete selected'
+            : 'Delete');
 
         $this->assertSame('Delete', $action->descriptor($this->context)?->label->resolve($this->context));
-        $this->assertSame('Delete selected', $action->descriptor($this->context)?->label->resolve($this->context->isBulk()));
+        $this->assertSame(
+            'Delete selected',
+            $action->descriptor($this->context)?->label->resolve($this->context->isBulk()),
+        );
     }
 
     public function test_the_last_label_wins(): void
     {
-        $descriptor = new Action()->label('Edit')->label('Update')->descriptor($this->context);
+        $descriptor = new Action()
+            ->label('Edit')
+            ->label('Update')
+            ->descriptor($this->context);
 
         $this->assertSame('Update', $descriptor?->label->resolve($this->context));
     }
@@ -224,8 +238,10 @@ class ActionTest extends TestCase
 
         try {
             $action->as($this->createIntent());
+
+            // @mago-expect lint:no-empty-catch-clause -- swallowing it is the point: the test asserts what survives
+            // the failed second call, not the throw itself, which its own test already covers
         } catch (ActionIntentAlreadySet) {
-            // Expected
         }
 
         $this->assertSame($intent, $action->descriptor($this->context)?->intent);
@@ -240,8 +256,7 @@ class ActionTest extends TestCase
     {
         $action = new Action()
             ->with($this->createCapability(check: true))
-            ->with($this->createCapability(check: true))
-        ;
+            ->with($this->createCapability(check: true));
 
         $this->assertTrue($action->hasDescriptor($this->context));
     }
@@ -250,17 +265,17 @@ class ActionTest extends TestCase
     {
         $action = new Action()
             ->with($this->createCapability(check: true))
-            ->with($this->createCapability(check: false))
-        ;
+            ->with($this->createCapability(check: false));
 
         $this->assertFalse($action->hasDescriptor($this->context));
     }
 
     public function test_has_descriptor_is_evaluated_per_context(): void
     {
-        $action = new Action()->with($this->createCapability(
-            check: fn (ActionDescriptor $descriptor, ActionContext $context) => $context->isBulk,
-        ));
+        $action = new Action()->with($this->createCapability(check: static fn(
+            ActionDescriptor $descriptor,
+            ActionContext $context,
+        ) => $context->isBulk));
 
         $this->assertFalse($action->hasDescriptor($this->context));
         $this->assertTrue($action->hasDescriptor($this->context->isBulk()));
@@ -268,7 +283,9 @@ class ActionTest extends TestCase
 
     public function test_descriptor_returns_null_when_a_capability_fails(): void
     {
-        $action = new Action()->label('Edit')->with($this->createCapability(check: false));
+        $action = new Action()
+            ->label('Edit')
+            ->with($this->createCapability(check: false));
 
         $this->assertNull($action->descriptor($this->context));
     }
@@ -290,13 +307,12 @@ class ActionTest extends TestCase
     public function test_descriptor_applies_every_capability(): void
     {
         $action = new Action()
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+            ->with($this->createCapability(apply: static function (ActionDescriptor $descriptor): void {
                 $descriptor->attributes['class'] = 'btn-danger';
             }))
-            ->with($this->createCapability(apply: function (ActionDescriptor $descriptor): void {
+            ->with($this->createCapability(apply: static function (ActionDescriptor $descriptor): void {
                 $descriptor->attributes['title'] = 'Delete';
-            }))
-        ;
+            }));
 
         $descriptor = $action->descriptor($this->context);
 
@@ -308,13 +324,12 @@ class ActionTest extends TestCase
         $applied = [];
 
         $action = new Action()
-            ->with($this->createCapability(apply: function () use (&$applied): void {
+            ->with($this->createCapability(apply: static function () use (&$applied): void {
                 $applied[] = 'first';
             }))
-            ->with($this->createCapability(apply: function () use (&$applied): void {
+            ->with($this->createCapability(apply: static function () use (&$applied): void {
                 $applied[] = 'second';
-            }))
-        ;
+            }));
 
         $action->descriptor($this->context);
 
@@ -326,11 +341,10 @@ class ActionTest extends TestCase
         $applied = false;
 
         $action = new Action()
-            ->with($this->createCapability(apply: function () use (&$applied): void {
+            ->with($this->createCapability(apply: static function () use (&$applied): void {
                 $applied = true;
             }))
-            ->with($this->createCapability(check: false))
-        ;
+            ->with($this->createCapability(check: false));
 
         $action->descriptor($this->context);
 
@@ -339,9 +353,11 @@ class ActionTest extends TestCase
 
     public function test_descriptor_collects_the_contributions_in_the_render_buffers(): void
     {
-        $action = new Action()->with($this->createCapability(
-            contribution: $this->createContribution('before', 'data-confirm="true"', 'after'),
-        ));
+        $action = new Action()->with($this->createCapability(contribution: $this->createContribution(
+            'before',
+            'data-confirm="true"',
+            'after',
+        )));
 
         $descriptor = $action->descriptor($this->context);
 
@@ -354,8 +370,7 @@ class ActionTest extends TestCase
     {
         $action = new Action()
             ->with($this->createCapability(contribution: $this->createContribution(attributes: 'data-one="1"')))
-            ->with($this->createCapability(contribution: $this->createContribution(attributes: 'data-two="2"')))
-        ;
+            ->with($this->createCapability(contribution: $this->createContribution(attributes: 'data-two="2"')));
 
         $descriptor = $action->descriptor($this->context);
 
@@ -366,8 +381,7 @@ class ActionTest extends TestCase
     {
         $action = new Action()
             ->with($this->createCapability())
-            ->with($this->createCapability(contribution: $this->createContribution(attributes: 'data-one="1"')))
-        ;
+            ->with($this->createCapability(contribution: $this->createContribution(attributes: 'data-one="1"')));
 
         $descriptor = $action->descriptor($this->context);
 
@@ -376,9 +390,11 @@ class ActionTest extends TestCase
 
     public function test_descriptor_empties_the_buffers_between_calls(): void
     {
-        $action = new Action()->with($this->createCapability(
-            contribution: $this->createContribution('before', 'data-confirm="true"', 'after'),
-        ));
+        $action = new Action()->with($this->createCapability(contribution: $this->createContribution(
+            'before',
+            'data-confirm="true"',
+            'after',
+        )));
 
         $action->descriptor($this->context);
         $descriptor = $action->descriptor($this->context);
@@ -392,18 +408,20 @@ class ActionTest extends TestCase
     {
         $contexts = [];
 
-        $capability = $this->createCapability(
-            check: function (ActionDescriptor $descriptor, ActionContext $context) use (&$contexts): bool {
-                $contexts[] = $context;
+        $capability = $this->createCapability(check: static function (
+            ActionDescriptor $descriptor,
+            ActionContext $context,
+        ) use (&$contexts): bool {
+            $contexts[] = $context;
 
-                return true;
-            },
-            apply: function (ActionDescriptor $descriptor, ActionContext $context) use (&$contexts): void {
-                $contexts[] = $context;
-            },
-        );
+            return true;
+        }, apply: static function (ActionDescriptor $descriptor, ActionContext $context) use (&$contexts): void {
+            $contexts[] = $context;
+        });
 
-        new Action()->with($capability)->descriptor($this->context);
+        new Action()
+            ->with($capability)
+            ->descriptor($this->context);
 
         $this->assertCount(2, $contexts);
         $this->assertSame($this->context, $contexts[0]);

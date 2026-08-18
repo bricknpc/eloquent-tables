@@ -97,9 +97,9 @@ class Action
 
     public function hasDescriptor(ActionContext $context): bool
     {
-        return array_all(
-            $this->capabilities,
-            fn (ActionCapability $capability) => $capability->check($this->descriptor, $context),
-        );
+        return array_all($this->capabilities, fn(ActionCapability $capability) => $capability->check(
+            $this->descriptor,
+            $context,
+        ));
     }
 }

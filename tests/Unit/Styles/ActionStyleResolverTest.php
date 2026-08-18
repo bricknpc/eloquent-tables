@@ -70,19 +70,16 @@ class ActionStyleResolverTest extends TestCase
 
     public function test_it_skips_the_default_style_between_other_styles(): void
     {
-        $this->assertSame(
-            'btn btn-success',
-            $this->classes(new StyleSet(ButtonStyle::Default, ButtonStyle::Success)),
-        );
+        $this->assertSame('btn btn-success', $this->classes(new StyleSet(ButtonStyle::Default, ButtonStyle::Success)));
     }
 
     public function test_it_uses_the_dropdown_variant_inside_a_dropdown(): void
     {
         // Covers AE4.
-        $this->assertSame(
-            'dropdown-item text-danger',
-            $this->classes(new StyleSet(ButtonStyle::Danger), ActionRegion::DropdownItem),
-        );
+        $this->assertSame('dropdown-item text-danger', $this->classes(
+            new StyleSet(ButtonStyle::Danger),
+            ActionRegion::DropdownItem,
+        ));
     }
 
     public function test_a_dropdown_item_without_a_style_has_no_variant_and_no_trailing_space(): void
@@ -93,26 +90,23 @@ class ActionStyleResolverTest extends TestCase
 
     public function test_the_default_style_case_adds_nothing_inside_a_dropdown(): void
     {
-        $this->assertSame(
-            'dropdown-item',
-            $this->classes(new StyleSet(ButtonStyle::Default), ActionRegion::DropdownItem),
-        );
+        $this->assertSame('dropdown-item', $this->classes(
+            new StyleSet(ButtonStyle::Default),
+            ActionRegion::DropdownItem,
+        ));
     }
 
     public function test_a_dropdown_toggle_keeps_the_button_variant(): void
     {
-        $this->assertStringContainsString(
-            'btn-danger',
-            $this->classes(new StyleSet(ButtonStyle::Danger), ActionRegion::DropdownToggle),
-        );
+        $this->assertStringContainsString('btn-danger', $this->classes(
+            new StyleSet(ButtonStyle::Danger),
+            ActionRegion::DropdownToggle,
+        ));
     }
 
     public function test_a_style_that_is_not_a_button_style_is_ignored(): void
     {
-        $this->assertSame(
-            'btn btn-danger',
-            $this->classes(new StyleSet(TestStyle::First, ButtonStyle::Danger)),
-        );
+        $this->assertSame('btn btn-danger', $this->classes(new StyleSet(TestStyle::First, ButtonStyle::Danger)));
     }
 
     public function test_a_set_of_only_foreign_styles_falls_back_to_the_default(): void
@@ -122,15 +116,16 @@ class ActionStyleResolverTest extends TestCase
 
     public function test_a_closure_decides_the_style_from_the_context(): void
     {
-        $styles = new StyleSet(fn (ActionContext $context) => $context->isBulk
+        $styles = new StyleSet(static fn(ActionContext $context) => $context->isBulk
             ? ButtonStyle::Danger
             : ButtonStyle::Link);
 
         $this->assertSame('btn btn-link', $this->resolver->classes($styles, $this->context, ActionRegion::Button));
-        $this->assertSame(
-            'btn btn-danger',
-            $this->resolver->classes($styles, $this->context->isBulk(), ActionRegion::Button),
-        );
+        $this->assertSame('btn btn-danger', $this->resolver->classes(
+            $styles,
+            $this->context->isBulk(),
+            ActionRegion::Button,
+        ));
     }
 
     private function classes(?StyleSet $styles, ActionRegion $region = ActionRegion::Button): string

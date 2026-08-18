@@ -35,8 +35,9 @@ class ActionCollection extends Collection
      * @param array<Action|ActionCollection> $items
      */
     public function __construct(array $items = [], ?ActionCollectionType $type = null)
+    // @mago-expect analysis:less-specific-argument -- Collection's template is invariant, so the narrower item type is rejected
     {
-        parent::__construct($items); // @phpstan-ignore-line
+        parent::__construct($items);
 
         $this->type = $type ?? ActionCollectionType::Normal;
     }
@@ -68,7 +69,7 @@ class ActionCollection extends Collection
 
     public function countRenderable(ActionContext $context): int
     {
-        return $this->sum(function (Action|ActionCollection $item) use ($context) {
+        return $this->sum(static function (Action|ActionCollection $item) use ($context) {
             if ($item instanceof ActionCollection) {
                 return $item->countRenderable($context);
             }

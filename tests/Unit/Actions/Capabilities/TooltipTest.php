@@ -86,7 +86,7 @@ class TooltipTest extends TestCase
 
     public function test_contribute_resolves_a_closure_text_with_the_context(): void
     {
-        $tooltip = new Tooltip(fn (ActionContext $context) => $context->isBulk ? 'Bulk tooltip' : 'Row tooltip');
+        $tooltip = new Tooltip(static fn(ActionContext $context) => $context->isBulk ? 'Bulk tooltip' : 'Row tooltip');
 
         $contribution = $tooltip->contribute($this->descriptor, $this->context);
 
@@ -98,7 +98,7 @@ class TooltipTest extends TestCase
 
     public function test_contribute_resolves_the_closure_against_the_given_context(): void
     {
-        $tooltip = new Tooltip(fn (ActionContext $context) => $context->isBulk ? 'Bulk tooltip' : 'Row tooltip');
+        $tooltip = new Tooltip(static fn(ActionContext $context) => $context->isBulk ? 'Bulk tooltip' : 'Row tooltip');
 
         $contribution = $tooltip->contribute($this->descriptor, $this->context->isBulk());
 
@@ -112,7 +112,7 @@ class TooltipTest extends TestCase
     {
         $contextPassed = null;
 
-        $tooltip = new Tooltip(function (ActionContext $ctx) use (&$contextPassed): string {
+        $tooltip = new Tooltip(static function (ActionContext $ctx) use (&$contextPassed): string {
             $contextPassed = $ctx;
 
             return 'Some text';
@@ -126,7 +126,7 @@ class TooltipTest extends TestCase
     public function test_contribute_falls_back_to_an_empty_text_when_the_closure_returns_null(): void
     {
         /** @var \Closure(ActionContext $context): string $closure */
-        $closure = fn (ActionContext $context) => null;
+        $closure = static fn(ActionContext $context) => null;
 
         $tooltip = new Tooltip($closure);
 

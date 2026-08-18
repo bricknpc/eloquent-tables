@@ -21,6 +21,7 @@ final class Http extends ActionIntent
     }
 
     public function url(): LazyValue
+    // @mago-expect analysis:less-specific-nested-argument-type -- LazyValue's template is invariant, so the narrower value type is rejected
     {
         return new LazyValue($this->url);
     }

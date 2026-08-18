@@ -156,17 +156,19 @@ class TableRendererTest extends TestCase
 
         /** @var Request $request */
         $request = $this->app->make('request');
-        $table   = new #[Layout('app.layout')] class extends Table {
-            public function columns(): array
-            {
-                return [];
-            }
+        $table   = new
+            #[Layout('app.layout')]
+            class extends Table {
+                public function columns(): array
+                {
+                    return [];
+                }
 
-            public function query(): Builder
-            {
-                return TestModel::query();
-            }
-        };
+                public function query(): Builder
+                {
+                    return TestModel::query();
+                }
+            };
 
         $view = $builder->build($table, $request);
 
@@ -321,10 +323,10 @@ class TableRendererTest extends TestCase
         $table = new class extends Table {
             use WithPagination;
 
-            protected int $perPage          = 25;
-            protected string $perPageName   = 'per_page';
-            protected string $pageName      = 'page';
-            protected array $perPageOptions = [10, 25, 50];
+            protected int    $perPage        = 25;
+            protected string $perPageName    = 'per_page';
+            protected string $pageName       = 'page';
+            protected array  $perPageOptions = [10, 25, 50];
 
             public function query(): Builder
             {
@@ -396,7 +398,10 @@ class TableRendererTest extends TestCase
 
         $this->assertStringContainsString('<input type="hidden" name="table[search]" value="ada"/>', $html);
         $this->assertStringContainsString('<input type="hidden" name="table[sort][name]" value="asc"/>', $html);
-        $this->assertStringContainsString('<input type="hidden" name="table[filter][name]" value="Test Model 01"/>', $html);
+        $this->assertStringContainsString(
+            '<input type="hidden" name="table[filter][name]" value="Test Model 01"/>',
+            $html,
+        );
         $this->assertStringContainsString('<input type="hidden" name="orders[sort][total]" value="desc"/>', $html);
 
         // The page is deliberately dropped so a new page size starts from the first page.
@@ -581,7 +586,7 @@ class TableRendererTest extends TestCase
     {
         $view = $this->buildActionTable(
             allow: true,
-            rowCondition: fn (ActionContext $context) => $context->model->name === 'A',
+            rowCondition: static fn(ActionContext $context) => $context->model->name === 'A',
         );
 
         $html = $view->render();
@@ -605,9 +610,9 @@ class TableRendererTest extends TestCase
     public function test_a_conditional_row_style_lands_only_on_matching_rows(): void
     {
         // Covers AE7.
-        $html = $this->renderStyledRows(new StyleSet(
-            fn (RowContext $context) => $context->model->name === 'A' ? RowStyle::Danger : null,
-        ));
+        $html = $this->renderStyledRows(new StyleSet(static fn(RowContext $context) => $context->model->name === 'A'
+            ? RowStyle::Danger
+            : null));
 
         $this->assertSame(1, substr_count($html, '<tr class="table-danger">'));
         $this->assertSame(1, substr_count($html, '<tr class="">'));
@@ -645,7 +650,7 @@ class TableRendererTest extends TestCase
     {
         $seen = [];
 
-        $this->renderStyledRows(new StyleSet(function (RowContext $context) use (&$seen) {
+        $this->renderStyledRows(new StyleSet(static function (RowContext $context) use (&$seen) {
             $seen[] = $context->model->name;
 
             return null;
@@ -711,13 +716,10 @@ class TableRendererTest extends TestCase
         // Covers AE1.
         $this->seedAmounts(10, 20, 30, 40, 50);
 
-        $html = $this->renderFooterTable(
-            footer: [
-                new FooterRow(new Sum(), AggregateScope::Page, 'This page'),
-                new FooterRow(new Sum(), AggregateScope::Total, 'All rows'),
-            ],
-            perPage: 2,
-        );
+        $html = $this->renderFooterTable(footer: [
+            new FooterRow(new Sum(), AggregateScope::Page, 'This page'),
+            new FooterRow(new Sum(), AggregateScope::Total, 'All rows'),
+        ], perPage: 2);
 
         $this->assertStringContainsString('This page', $html);
         $this->assertStringContainsString('All rows', $html);
@@ -728,10 +730,10 @@ class TableRendererTest extends TestCase
     public function test_the_label_renders_in_a_spanning_cell(): void
     {
         // Covers R9.
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
-            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')], columns: [
+            new Column('name'),
+            new Column('amount')->aggregate(new Sum()),
+        ]);
 
         $this->assertStringContainsString('<th colspan="1">Total</th>', $html);
     }
@@ -739,10 +741,12 @@ class TableRendererTest extends TestCase
     public function test_a_row_naming_a_label_column_renders_the_label_there(): void
     {
         // Covers R9.
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total', labelColumn: 'name')],
-            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(
+            new Sum(),
+            AggregateScope::Page,
+            'Total',
+            labelColumn: 'name',
+        )], columns: [new Column('name'), new Column('amount')->aggregate(new Sum())]);
 
         $this->assertStringNotContainsString('colspan', $html);
         $this->assertStringContainsString('<th>Total</th>', $html);
@@ -761,7 +765,7 @@ class TableRendererTest extends TestCase
     public function test_a_closure_label_is_resolved_in_the_markup(): void
     {
         $html = $this->renderFooterTable(footer: [
-            new FooterRow(new Sum(), AggregateScope::Page, fn () => 'Deferred label'),
+            new FooterRow(new Sum(), AggregateScope::Page, static fn() => 'Deferred label'),
         ]);
 
         $this->assertStringContainsString('Deferred label', $html);
@@ -771,10 +775,10 @@ class TableRendererTest extends TestCase
     {
         $this->seedAmounts(10, 20);
 
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
-            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')], columns: [
+            new Column('name'),
+            new Column('amount')->aggregate(new Sum()),
+        ]);
 
         $body   = $this->cellsInFirst($html, '<tbody>');
         $footer = $this->cellsInFirst($html, '<tfoot>');
@@ -784,20 +788,20 @@ class TableRendererTest extends TestCase
 
     public function test_an_unlabelled_footer_row_renders_no_label_text(): void
     {
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page)],
-            columns: [new Column('name'), new Column('amount')->aggregate(new Sum())],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(new Sum(), AggregateScope::Page)], columns: [
+            new Column('name'),
+            new Column('amount')->aggregate(new Sum()),
+        ]);
 
         $this->assertStringContainsString('<th colspan="1"></th>', $html);
     }
 
     public function test_an_aggregated_first_column_never_emits_a_zero_colspan(): void
     {
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
-            columns: [new Column('amount')->aggregate(new Sum()), new Column('name')],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')], columns: [
+            new Column('amount')->aggregate(new Sum()),
+            new Column('name'),
+        ]);
 
         $this->assertStringNotContainsString('colspan="0"', $html);
     }
@@ -806,10 +810,10 @@ class TableRendererTest extends TestCase
     {
         $this->seedAmounts(10, 20);
 
-        $html = $this->renderFooterTable(
-            footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')],
-            columns: [new Column('amount')->aggregate(new Sum()), new Column('name')],
-        );
+        $html = $this->renderFooterTable(footer: [new FooterRow(new Sum(), AggregateScope::Page, 'Total')], columns: [
+            new Column('amount')->aggregate(new Sum()),
+            new Column('name'),
+        ]);
 
         $this->assertSame(
             $this->cellsInFirst($html, '<tbody>'),
@@ -876,20 +880,20 @@ class TableRendererTest extends TestCase
     private function accentedView(AccentStyle $accent): View
     {
         DB::table('test_models')->insert(
-            collect(range(1, 20))
-                ->map(fn (int $i) => [
-                    'name'       => 'Row ' . $i,
-                    'email'      => 'row' . $i . '@test.com',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ])
-                ->all(),
+            collect(range(1, 20))->map(static fn(int $i) => [
+                'name'       => 'Row ' . $i,
+                'email'      => 'row' . $i . '@test.com',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->all(),
         );
 
         $table = new class($accent) extends Table {
             use WithPagination;
 
-            public function __construct(private readonly AccentStyle $accent) {}
+            public function __construct(
+                private readonly AccentStyle $accent,
+            ) {}
 
             public function query(): Builder
             {
@@ -930,7 +934,9 @@ class TableRendererTest extends TestCase
             /**
              * @param TableStyle[] $tableStyle
              */
-            public function __construct(private readonly array $tableStyle) {}
+            public function __construct(
+                private readonly array $tableStyle,
+            ) {}
 
             public function query(): Builder
             {
@@ -990,16 +996,12 @@ class TableRendererTest extends TestCase
 
             public function rowActions(): array
             {
-                return $this->withActions
-                    ? [new Action()->label('R')->as(new Http('https://example.test'))]
-                    : [];
+                return $this->withActions ? [new Action()->label('R')->as(new Http('https://example.test'))] : [];
             }
 
             public function bulkActions(): array
             {
-                return $this->withActions
-                    ? [new Action()->label('B')->as(new Http('https://example.test'))]
-                    : [];
+                return $this->withActions ? [new Action()->label('B')->as(new Http('https://example.test'))] : [];
             }
         };
 
@@ -1044,12 +1046,15 @@ class TableRendererTest extends TestCase
             public function rowActions(): array
             {
                 $action = $this->rowCondition !== null
-                    ? new Action()->label('R')->as(new Http('https://example.test'))->with(new When($this->rowCondition))
+                    ? new Action()
+                        ->label('R')
+                        ->as(new Http('https://example.test'))
+                        ->with(new When($this->rowCondition))
                     : $this->action('R');
 
-                return $this->groupRowActions
-                    ? [new ActionCollection()->group($action, $this->action('R2'))]
-                    : [$action];
+                return (
+                    $this->groupRowActions ? [new ActionCollection()->group($action, $this->action('R2'))] : [$action]
+                );
             }
 
             public function bulkActions(): array
@@ -1062,8 +1067,7 @@ class TableRendererTest extends TestCase
                 return new Action()
                     ->label($label)
                     ->as(new Http('https://example.test'))
-                    ->with(new Authorize(fn () => $this->allow))
-                ;
+                    ->with(new Authorize(fn() => $this->allow));
             }
         };
 

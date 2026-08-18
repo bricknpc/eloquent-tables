@@ -7,13 +7,12 @@ namespace BrickNPC\EloquentTables\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use BrickNPC\EloquentTables\Actions\Action;
 use PHPUnit\Framework\Attributes\UsesClass;
-
-use function BrickNPC\EloquentTables\actions;
-
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use BrickNPC\EloquentTables\Enums\ActionCollectionType;
 use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
+
+use function BrickNPC\EloquentTables\actions;
 
 /**
  * @internal
@@ -44,8 +43,10 @@ class HelpersTest extends TestCase
      * @param callable-string $helper
      */
     #[DataProvider('helperProvider')]
-    public function test_it_builds_a_collection_of_the_matching_type(string $helper, ActionCollectionType $expected): void
-    {
+    public function test_it_builds_a_collection_of_the_matching_type(
+        string $helper,
+        ActionCollectionType $expected,
+    ): void {
         $this->assertSame($expected, $helper($this->action1)->type);
     }
 
@@ -65,8 +66,10 @@ class HelpersTest extends TestCase
      * @param callable-string $helper
      */
     #[DataProvider('helperProvider')]
-    public function test_it_builds_an_empty_collection_without_arguments(string $helper, ActionCollectionType $expected): void
-    {
+    public function test_it_builds_an_empty_collection_without_arguments(
+        string $helper,
+        ActionCollectionType $expected,
+    ): void {
         $result = $helper();
 
         $this->assertCount(0, $result);

@@ -76,7 +76,11 @@ readonly class FooterResolver
 
             $values[$index] = $aggregate === null
                 ? ''
-                : $this->render($column, $aggregate, $this->compute($aggregate, $footerRow->scope, $column, $rows, $query));
+                : $this->render(
+                    $column,
+                    $aggregate,
+                    $this->compute($aggregate, $footerRow->scope, $column, $rows, $query),
+                );
         }
 
         return $values;
@@ -97,7 +101,8 @@ readonly class FooterResolver
             return $aggregate->forPage($rows->map(
                 // Column's TModel is invariant, so a Column<TModel> cannot be handed to a method
                 // that binds its template from the model argument.
-                fn (Model $model) => $this->columnValue->resolve($column, $model), // @phpstan-ignore argument.type
+                // @mago-expect analysis:possibly-invalid-argument -- invariant TModel, see above
+                fn(Model $model) => $this->columnValue->resolve($column, $model),
             ));
         }
 
@@ -126,7 +131,10 @@ readonly class FooterResolver
 
         // A closure formatter parameter resolves against a row, and a footer value has none, so the
         // value is rendered unformatted rather than refused.
-        if (array_any($column->getFormatterParameters(), fn (mixed $parameter) => $parameter instanceof \Closure)) {
+        if (array_any(
+            $column->getFormatterParameters(),
+            static fn(mixed $parameter) => $parameter instanceof \Closure,
+        )) {
             return $this->toString($value);
         }
 

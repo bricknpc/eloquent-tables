@@ -11,18 +11,16 @@ class ActionIntentAlreadySet extends \Exception
 {
     private ?ActionIntent $intent    = null;
     private ?ActionIntent $newIntent = null;
-    private ?Action $action          = null;
+    private ?Action       $action    = null;
 
     public static function forIntent(ActionIntent $intent, ActionIntent $newIntent, Action $action): self
     {
-        $exception = new self(
-            sprintf(
-                'The action %s already has an intent %s, new intent %s can not be set',
-                get_class($action),
-                get_class($intent),
-                get_class($newIntent),
-            ),
-        );
+        $exception = new self(sprintf(
+            'The action %s already has an intent %s, new intent %s can not be set',
+            get_class($action),
+            get_class($intent),
+            get_class($newIntent),
+        ));
 
         $exception->intent    = $intent;
         $exception->newIntent = $newIntent;

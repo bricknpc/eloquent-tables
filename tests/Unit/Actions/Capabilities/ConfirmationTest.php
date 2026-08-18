@@ -102,9 +102,7 @@ class ConfirmationTest extends TestCase
 
     public function test_contribute_with_closure_text(): void
     {
-        $confirmation = new Confirmation(
-            fn (ActionContext $context): string => 'Dynamic confirmation message',
-        );
+        $confirmation = new Confirmation(static fn(ActionContext $context): string => 'Dynamic confirmation message');
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
 
@@ -114,10 +112,10 @@ class ConfirmationTest extends TestCase
     public function test_contribute_with_all_closure_parameters(): void
     {
         $confirmation = new Confirmation(
-            text: fn (ActionContext $context): string => 'Delete this?',
-            confirmValue: fn (ActionContext $context): string => 'Confirm',
-            cancelValue: fn (ActionContext $context): string => 'Cancel',
-            inputConfirmationValue: fn (ActionContext $context): string => 'DELETE',
+            text: static fn(ActionContext $context): string => 'Delete this?',
+            confirmValue: static fn(ActionContext $context): string => 'Confirm',
+            cancelValue: static fn(ActionContext $context): string => 'Cancel',
+            inputConfirmationValue: static fn(ActionContext $context): string => 'DELETE',
         );
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
@@ -129,9 +127,9 @@ class ConfirmationTest extends TestCase
     {
         $confirmation = new Confirmation(
             text: 'Delete this item?',
-            confirmValue: fn (ActionContext $context): string => 'Yes',
+            confirmValue: static fn(ActionContext $context): string => 'Yes',
             cancelValue: 'No',
-            inputConfirmationValue: fn (ActionContext $context): string => 'DELETE',
+            inputConfirmationValue: static fn(ActionContext $context): string => 'DELETE',
         );
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
@@ -157,13 +155,11 @@ class ConfirmationTest extends TestCase
     {
         $contextPassed = null;
 
-        $confirmation = new Confirmation(
-            text: function (ActionContext $ctx) use (&$contextPassed): string {
-                $contextPassed = $ctx;
+        $confirmation = new Confirmation(text: static function (ActionContext $ctx) use (&$contextPassed): string {
+            $contextPassed = $ctx;
 
-                return 'Confirm?';
-            },
-        );
+            return 'Confirm?';
+        });
 
         $confirmation->contribute($this->descriptor, $this->context);
 
@@ -175,22 +171,22 @@ class ConfirmationTest extends TestCase
         $contextsPassed = [];
 
         $confirmation = new Confirmation(
-            text: function (ActionContext $ctx) use (&$contextsPassed): string {
+            text: static function (ActionContext $ctx) use (&$contextsPassed): string {
                 $contextsPassed['text'] = $ctx;
 
                 return 'Text';
             },
-            confirmValue: function (ActionContext $ctx) use (&$contextsPassed): string {
+            confirmValue: static function (ActionContext $ctx) use (&$contextsPassed): string {
                 $contextsPassed['confirm'] = $ctx;
 
                 return 'Confirm';
             },
-            cancelValue: function (ActionContext $ctx) use (&$contextsPassed): string {
+            cancelValue: static function (ActionContext $ctx) use (&$contextsPassed): string {
                 $contextsPassed['cancel'] = $ctx;
 
                 return 'Cancel';
             },
-            inputConfirmationValue: function (ActionContext $ctx) use (&$contextsPassed): string {
+            inputConfirmationValue: static function (ActionContext $ctx) use (&$contextsPassed): string {
                 $contextsPassed['input'] = $ctx;
 
                 return 'DELETE';
@@ -231,9 +227,7 @@ class ConfirmationTest extends TestCase
     {
         $itemName = 'User Account';
 
-        $confirmation = new Confirmation(
-            text: fn (ActionContext $context): string => "Delete {$itemName}?",
-        );
+        $confirmation = new Confirmation(text: static fn(ActionContext $context): string => "Delete {$itemName}?");
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
 
@@ -264,11 +258,7 @@ class ConfirmationTest extends TestCase
 
     public function test_contribute_with_unicode_characters(): void
     {
-        $confirmation = new Confirmation(
-            text: '¿Estás seguro? 你确定吗？',
-            confirmValue: 'Sí',
-            cancelValue: 'No',
-        );
+        $confirmation = new Confirmation(text: '¿Estás seguro? 你确定吗？', confirmValue: 'Sí', cancelValue: 'No');
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
 
@@ -331,13 +321,11 @@ class ConfirmationTest extends TestCase
 
     public function test_contribute_closure_with_complex_logic(): void
     {
-        $confirmation = new Confirmation(
-            text: function (ActionContext $context): string {
-                $parts = ['Delete', 'this', 'item'];
+        $confirmation = new Confirmation(text: static function (ActionContext $context): string {
+            $parts = ['Delete', 'this', 'item'];
 
-                return implode(' ', $parts) . '?';
-            },
-        );
+            return implode(' ', $parts) . '?';
+        });
 
         $result = $confirmation->contribute($this->descriptor, $this->context);
 
@@ -348,13 +336,11 @@ class ConfirmationTest extends TestCase
     {
         $counter = 0;
 
-        $confirmation = new Confirmation(
-            text: function (ActionContext $context) use (&$counter): string {
-                ++$counter;
+        $confirmation = new Confirmation(text: static function (ActionContext $context) use (&$counter): string {
+            ++$counter;
 
-                return "Confirmation #{$counter}";
-            },
-        );
+            return "Confirmation #{$counter}";
+        });
 
         $confirmation->contribute($this->descriptor, $this->context);
         $confirmation->contribute($this->descriptor, $this->context);

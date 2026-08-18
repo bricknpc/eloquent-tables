@@ -266,6 +266,9 @@ class DateFormatterTest extends TestCase
 
     public function test_it_formats_a_value_with_no_model_at_all(): void
     {
-        $this->assertNotSame('', (string) new DateFormatter('en_US', 'UTC')->format(Carbon::parse('2026-08-17 12:00:00')));
+        $this->assertNotSame(
+            '',
+            (string) new DateFormatter('en_US', 'UTC')->format(Carbon::parse('2026-08-17 12:00:00')),
+        );
     }
 }

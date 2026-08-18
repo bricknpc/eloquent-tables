@@ -45,7 +45,7 @@ class WhenTest extends TestCase
 
     public function test_when_is_instance_of_action_capability(): void
     {
-        $when = new When(fn (ActionContext $context): bool => true);
+        $when = new When(static fn(ActionContext $context): bool => true);
 
         $this->assertInstanceOf(ActionCapability::class, $when);
     }
@@ -59,14 +59,14 @@ class WhenTest extends TestCase
 
     public function test_check_returns_true_when_closure_returns_true(): void
     {
-        $when = new When(fn (ActionContext $context): bool => true);
+        $when = new When(static fn(ActionContext $context): bool => true);
 
         $this->assertTrue($when->check($this->descriptor, $this->context));
     }
 
     public function test_check_returns_false_when_closure_returns_false(): void
     {
-        $when = new When(fn (ActionContext $context): bool => false);
+        $when = new When(static fn(ActionContext $context): bool => false);
 
         $this->assertFalse($when->check($this->descriptor, $this->context));
     }
@@ -75,7 +75,7 @@ class WhenTest extends TestCase
     {
         $contextPassed = null;
 
-        $when = new When(function (ActionContext $ctx) use (&$contextPassed): bool {
+        $when = new When(static function (ActionContext $ctx) use (&$contextPassed): bool {
             $contextPassed = $ctx;
 
             return true;
@@ -88,14 +88,14 @@ class WhenTest extends TestCase
 
     public function test_check_can_use_the_model_from_the_context(): void
     {
-        $when = new When(fn (ActionContext $context): bool => $context->model !== null);
+        $when = new When(static fn(ActionContext $context): bool => $context->model !== null);
 
         $this->assertFalse($when->check($this->descriptor, $this->context));
     }
 
     public function test_check_can_use_the_bulk_flag_from_the_context(): void
     {
-        $when = new When(fn (ActionContext $context): bool => $context->isBulk);
+        $when = new When(static fn(ActionContext $context): bool => $context->isBulk);
 
         $this->assertFalse($when->check($this->descriptor, $this->context));
         $this->assertTrue($when->check($this->descriptor, $this->context->isBulk()));
@@ -103,28 +103,28 @@ class WhenTest extends TestCase
 
     public function test_check_casts_truthy_return_value_to_true(): void
     {
-        $when = new When(fn (ActionContext $context) => 1);
+        $when = new When(static fn(ActionContext $context) => 1);
 
         $this->assertTrue($when->check($this->descriptor, $this->context));
     }
 
     public function test_check_casts_falsy_return_value_to_false(): void
     {
-        $when = new When(fn (ActionContext $context) => 0);
+        $when = new When(static fn(ActionContext $context) => 0);
 
         $this->assertFalse($when->check($this->descriptor, $this->context));
     }
 
     public function test_check_casts_non_empty_string_to_true(): void
     {
-        $when = new When(fn (ActionContext $context) => 'yes');
+        $when = new When(static fn(ActionContext $context) => 'yes');
 
         $this->assertTrue($when->check($this->descriptor, $this->context));
     }
 
     public function test_check_casts_empty_string_to_false(): void
     {
-        $when = new When(fn (ActionContext $context) => '');
+        $when = new When(static fn(ActionContext $context) => '');
 
         $this->assertFalse($when->check($this->descriptor, $this->context));
     }
@@ -133,7 +133,7 @@ class WhenTest extends TestCase
     {
         $callCount = 0;
 
-        $when = new When(function (ActionContext $context) use (&$callCount): bool {
+        $when = new When(static function (ActionContext $context) use (&$callCount): bool {
             ++$callCount;
 
             return true;
@@ -149,7 +149,7 @@ class WhenTest extends TestCase
     {
         $allowed = false;
 
-        $when = new When(function (ActionContext $context) use (&$allowed): bool {
+        $when = new When(static function (ActionContext $context) use (&$allowed): bool {
             return $allowed;
         });
 
@@ -162,14 +162,14 @@ class WhenTest extends TestCase
 
     public function test_contribute_returns_null(): void
     {
-        $when = new When(fn (ActionContext $context): bool => true);
+        $when = new When(static fn(ActionContext $context): bool => true);
 
         $this->assertNull($when->contribute($this->descriptor, $this->context));
     }
 
     public function test_apply_does_not_change_the_descriptor(): void
     {
-        $when = new When(fn (ActionContext $context): bool => true);
+        $when = new When(static fn(ActionContext $context): bool => true);
 
         $when->apply($this->descriptor, $this->context);
 

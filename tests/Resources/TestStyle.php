@@ -17,9 +17,9 @@ enum TestStyle implements Style
     {
         return match ($theme) {
             Theme::Bootstrap5 => match ($this) {
-                self::First  => 'first',
+                self::First => 'first',
                 self::Second => 'second',
-                self::Third  => 'third',
+                self::Third => 'third',
             },
         };
     }

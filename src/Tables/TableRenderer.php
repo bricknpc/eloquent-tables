@@ -36,13 +36,14 @@ use BrickNPC\EloquentTables\Actions\Collections\ActionCollection;
 /**
  * @template TModel of Model
  *
- * <todo>
- * All the ignore comments for PHPStan in this class are because of the fact that the WithPagination trait is
- * optional for tables. PHPStan does not have a valid way to handle this, so instead of writing a bunch of
- * unnecessary code I choose to ignore PHPStan in this regard, even though it is not best practice.
+ * TODO: the suppressions in this class all trace to one cause, that the WithPagination trait is optional for a
+ * table. A static analyser cannot see whether a given table uses it, so calls the trait provides are unprovable
+ * from the Table type alone. Suppressing is the cheaper trade against writing code that exists only to satisfy
+ * the analyser. If a better solution exists or arrives, a PR is welcome.
  *
- * If a better solution exists or is implemented in the future, feel free to open a PR.
- * </todo>
+ * Do not reintroduce angle-bracket pseudo-tags such as a todo element here. Mago parses a docblock's angle
+ * brackets as a type expression, so one of those produced fifteen unresolvable-class errors from this comment
+ * alone.
  */
 readonly class TableRenderer
 {
@@ -75,10 +76,7 @@ readonly class TableRenderer
      */
     public function build(Table $table, Request $request): View
     {
-        return $this->viewFactory->make(
-            $this->getViewFile($table),
-            $this->getViewData($table, $request),
-        );
+        return $this->viewFactory->make($this->getViewFile($table), $this->getViewData($table, $request));
     }
 
     /**
@@ -129,56 +127,57 @@ readonly class TableRenderer
         $context = new ActionContext($request, $this->config);
 
         $viewData = [
-            'id'            => spl_object_id($table),
-            'table'         => $table,
-            'tableName'     => $table->name(),
-            'preferences'   => $this->config->preferencesEnabled() ? [
-                'cookie'     => $this->config->preferencesCookieName(),
-                'perPageKey' => $this->parameters->key($table, TableParameter::PerPage),
-                'sortKey'    => $this->parameters->key($table, TableParameter::Sort),
-            ] : null,
-            'theme'                  => $theme,
-            'dataNamespace'          => $this->config->dataNamespace(),
-            'request'                => $request,
-            'tableStyles'            => $this->styleResolver->classes($table->style()),
-            'columns'                => $columns,
-            'columnLabelRenderer'    => $this->columnLabelRenderer,
-            'rows'                   => $rows,
-            'rowStyles'              => $this->rowStyles($table, $rows, $request),
-            'footer'                 => $this->footerRenderer->build(
+            'id'                    => spl_object_id($table),
+            'table'                 => $table,
+            'tableName'             => $table->name(),
+            'preferences'           => $this->config->preferencesEnabled()
+                ? [
+                    'cookie'     => $this->config->preferencesCookieName(),
+                    'perPageKey' => $this->parameters->key($table, TableParameter::PerPage),
+                    'sortKey'    => $this->parameters->key($table, TableParameter::Sort),
+                ] : null,
+            'theme'                 => $theme,
+            'dataNamespace'         => $this->config->dataNamespace(),
+            'request'               => $request,
+            'tableStyles'           => $this->styleResolver->classes($table->style()),
+            'columns'               => $columns,
+            'columnLabelRenderer'   => $this->columnLabelRenderer,
+            'rows'                  => $rows,
+            'rowStyles'             => $this->rowStyles($table, $rows, $request),
+            'footer'                => $this->footerRenderer->build(
                 $table,
                 $columns,
                 $rows,
                 $this->rowsBuilder->narrowedQuery(),
                 $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()) > 0 ? 1 : 0,
             ),
-            'columnValueRenderer'    => $this->columnValueRenderer,
-            'links'                  => $this->getLinks($table, $request),
-            'tableActionCount'       => $this->actionRenderer->countRenderable($tableActions, $context),
-            'tableActions'           => $tableActions,
-            'showSearchForm'         => $this->hasSearchableColumns($columns),
-            'tableSearchUrl'         => $request->fullUrl(),
-            'fullUrl'                => $request->fullUrl(),
-            'searchQuery'            => $this->parameters->stringValue($table, TableParameter::Search, $request),
-            'searchQueryName'        => $this->parameters->key($table, TableParameter::Search),
-            'searchHiddenInputs'     => $this->parameters->hiddenInputs($request, [
+            'columnValueRenderer'   => $this->columnValueRenderer,
+            'links'                 => $this->getLinks($table, $request),
+            'tableActionCount'      => $this->actionRenderer->countRenderable($tableActions, $context),
+            'tableActions'          => $tableActions,
+            'showSearchForm'        => $this->hasSearchableColumns($columns),
+            'tableSearchUrl'        => $request->fullUrl(),
+            'fullUrl'               => $request->fullUrl(),
+            'searchQuery'           => $this->parameters->stringValue($table, TableParameter::Search, $request),
+            'searchQueryName'       => $this->parameters->key($table, TableParameter::Search),
+            'searchHiddenInputs'    => $this->parameters->hiddenInputs($request, [
                 $this->parameters->key($table, TableParameter::Search),
                 // A new search changes the result set, so the old page number no longer means anything.
                 $this->parameters->key($table, TableParameter::Page),
             ]),
-            'searchIcon'             => $this->config->searchIcon(),
-            'rowActionCount'         => $this->countRenderableRowActions($rowActions, $rows, $request),
-            'rowActions'             => $rowActions,
-            'bulkActionCount'        => $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()),
-            'bulkActions'            => $bulkActions,
-            'bulkActionColumnWidth'  => $table->bulkActionColumnWidth(),
-            'bulkActionCellStyles'   => $this->styleResolver->classes([CellStyle::AlignCenter], StyleTarget::Content),
-            'rowActionCellStyles'    => $this->styleResolver->classes([CellStyle::AlignRight], StyleTarget::Content),
-            'filterCount'            => count($filters),
-            'filters'                => $filters,
-            'filterRenderer'         => $this->filterRenderer,
-            'actionRenderer'         => $this->actionRenderer,
-            'config'                 => $this->config,
+            'searchIcon'            => $this->config->searchIcon(),
+            'rowActionCount'        => $this->countRenderableRowActions($rowActions, $rows, $request),
+            'rowActions'            => $rowActions,
+            'bulkActionCount'       => $this->actionRenderer->countRenderable($bulkActions, $context->isBulk()),
+            'bulkActions'           => $bulkActions,
+            'bulkActionColumnWidth' => $table->bulkActionColumnWidth(),
+            'bulkActionCellStyles'  => $this->styleResolver->classes([CellStyle::AlignCenter], StyleTarget::Content),
+            'rowActionCellStyles'   => $this->styleResolver->classes([CellStyle::AlignRight], StyleTarget::Content),
+            'filterCount'           => count($filters),
+            'filters'               => $filters,
+            'filterRenderer'        => $this->filterRenderer,
+            'actionRenderer'        => $this->actionRenderer,
+            'config'                => $this->config,
         ];
 
         $layout = $this->layoutFinder->getLayout($table);
@@ -193,10 +192,12 @@ readonly class TableRenderer
         $viewData['activeStyle']    = $accent->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
+            // @mago-expect analysis:mixed-argument,non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
             /* @var WithPagination|Table $table */
-            $viewData['perPage']             = $this->parameters->perPage($table, $request, $table->perPage($request)); // @phpstan-ignore-line
+            $viewData['perPage'] = $this->parameters->perPage($table, $request, $table->perPage($request));
+            // @mago-expect analysis:non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
             $viewData['perPageName']         = $this->parameters->key($table, TableParameter::PerPage);
-            $viewData['perPageOptions']      = $table->perPageOptions(); // @phpstan-ignore-line
+            $viewData['perPageOptions']      = $table->perPageOptions();
             $viewData['perPageHiddenInputs'] = $this->parameters->hiddenInputs($request, [
                 $this->parameters->key($table, TableParameter::PerPage),
                 // Changing the page size returns the table to its first page.
@@ -221,11 +222,10 @@ readonly class TableRenderer
             return [];
         }
 
-        return $rows
-            ->values()
-            ->map(fn (Model $row) => $this->styleResolver->classes($set->resolve(new RowContext($request, $row))))
-            ->all()
-        ;
+        return $rows->values()->map(fn(Model $row) => $this->styleResolver->classes($set->resolve(new RowContext(
+            $request,
+            $row,
+        ))))->all();
     }
 
     /**
@@ -238,11 +238,13 @@ readonly class TableRenderer
 
         foreach ($rowActions as $action) {
             foreach ($rows as $row) {
-                if ($this->actionRenderer->canRender($action, new ActionContext($request, $this->config, $row))) {
-                    ++$count;
-
-                    break;
+                if (!$this->actionRenderer->canRender($action, new ActionContext($request, $this->config, $row))) {
+                    continue;
                 }
+
+                ++$count;
+
+                break;
             }
         }
 
@@ -271,8 +273,10 @@ readonly class TableRenderer
         }
 
         $theme = $this->config->theme();
+        // @mago-expect analysis:mixed-return-statement -- the paginator's links() returns mixed
+        // @mago-expect analysis:non-documented-method(2) -- AbstractPaginator declares links() ambiguously across its subclasses
 
-        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [ // @phpstan-ignore-line
+        return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
             'disabledStyle'  => $table->accentStyle()->toCssDisabledClass($theme),
             'activeStyle'    => $table->accentStyle()->toCssActiveClass($theme),
@@ -284,9 +288,6 @@ readonly class TableRenderer
      */
     private function hasSearchableColumns(array $columns): bool
     {
-        return collect($columns)
-            ->filter(fn (Column $column) => $column->searchable)
-            ->isNotEmpty()
-        ;
+        return collect($columns)->filter(static fn(Column $column) => $column->searchable)->isNotEmpty();
     }
 }

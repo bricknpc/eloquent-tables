@@ -127,17 +127,22 @@ docker-compose exec php composer test
 
 ## Code quality tools
 
-Eloquent Tables uses PHP CS Fixer and PHPStan to ensure a high quality code base. You can run the tools locally 
-using the following commands.
+Eloquent Tables uses [Mago](https://mago.carthage.software/) for formatting, linting and static analysis. You can 
+run the tools locally using the following commands.
 
-**PHP CS Fixer:**
+**Formatter** (writes to your files):
 ```bash
-docker-compose exec php composer cs
+docker-compose exec php composer mago:format
 ```
 
-**PHPStan:**
+**Linter:**
 ```bash
-docker-compose exec php composer ps
+docker-compose exec php composer mago:lint
+```
+
+**Static analysis:**
+```bash
+docker-compose exec php composer mago:analyze
 ```
 
 ## Community showcase
@@ -154,7 +159,8 @@ manually.
 
 Before creating a pull request, please run the tests and code quality tools locally.
 
-We only accept pull requests when PHPStan reports no errors and the test coverage hasn't gone down.
+We only accept pull requests when the analyzer reports no errors, the formatter reports no changes, and the test 
+coverage hasn't gone down.
 
 ### Which branch to target
 

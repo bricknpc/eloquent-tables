@@ -39,7 +39,7 @@ class InvalidValueExceptionTest extends TestCase
         ];
 
         yield [
-            function () {},
+            static function () {},
             'of type Closure',
         ];
 
@@ -55,8 +55,10 @@ class InvalidValueExceptionTest extends TestCase
     }
 
     #[DataProvider('invalidValueProvider')]
-    public function test_it_saves_the_invalid_value_formatter_and_adds_them_to_the_context(mixed $value, string $other): void
-    {
+    public function test_it_saves_the_invalid_value_formatter_and_adds_them_to_the_context(
+        mixed $value,
+        string $other,
+    ): void {
         $exception = InvalidValueException::forInvalidValue($value, new NumberFormatter('en', 2));
 
         $this->assertSame($value, $exception->value);

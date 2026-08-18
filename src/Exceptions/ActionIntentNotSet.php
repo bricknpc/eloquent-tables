@@ -12,12 +12,10 @@ class ActionIntentNotSet extends \Exception
 
     public static function forAction(Action $action): self
     {
-        $exception = new self(
-            sprintf(
-                'The action %s has no intent and can not be rendered, set one with the as() method',
-                get_class($action),
-            ),
-        );
+        $exception = new self(sprintf(
+            'The action %s has no intent and can not be rendered, set one with the as() method',
+            get_class($action),
+        ));
 
         $exception->action = $action;
 

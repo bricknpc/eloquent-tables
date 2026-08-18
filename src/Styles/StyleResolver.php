@@ -26,15 +26,19 @@ readonly class StyleResolver
         $declared = [];
 
         foreach ($styles as $style) {
-            if ($style instanceof CellStyle) {
-                $declared[] = $style->family();
+            if (!$style instanceof CellStyle) {
+                continue;
             }
+
+            $declared[] = $style->family();
         }
 
         foreach ($defaults as $default) {
-            if (!in_array($default->family(), $declared, true)) {
-                $styles[] = $default;
+            if (in_array($default->family(), $declared, true)) {
+                continue;
             }
+
+            $styles[] = $default;
         }
 
         return $styles;

@@ -33,6 +33,7 @@ readonly class NumberFormatter implements Formatter
         $decimalSeparator   = $formatter->getSymbol(\NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
         $thousandsSeparator = $formatter->getSymbol(\NumberFormatter::GROUPING_SEPARATOR_SYMBOL);
 
+        // @mago-expect analysis:possibly-false-argument(2) -- getSymbol only returns false for an invalid symbol constant, and both are literals here
         return str(number_format((float) $value, $this->decimals, $decimalSeparator, $thousandsSeparator));
     }
 }

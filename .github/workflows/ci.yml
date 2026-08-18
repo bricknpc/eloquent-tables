@@ -126,8 +126,8 @@ jobs:
           path: previous-coverage.txt
           key: coverage-${{ github.ref }}-${{ github.sha }}
 
-  phpstan:
-    name: PHPStan (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
+  mago-analyze:
+    name: Mago analyze (PHP ${{ matrix.php-version }}, Laravel ${{ matrix.laravel }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -156,16 +156,15 @@ jobs:
       - name: Install dependencies against Laravel ${{ matrix.laravel }}
         run: composer update --with="illuminate/support:^${{ matrix.laravel }}.0" --prefer-dist --no-progress
 
-      - name: Run PHPStan
-        run: vendor/bin/phpstan analyse --error-format=github
+      - name: Run Mago analyzer
+        env:
+          MAGO_PHP_VERSION: ${{ matrix.php-version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: vendor/bin/mago analyze --reporting-format=github
 
-  php-cs-fixer:
-    name: PHP-CS-Fixer (PHP ${{ matrix.php-version }})
+  mago-check:
+    name: Mago (format and lint)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: ['8.4', '8.5']
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -173,7 +172,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.4'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, json, pdo
 
       - name: Cache Composer packages
@@ -181,15 +180,25 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-8.4-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-
+            ${{ runner.os }}-php-8.4-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run PHP-CS-Fixer (dry-run)
-        run: vendor/bin/php-cs-fixer fix --dry-run --diff --verbose --allow-risky=yes --config=.php-cs-fixer.php
+      # The Composer package is a wrapper that fetches the matching binary from GitHub releases on
+      # first use and caches it under vendor/, so the cache step above covers it too. The token
+      # only avoids the anonymous rate limit on a cache miss.
+      - name: Run Mago formatter (dry-run)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: vendor/bin/mago format --dry-run
+
+      - name: Run Mago linter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: vendor/bin/mago lint --reporting-format=github
 
   # Builds the site and nothing else: no environment, no pages permission, no upload or
   # deploy step, so it cannot touch what is published. onBrokenLinks is 'throw', so this is
@@ -228,7 +237,7 @@ jobs:
     # hardcoded name means the next major taking over as default needs no change here, and
     # keeps unreleased documentation on the next release branch out of the published site.
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
-    needs: [phpunit, phpstan, php-cs-fixer]
+    needs: [phpunit, mago-analyze, mago-check]
 
     # Scoped to this job on purpose. As a workflow-level key it serialised every run of the
     # whole workflow repo-wide, so a push to one branch queued behind another branch's tests.

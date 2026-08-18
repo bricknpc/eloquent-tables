@@ -7,8 +7,8 @@ namespace BrickNPC\EloquentTables\Filters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Contracts\Filter as FilterContract;
+use Illuminate\Contracts\Database\Query\Builder;
 
 class Filter implements FilterContract
 {
@@ -26,6 +26,7 @@ class Filter implements FilterContract
 
     public function __invoke(Request $request, Builder $query, string $value): void
     {
+        // @mago-expect analysis:possibly-invalid-argument -- the filter callback is user-supplied, so its signature is unprovable here
         $this->filter !== null
             ? call_user_func($this->filter, $request, $query, $value)
             : $query->where($this->name, '=', $value);
@@ -61,14 +62,15 @@ class Filter implements FilterContract
     }
 
     public function options(): array
+    // @mago-expect analysis:less-specific-nested-argument-type,template-constraint-violation -- collect() cannot preserve the option key and value templates
     {
-        $options = $this->options instanceof Collection ? $this->options : collect($this->options); // @phpstan-ignore-line
+        $options = $this->options instanceof Collection ? $this->options : collect($this->options);
 
         /** @var array<string, string> $result */
+        // @mago-expect analysis:mixed-argument -- option values are mixed by contract and are validated in getOption
         $result = $options
-            ->mapWithKeys(fn (mixed $option, int|string $key) => $this->getOption($option, $key)) // @phpstan-ignore-line
-            ->toArray()
-        ;
+            ->mapWithKeys(fn(mixed $option, int|string $key) => $this->getOption($option, $key))
+            ->toArray();
 
         return $result;
     }
@@ -81,10 +83,11 @@ class Filter implements FilterContract
     private function getOption(mixed $option, int|string $key): array
     {
         if ($option instanceof Model) {
-            $key   = $this->optionKey     ?? $option->getKeyName();
-            $label = $this->optionLabel   ?? $option->getKeyName();
+            $key   = $this->optionKey ?? $option->getKeyName();
+            $label = $this->optionLabel ?? $option->getKeyName();
+            // @mago-expect analysis:string-member-selector(2) -- the member name is data, not a literal; this is the dynamic-option design
 
-            return [(string) $option->{$key} => (string) $option->{$label}]; // @phpstan-ignore-line
+            return [(string) $option->{$key} => (string) $option->{$label}];
         }
 
         if ($option instanceof \BackedEnum) {

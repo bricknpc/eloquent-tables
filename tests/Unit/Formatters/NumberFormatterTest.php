@@ -21,8 +21,12 @@ use BrickNPC\EloquentTables\Exceptions\InvalidValueException;
 class NumberFormatterTest extends TestCase
 {
     #[DataProvider('numberProvider')]
-    public function test_it_formats_currency_for_locale(string $locale, int $decimals, mixed $value, string $expected): void
-    {
+    public function test_it_formats_currency_for_locale(
+        string $locale,
+        int $decimals,
+        mixed $value,
+        string $expected,
+    ): void {
         $formatter = new NumberFormatter($locale, $decimals);
 
         $model = new class extends Model {};
@@ -162,7 +166,7 @@ class NumberFormatterTest extends TestCase
         yield [
             'en',
             2,
-            function () {},
+            static function () {},
         ];
 
         yield [
@@ -174,7 +178,7 @@ class NumberFormatterTest extends TestCase
         yield [
             'en',
             2,
-            fn () => true,
+            static fn() => true,
         ];
 
         yield [
@@ -200,10 +204,7 @@ class NumberFormatterTest extends TestCase
     {
         $formatter = new NumberFormatter('en_US');
 
-        $this->assertSame(
-            (string) $formatter->format(1234.56, new TestModel()),
-            (string) $formatter->format(1234.56),
-        );
+        $this->assertSame((string) $formatter->format(1234.56, new TestModel()), (string) $formatter->format(1234.56));
     }
 
     public function test_it_formats_a_value_with_no_model_at_all(): void

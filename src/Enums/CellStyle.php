@@ -67,18 +67,37 @@ enum CellStyle implements Style
     public function family(): StyleFamily
     {
         return match ($this) {
-            self::AlignLeft, self::AlignCenter, self::AlignRight, self::AlignJustify,
-            self::AlignBetween, self::AlignTop, self::AlignMiddle, self::AlignBottom => StyleFamily::Alignment,
-
-            self::BackgroundPrimary, self::BackgroundSecondary, self::BackgroundTertiary,
-            self::BackgroundQuaternary, self::BackgroundSuccess, self::BackgroundWarning,
-            self::BackgroundDanger, self::BackgroundInfo, self::BackgroundLight,
-            self::BackgroundDark => StyleFamily::Background,
-
-            self::TextPrimary, self::TextSecondary, self::TextTertiary, self::TextQuaternary,
-            self::TextSuccess, self::TextWarning, self::TextDanger, self::TextInfo,
-            self::TextLight, self::TextDark => StyleFamily::TextColour,
-
+            self::AlignLeft,
+            self::AlignCenter,
+            self::AlignRight,
+            self::AlignJustify,
+            self::AlignBetween,
+            self::AlignTop,
+            self::AlignMiddle,
+            self::AlignBottom,
+                => StyleFamily::Alignment,
+            self::BackgroundPrimary,
+            self::BackgroundSecondary,
+            self::BackgroundTertiary,
+            self::BackgroundQuaternary,
+            self::BackgroundSuccess,
+            self::BackgroundWarning,
+            self::BackgroundDanger,
+            self::BackgroundInfo,
+            self::BackgroundLight,
+            self::BackgroundDark,
+                => StyleFamily::Background,
+            self::TextPrimary,
+            self::TextSecondary,
+            self::TextTertiary,
+            self::TextQuaternary,
+            self::TextSuccess,
+            self::TextWarning,
+            self::TextDanger,
+            self::TextInfo,
+            self::TextLight,
+            self::TextDark,
+                => StyleFamily::TextColour,
             self::FontLight, self::FontNormal, self::FontSemibold, self::FontBold => StyleFamily::FontWeight,
         };
     }
@@ -86,43 +105,43 @@ enum CellStyle implements Style
     private function toAlignmentCssClass(): string
     {
         return match ($this) {
-            self::AlignLeft    => 'justify-content-start',
-            self::AlignCenter  => 'justify-content-center',
-            self::AlignRight   => 'justify-content-end',
+            self::AlignLeft => 'justify-content-start',
+            self::AlignCenter => 'justify-content-center',
+            self::AlignRight => 'justify-content-end',
             self::AlignJustify => 'justify-content-stretch',
             self::AlignBetween => 'justify-content-between',
-            self::AlignTop     => 'align-items-start',
-            self::AlignMiddle  => 'align-items-center',
-            self::AlignBottom  => 'align-items-end',
-            default            => '',
+            self::AlignTop => 'align-items-start',
+            self::AlignMiddle => 'align-items-center',
+            self::AlignBottom => 'align-items-end',
+            default => '',
         };
     }
 
     private function colour(): string
     {
         return match ($this) {
-            self::BackgroundPrimary, self::TextPrimary       => 'primary',
-            self::BackgroundSecondary, self::TextSecondary   => 'secondary',
-            self::BackgroundTertiary, self::TextTertiary     => 'tertiary',
+            self::BackgroundPrimary, self::TextPrimary => 'primary',
+            self::BackgroundSecondary, self::TextSecondary => 'secondary',
+            self::BackgroundTertiary, self::TextTertiary => 'tertiary',
             self::BackgroundQuaternary, self::TextQuaternary => 'quaternary',
-            self::BackgroundSuccess, self::TextSuccess       => 'success',
-            self::BackgroundWarning, self::TextWarning       => 'warning',
-            self::BackgroundDanger, self::TextDanger         => 'danger',
-            self::BackgroundInfo, self::TextInfo             => 'info',
-            self::BackgroundLight, self::TextLight           => 'light',
-            self::BackgroundDark, self::TextDark             => 'dark',
-            default                                          => '',
+            self::BackgroundSuccess, self::TextSuccess => 'success',
+            self::BackgroundWarning, self::TextWarning => 'warning',
+            self::BackgroundDanger, self::TextDanger => 'danger',
+            self::BackgroundInfo, self::TextInfo => 'info',
+            self::BackgroundLight, self::TextLight => 'light',
+            self::BackgroundDark, self::TextDark => 'dark',
+            default => '',
         };
     }
 
     private function weight(): string
     {
         return match ($this) {
-            self::FontLight    => 'light',
-            self::FontNormal   => 'normal',
+            self::FontLight => 'light',
+            self::FontNormal => 'normal',
             self::FontSemibold => 'semibold',
-            self::FontBold     => 'bold',
-            default            => '',
+            self::FontBold => 'bold',
+            default => '',
         };
     }
 }

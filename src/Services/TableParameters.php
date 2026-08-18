@@ -45,18 +45,18 @@ readonly class TableParameters
             // choice in its own right and must not be undone by the stored value.
             $absent = $value === null;
 
-            return $absent && $parameter === TableParameter::Sort
-                ? $this->preferences->sort($table, $request)
-                : [];
+            return $absent && $parameter === TableParameter::Sort ? $this->preferences->sort($table, $request) : [];
         }
 
         $values = [];
 
         // The insertion order is meaningful: it is the order the visitor clicked the column headers.
         foreach ($value as $key => $item) {
-            if (is_string($item) && $item !== '') {
-                $values[(string) $key] = $item;
+            if (!(is_string($item) && $item !== '')) {
+                continue;
             }
+
+            $values[(string) $key] = $item;
         }
 
         return $values;
@@ -91,8 +91,10 @@ readonly class TableParameters
      */
     public function perPage(Table $table, Request $request, int $default): int
     {
-        $perPage = $this->integerValue($table, TableParameter::PerPage, $request)
-            ?? $this->preferences->perPage($table, $request);
+        $perPage = $this->integerValue($table, TableParameter::PerPage, $request) ?? $this->preferences->perPage(
+            $table,
+            $request,
+        );
 
         return $perPage !== null && $perPage > 0 ? $perPage : $default;
     }
@@ -116,9 +118,11 @@ readonly class TableParameters
         $query = $request->query();
 
         foreach ($this->flatten(is_array($query) ? $query : []) as $name => $value) {
-            if (!$this->isExcluded($name, $except)) {
-                $inputs[$name] = $value;
+            if ($this->isExcluded($name, $except)) {
+                continue;
             }
+
+            $inputs[$name] = $value;
         }
 
         return $inputs;

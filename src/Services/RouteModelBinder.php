@@ -30,7 +30,10 @@ readonly class RouteModelBinder
                 continue;
             }
 
-            if (!is_subclass_of($type->getName(), Model::class) || $this->request->route($parameter->getName()) === null) {
+            if (
+                !is_subclass_of($type->getName(), Model::class)
+                || $this->request->route($parameter->getName()) === null
+            ) {
                 continue;
             }
 
@@ -46,16 +49,13 @@ readonly class RouteModelBinder
             if ($routeValue instanceof Model && $routeValue->getKey() !== null) {
                 $model = $routeValue;
             } else {
-                $model = $instance
-                    ->newQuery()
-                    ->where($bindingField, '=', $routeValue)
-                    ->firstOrFail()
-                ;
+                $model = $instance->newQuery()->where($bindingField, '=', $routeValue)->firstOrFail();
             }
 
             $callParameters[$parameter->getName()] = $model;
         }
+        // @mago-expect analysis:less-specific-nested-argument-type -- the container accepts a looser parameter array than its signature declares
 
-        return $this->container->call([$object, $method], $callParameters); // @phpstan-ignore-line
+        return $this->container->call([$object, $method], $callParameters);
     }
 }

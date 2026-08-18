@@ -18,8 +18,12 @@ use BrickNPC\EloquentTables\Formatters\CurrencyFormatter;
 class CurrencyFormatterTest extends TestCase
 {
     #[DataProvider('currencyProvider')]
-    public function test_it_formats_currency_for_locale(string $locale, string $currency, mixed $value, string $expected): void
-    {
+    public function test_it_formats_currency_for_locale(
+        string $locale,
+        string $currency,
+        mixed $value,
+        string $expected,
+    ): void {
         $formatter = new CurrencyFormatter($locale, $currency);
 
         $model = new class extends Model {};
@@ -78,10 +82,7 @@ class CurrencyFormatterTest extends TestCase
     {
         $formatter = new CurrencyFormatter('en_US', 'USD');
 
-        $this->assertSame(
-            (string) $formatter->format(1234.56, new TestModel()),
-            (string) $formatter->format(1234.56),
-        );
+        $this->assertSame((string) $formatter->format(1234.56, new TestModel()), (string) $formatter->format(1234.56));
     }
 
     public function test_it_formats_a_value_with_no_model_at_all(): void

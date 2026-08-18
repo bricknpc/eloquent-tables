@@ -245,7 +245,10 @@ class ButtonStyleTest extends TestCase
     public function test_every_style_has_a_dropdown_variant_without_a_button_class(): void
     {
         foreach (ButtonStyle::cases() as $style) {
-            $this->assertStringNotContainsString('btn', $style->toCssClass(Theme::Bootstrap5, ActionRegion::DropdownItem));
+            $this->assertStringNotContainsString('btn', $style->toCssClass(
+                Theme::Bootstrap5,
+                ActionRegion::DropdownItem,
+            ));
         }
     }
 }

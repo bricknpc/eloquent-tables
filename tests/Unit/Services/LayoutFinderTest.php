@@ -74,17 +74,19 @@ class LayoutFinderTest extends TestCase
 
     public function test_table_with_layout_attribute_returns_layout(): void
     {
-        $table = new #[Layout(name: 'layout-via-attribute')] class extends Table {
-            public function query(): Builder
-            {
-                return TestModel::query();
-            }
+        $table = new
+            #[Layout(name: 'layout-via-attribute')]
+            class extends Table {
+                public function query(): Builder
+                {
+                    return TestModel::query();
+                }
 
-            public function columns(): array
-            {
-                return [];
-            }
-        };
+                public function columns(): array
+                {
+                    return [];
+                }
+            };
 
         /** @var LayoutFinder $service */
         $service = $this->app->make(LayoutFinder::class);
@@ -97,22 +99,24 @@ class LayoutFinderTest extends TestCase
 
     public function test_table_with_both_layout_method_and_attribute_returns_layout_from_method(): void
     {
-        $table = new #[Layout(name: 'layout-via-attribute')] class extends Table {
-            public function query(): Builder
-            {
-                return TestModel::query();
-            }
+        $table = new
+            #[Layout(name: 'layout-via-attribute')]
+            class extends Table {
+                public function query(): Builder
+                {
+                    return TestModel::query();
+                }
 
-            public function columns(): array
-            {
-                return [];
-            }
+                public function columns(): array
+                {
+                    return [];
+                }
 
-            public function layout(): Layout
-            {
-                return new Layout('layout-via-method');
-            }
-        };
+                public function layout(): Layout
+                {
+                    return new Layout('layout-via-method');
+                }
+            };
 
         /** @var LayoutFinder $service */
         $service = $this->app->make(LayoutFinder::class);

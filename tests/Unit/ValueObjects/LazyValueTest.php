@@ -92,7 +92,7 @@ class LazyValueTest extends TestCase
 
     public function test_resolve_executes_closure_and_returns_result(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return 'Closure Result';
         });
         $context = $this->createActionContext();
@@ -107,7 +107,7 @@ class LazyValueTest extends TestCase
         $context       = $this->createActionContext();
         $contextPassed = null;
 
-        $lazyValue = new LazyValue(function (ActionContext $ctx) use (&$contextPassed): string {
+        $lazyValue = new LazyValue(static function (ActionContext $ctx) use (&$contextPassed): string {
             $contextPassed = $ctx;
 
             return 'test';
@@ -136,7 +136,7 @@ class LazyValueTest extends TestCase
         $callCount = 0;
         $context   = $this->createActionContext();
 
-        $lazyValue = new LazyValue(function (ActionContext $context) use (&$callCount): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context) use (&$callCount): string {
             ++$callCount;
 
             return 'Call ' . $callCount;
@@ -152,7 +152,7 @@ class LazyValueTest extends TestCase
 
     public function test_resolve_closure_returns_empty_string(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return '';
         });
         $context = $this->createActionContext();
@@ -164,7 +164,7 @@ class LazyValueTest extends TestCase
 
     public function test_resolve_closure_returns_multiline_string(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return "Line 1\nLine 2\nLine 3";
         });
         $context = $this->createActionContext();
@@ -176,7 +176,7 @@ class LazyValueTest extends TestCase
 
     public function test_resolve_closure_returns_string_with_special_characters(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return '<div>Special & "quoted" \'content\'</div>';
         });
         $context = $this->createActionContext();
@@ -191,7 +191,7 @@ class LazyValueTest extends TestCase
         $context1 = $this->createActionContext();
         $context2 = $this->createActionContext();
 
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return 'Result from context: ' . spl_object_id($context);
         });
 
@@ -222,7 +222,7 @@ class LazyValueTest extends TestCase
         $externalValue = 'External';
         $context       = $this->createActionContext();
 
-        $lazyValue = new LazyValue(function (ActionContext $context) use ($externalValue): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context) use ($externalValue): string {
             return $externalValue . ' Value';
         });
 
@@ -253,7 +253,7 @@ class LazyValueTest extends TestCase
 
     public function test_closure_return_type_is_respected(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             return '123';
         });
         $context = $this->createActionContext();
@@ -277,7 +277,7 @@ class LazyValueTest extends TestCase
 
     public function test_resolve_closure_with_complex_logic(): void
     {
-        $lazyValue = new LazyValue(function (ActionContext $context): string {
+        $lazyValue = new LazyValue(static function (ActionContext $context): string {
             $parts    = ['Part', 'One'];
             $combined = implode(' ', $parts);
 
@@ -294,7 +294,7 @@ class LazyValueTest extends TestCase
     {
         $context = $this->createActionContext();
 
-        $lazyValue = new LazyValue(function (ActionContext $ctx): string {
+        $lazyValue = new LazyValue(static function (ActionContext $ctx): string {
             // Using instanceof to verify we got the right type
             return $ctx instanceof ActionContext ? 'Valid Context' : 'Invalid';
         });

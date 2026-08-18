@@ -44,26 +44,24 @@ readonly class ColumnLabelRenderer
         $sortDirection     = $this->sortDirectionForColumn($request, $table, $column);
         $nextSortDirection = $this->getNextSortDirection($sortDirection);
 
-        $styles = $column->style?->resolve(
-            new CellContext($request, $column, null, TableRegion::Header),
-        ) ?? [];
+        $styles = $column->style?->resolve(new CellContext($request, $column, null, TableRegion::Header)) ?? [];
 
         $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
 
         return $this->viewFactory->make('eloquent-tables::table.th', [
-            'theme'          => $theme,
-            'label'          => $this->getLabelValue($column),
-            'sortable'       => $column->sortable,
-            'searchable'     => $column->searchable,
-            'isSorted'       => $sortDirection !== null,
-            'sortDirection'  => $sortDirection,
-            'href'           => $this->sortUrl($request, $table, $column->name, $nextSortDirection),
-            'iconNone'       => $this->config->sortNoneIcon(),
-            'iconAsc'        => $this->config->sortAscIcon(),
-            'iconDesc'       => $this->config->sortDescIcon(),
-            'type'           => $column->type,
-            'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
-            'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
+            'theme'         => $theme,
+            'label'         => $this->getLabelValue($column),
+            'sortable'      => $column->sortable,
+            'searchable'    => $column->searchable,
+            'isSorted'      => $sortDirection !== null,
+            'sortDirection' => $sortDirection,
+            'href'          => $this->sortUrl($request, $table, $column->name, $nextSortDirection),
+            'iconNone'      => $this->config->sortNoneIcon(),
+            'iconAsc'       => $this->config->sortAscIcon(),
+            'iconDesc'      => $this->config->sortDescIcon(),
+            'type'          => $column->type,
+            'styles'        => $this->styleResolver->classes($styles, StyleTarget::Cell),
+            'cellStyles'    => $this->styleResolver->classes($styles, StyleTarget::Content),
         ]);
     }
 

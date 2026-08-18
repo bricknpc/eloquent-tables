@@ -44,7 +44,11 @@ class TranslationsTest extends TestCase
     public function test_no_translation_is_left_empty(string $file): void
     {
         foreach (self::translations($file) as $key => $translation) {
-            $this->assertNotSame('', trim($translation), sprintf('%s has an empty translation for "%s".', basename($file), $key));
+            $this->assertNotSame(
+                '',
+                trim($translation),
+                sprintf('%s has an empty translation for "%s".', basename($file), $key),
+            );
         }
     }
 

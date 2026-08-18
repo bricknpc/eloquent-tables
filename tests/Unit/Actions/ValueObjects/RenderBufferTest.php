@@ -121,10 +121,7 @@ class RenderBufferTest extends TestCase
         $buffer->add(null);
         $buffer->add(' End');
 
-        $this->assertSame(
-            'String <span>HTML</span> <div>View</div> Stringable End',
-            $buffer->render(),
-        );
+        $this->assertSame('String <span>HTML</span> <div>View</div> Stringable End', $buffer->render());
     }
 
     public function test_render_can_be_called_multiple_times(): void

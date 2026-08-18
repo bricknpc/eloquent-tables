@@ -34,22 +34,16 @@ class FilterTest extends TestCase
 
         $value = 'search';
 
-        $query
-            ->expects('where')
-            ->with('name', '=', 'search')
-            ->once()
-        ;
+        $query->expects('where')->with('name', '=', 'search')->once();
 
         $filter($request, $query, $value);
     }
 
     public function test_it_uses_custom_filter(): void
     {
-        $filter = new Filter('name', [])
-            ->filter(
-                fn (Request $request, Builder $query, string $value) => $query->where('custom_column', '!=', $value),
-            )
-        ;
+        $filter = new Filter('name', [])->filter(
+            static fn(Request $request, Builder $query, string $value) => $query->where('custom_column', '!=', $value),
+        );
 
         /** @var Request $request */
         $request = $this->app->make('request');
@@ -59,11 +53,7 @@ class FilterTest extends TestCase
 
         $value = 'search value';
 
-        $query
-            ->expects('where')
-            ->with('custom_column', '!=', 'search value')
-            ->once()
-        ;
+        $query->expects('where')->with('custom_column', '!=', 'search value')->once();
 
         $filter($request, $query, $value);
     }

@@ -55,112 +55,77 @@ class ColumnTest extends TestCase
 
     public function test_can_set_value_using_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            valueUsing: fn (Model $model) => $model->getKey(),
-        );
+        $column = new Column(name: 'name', valueUsing: static fn(Model $model) => $model->getKey());
 
         $this->assertInstanceOf(\Closure::class, $column->valueUsing);
 
-        $column2 = new Column(
-            name: 'name',
-        )->valueUsing(fn (Model $model) => $model->getKey());
+        $column2 = new Column(name: 'name')->valueUsing(static fn(Model $model) => $model->getKey());
 
         $this->assertInstanceOf(\Closure::class, $column2->valueUsing);
     }
 
     public function test_can_set_label_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            label: 'Label',
-        );
+        $column = new Column(name: 'name', label: 'Label');
 
         $this->assertSame('Label', $column->label);
 
-        $column2 = new Column(
-            name: 'name',
-        )->label('Label');
+        $column2 = new Column(name: 'name')->label('Label');
 
         $this->assertSame('Label', $column2->label);
     }
 
     public function test_can_set_sortable_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            sortable: true,
-        );
+        $column = new Column(name: 'name', sortable: true);
 
         $this->assertTrue($column->sortable);
 
-        $column2 = new Column(
-            name: 'name',
-        )->sortable();
+        $column2 = new Column(name: 'name')->sortable();
 
         $this->assertTrue($column2->sortable);
     }
 
     public function test_can_set_sort_using_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            sortUsing: fn () => true,
-        );
+        $column = new Column(name: 'name', sortUsing: static fn() => true);
 
         $this->assertInstanceOf(\Closure::class, $column->sortUsing);
 
-        $column2 = new Column(
-            name: 'name',
-        )->sortable(sortUsing: fn () => true);
+        $column2 = new Column(name: 'name')->sortable(sortUsing: static fn() => true);
 
         $this->assertInstanceOf(\Closure::class, $column2->sortUsing);
     }
 
     public function test_can_set_default_sort_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            defaultSort: Sort::Asc,
-        );
+        $column = new Column(name: 'name', defaultSort: Sort::Asc);
 
         $this->assertSame(Sort::Asc, $column->defaultSort);
 
-        $column2 = new Column(
-            name: 'name',
-        )->sortable(default: Sort::Asc);
+        $column2 = new Column(name: 'name')->sortable(default: Sort::Asc);
 
         $this->assertSame(Sort::Asc, $column2->defaultSort);
     }
 
     public function test_can_set_searchable_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            searchable: true,
-        );
+        $column = new Column(name: 'name', searchable: true);
 
         $this->assertTrue($column->searchable);
 
-        $column2 = new Column(
-            name: 'name',
-        )->searchable();
+        $column2 = new Column(name: 'name')->searchable();
 
         $this->assertTrue($column2->searchable);
     }
 
     public function test_can_set_search_using_via_constructor_and_fluent_setter(): void
     {
-        $column = new Column(
-            name: 'name',
-            searchUsing: fn () => true,
-        );
+        $column = new Column(name: 'name', searchUsing: static fn() => true);
 
         $this->assertInstanceOf(\Closure::class, $column->searchUsing);
 
-        $column2 = new Column(
-            name: 'name',
-        )->searchable(searchUsing: fn () => true);
+        $column2 = new Column(name: 'name')->searchable(searchUsing: static fn() => true);
 
         $this->assertInstanceOf(\Closure::class, $column2->searchUsing);
     }
@@ -171,10 +136,7 @@ class ColumnTest extends TestCase
     #[DataProvider('formatterProvider')]
     public function test_can_set_formatter_via_constructor_and_fluent_setter(Formatter|string $formatter): void
     {
-        $column = new Column(
-            name: 'name',
-            formatter: $formatter,
-        );
+        $column = new Column(name: 'name', formatter: $formatter);
 
         if (is_string($formatter)) {
             $this->assertSame($formatter, $column->formatter);
@@ -182,9 +144,7 @@ class ColumnTest extends TestCase
             $this->assertInstanceOf(get_class($formatter), $column->formatter);
         }
 
-        $column2 = new Column(
-            name: 'name',
-        )->format($formatter);
+        $column2 = new Column(name: 'name')->format($formatter);
 
         if (is_string($formatter)) {
             $this->assertSame($formatter, $column2->formatter);
@@ -240,8 +200,11 @@ class ColumnTest extends TestCase
     }
 
     #[DataProvider('customFormatterPropertiesProvider')]
-    public function test_using_custom_properties_for_formatters_saves_them_correctly(string $method, array $properties, array $expected): void
-    {
+    public function test_using_custom_properties_for_formatters_saves_them_correctly(
+        string $method,
+        array $properties,
+        array $expected,
+    ): void {
         $column = new Column('name');
 
         call_user_func_array([$column, $method], $properties);
@@ -386,8 +349,8 @@ class ColumnTest extends TestCase
         yield 'currency from closures' => [
             'currency',
             [
-                'currency' => $currency = fn (Model $model) => 'USD',
-                'locale'   => $locale   = fn (Model $model) => 'en_US',
+                'currency' => $currency = static fn(Model $model) => 'USD',
+                'locale'   => $locale = static fn(Model $model) => 'en_US',
             ],
             [
                 'currency' => $currency,
@@ -398,7 +361,7 @@ class ColumnTest extends TestCase
         yield 'number with closure decimals' => [
             'number',
             [
-                'decimals' => $decimals = fn (Model $model) => 3,
+                'decimals' => $decimals = static fn(Model $model) => 3,
             ],
             [
                 'decimals' => $decimals,
@@ -408,7 +371,7 @@ class ColumnTest extends TestCase
         yield 'float with closure decimals' => [
             'float',
             [
-                'decimals' => $floatDecimals = fn (Model $model) => 4,
+                'decimals' => $floatDecimals = static fn(Model $model) => 4,
             ],
             [
                 'decimals' => $floatDecimals,
@@ -418,8 +381,8 @@ class ColumnTest extends TestCase
         yield 'dateTime with closure locale and timezone' => [
             'dateTime',
             [
-                'locale'   => $dtLocale   = fn (Model $model) => 'ja_JP',
-                'timezone' => $dtTimezone = fn (Model $model) => 'Asia/Tokyo',
+                'locale'   => $dtLocale = static fn(Model $model) => 'ja_JP',
+                'timezone' => $dtTimezone = static fn(Model $model) => 'Asia/Tokyo',
             ],
             [
                 'locale'   => $dtLocale,
@@ -483,7 +446,9 @@ class ColumnTest extends TestCase
         $sum   = new Sum();
         $count = new Count();
 
-        $column = new Column('amount')->aggregate($sum)->aggregate($count);
+        $column = new Column('amount')
+            ->aggregate($sum)
+            ->aggregate($count);
 
         $this->assertSame([$sum, $count], $column->aggregates);
     }
@@ -492,10 +457,7 @@ class ColumnTest extends TestCase
     {
         $column = new Column(name: 'name', style: new StyleSet(CellStyle::AlignRight));
 
-        $this->assertSame(
-            [CellStyle::AlignRight],
-            $column->style?->resolve($this->cellContext($column)),
-        );
+        $this->assertSame([CellStyle::AlignRight], $column->style?->resolve($this->cellContext($column)));
     }
 
     public function test_styles_can_be_declared_fluently(): void
@@ -510,9 +472,7 @@ class ColumnTest extends TestCase
 
     public function test_declaring_styles_twice_merges_rather_than_replaces(): void
     {
-        $column = new Column(name: 'name', style: new StyleSet(CellStyle::AlignRight))
-            ->style(CellStyle::FontBold)
-        ;
+        $column = new Column(name: 'name', style: new StyleSet(CellStyle::AlignRight))->style(CellStyle::FontBold);
 
         $this->assertSame(
             [CellStyle::AlignRight, CellStyle::FontBold],
@@ -522,10 +482,7 @@ class ColumnTest extends TestCase
 
     public function test_a_closure_can_be_declared_alongside_static_styles(): void
     {
-        $column = new Column(name: 'name')->style(
-            CellStyle::AlignRight,
-            fn () => CellStyle::BackgroundDanger,
-        );
+        $column = new Column(name: 'name')->style(CellStyle::AlignRight, static fn() => CellStyle::BackgroundDanger);
 
         $this->assertSame(
             [CellStyle::AlignRight, CellStyle::BackgroundDanger],
@@ -567,7 +524,11 @@ class ColumnTest extends TestCase
 
     public function test_custom_search_algorithm_searches_in_column(): void
     {
-        $searchUsing = fn (Request $request, Builder $query, string $searchQuery) => $query->where('other', '=', '%' . $searchQuery . '%');
+        $searchUsing = static fn(Request $request, Builder $query, string $searchQuery) => $query->where(
+            'other',
+            '=',
+            '%' . $searchQuery . '%',
+        );
 
         $column = new Column('name')->searchable(searchUsing: $searchUsing);
 

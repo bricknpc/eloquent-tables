@@ -80,10 +80,8 @@ class CapabilityContributionTest extends TestCase
     public function test_subclasses_can_override_a_single_render_method(): void
     {
         $contribution = new class extends CapabilityContribution {
-            public function renderAttributes(
-                ActionDescriptor $descriptor,
-                ActionContext $context,
-            ): string {
+            public function renderAttributes(ActionDescriptor $descriptor, ActionContext $context): string
+            {
                 return 'data-custom="true"';
             }
         };
