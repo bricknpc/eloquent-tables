@@ -83,6 +83,10 @@ docker compose run --rm -T php composer mago:format       # WRITES to your files
 docker compose run --rm -T php composer mago:format:check # the read-only form CI runs
 ```
 
+Those are the canonical names and the ones to use in writing. Three aliases also exist, carried over from the
+PHP-CS-Fixer and PHPStan era so the maintainer's muscle memory still works: `cs` for `mago:format`, `ps` for
+`mago:analyze`, and `c` for both in that order, failing if either does.
+
 For a coverage summary you need the text report, since `composer test` only emits HTML:
 
 ```bash

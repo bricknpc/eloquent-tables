@@ -44,6 +44,12 @@
     "mago:format:check": "php vendor/bin/mago format --dry-run",
     "mago:lint": "php vendor/bin/mago lint",
     "mago:analyze": "php vendor/bin/mago analyze",
+    "cs": "@mago:format",
+    "ps": "@mago:analyze",
+    "c": [
+      "@mago:format",
+      "@mago:analyze"
+    ],
     "test": "php vendor/bin/phpunit -c phpunit.xml --colors=always --coverage-html tests/coverage/html"
   },
   "extra": {
