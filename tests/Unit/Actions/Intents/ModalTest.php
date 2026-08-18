@@ -99,7 +99,7 @@ class ModalTest extends TestCase
 
     public function test_the_title_can_be_a_closure(): void
     {
-        $title = fn (ActionContext $context) => 'Delete user';
+        $title = static fn (ActionContext $context) => 'Delete user';
 
         $intent = new Modal($title);
 
@@ -109,7 +109,7 @@ class ModalTest extends TestCase
 
     public function test_the_content_can_be_a_closure(): void
     {
-        $content = fn (ActionContext $context) => $context->isBulk ? 'Delete all selected users' : 'Delete this user';
+        $content = static fn (ActionContext $context) => $context->isBulk ? 'Delete all selected users' : 'Delete this user';
 
         $intent = new Modal('Delete user', $content);
 
@@ -141,7 +141,7 @@ class ModalTest extends TestCase
 
     public function test_title_resolves_a_closure_title_with_the_context(): void
     {
-        $intent = new Modal(fn (ActionContext $context) => $context->isBulk ? 'Delete users' : 'Delete user');
+        $intent = new Modal(static fn (ActionContext $context) => $context->isBulk ? 'Delete users' : 'Delete user');
 
         $this->assertSame('Delete user', $intent->title()->resolve($this->context));
         $this->assertSame('Delete users', $intent->title()->resolve($this->context->isBulk()));
@@ -170,7 +170,7 @@ class ModalTest extends TestCase
 
     public function test_content_resolves_a_closure_content_with_the_context(): void
     {
-        $intent = new Modal('Delete user', fn (ActionContext $context) => $context->isBulk ? 'All selected' : 'This one');
+        $intent = new Modal('Delete user', static fn (ActionContext $context) => $context->isBulk ? 'All selected' : 'This one');
 
         $this->assertSame('This one', $intent->content()->resolve($this->context));
         $this->assertSame('All selected', $intent->content()->resolve($this->context->isBulk()));

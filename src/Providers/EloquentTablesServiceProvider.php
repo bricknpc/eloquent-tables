@@ -86,10 +86,10 @@ class EloquentTablesServiceProvider extends ServiceProvider
         $this->app->when(NumberFormatter::class)->needs('$decimals')->give($decimals);
         $this->app->when(NumberFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
-        $this->app->when(DateFormatter::class)->needs('$timezone')->give(fn () => $timezone);
+        $this->app->when(DateFormatter::class)->needs('$timezone')->give(static fn () => $timezone);
         $this->app->when(DateFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
 
-        $this->app->when(DateTimeFormatter::class)->needs('$timezone')->give(fn () => $timezone);
+        $this->app->when(DateTimeFormatter::class)->needs('$timezone')->give(static fn () => $timezone);
         $this->app->when(DateTimeFormatter::class)->needs('$locale')->give(fn () => $this->app->getLocale());
     }
 

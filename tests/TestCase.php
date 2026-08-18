@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         // todo We don't need to do this for each test, but it's easier to do it here for now.
-        Schema::create('test_models', function (Blueprint $table) {
+        Schema::create('test_models', static function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();

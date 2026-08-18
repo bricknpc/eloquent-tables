@@ -232,7 +232,7 @@ class RowsBuilderTest extends TestCase
             public function columns(): array
             {
                 return [
-                    new Column('name')->sortable(default: fn (Request $request, Builder $query) => $query->orderBy('id', 'asc')),
+                    new Column('name')->sortable(default: static fn (Request $request, Builder $query) => $query->orderBy('id', 'asc')),
                 ];
             }
 
@@ -322,7 +322,7 @@ class RowsBuilderTest extends TestCase
             public function columns(): array
             {
                 return [
-                    new Column('name')->sortable(sortUsing: fn (Request $request, Builder $query, Sort $direction) => $query->orderBy('id', $direction->value)),
+                    new Column('name')->sortable(sortUsing: static fn (Request $request, Builder $query, Sort $direction) => $query->orderBy('id', $direction->value)),
                 ];
             }
 
@@ -422,7 +422,7 @@ class RowsBuilderTest extends TestCase
 
     public function test_two_tables_on_one_request_sort_independently(): void
     {
-        $makeTable = fn (string $name) => new class($name) extends Table {
+        $makeTable = static fn (string $name) => new class($name) extends Table {
             public function __construct(private readonly string $tableName) {}
 
             public function name(): string
@@ -922,8 +922,8 @@ class RowsBuilderTest extends TestCase
      */
     private function recordingSortTable(array &$applied): Table
     {
-        $record = function (string $name) use (&$applied) {
-            return function ($request, $query, Sort $sort) use ($name, &$applied) {
+        $record = static function (string $name) use (&$applied) {
+            return static function ($request, $query, Sort $sort) use ($name, &$applied) {
                 $applied[] = $name . ':' . $sort->value;
             };
         };

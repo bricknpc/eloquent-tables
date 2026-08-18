@@ -76,7 +76,7 @@ readonly class ColumnValueRenderer
     private function resolveFormatterParameters(array $parameters, Model $model): array
     {
         return array_map(
-            fn (mixed $parameter): mixed => $parameter instanceof \Closure
+            static fn (mixed $parameter): mixed => $parameter instanceof \Closure
                 ? call_user_func($parameter, $model)
                 : $parameter,
             $parameters,

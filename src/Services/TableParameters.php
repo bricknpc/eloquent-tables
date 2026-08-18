@@ -54,9 +54,11 @@ readonly class TableParameters
 
         // The insertion order is meaningful: it is the order the visitor clicked the column headers.
         foreach ($value as $key => $item) {
-            if (is_string($item) && $item !== '') {
-                $values[(string) $key] = $item;
+            if (!(is_string($item) && $item !== '')) {
+                continue;
             }
+
+            $values[(string) $key] = $item;
         }
 
         return $values;
@@ -116,9 +118,11 @@ readonly class TableParameters
         $query = $request->query();
 
         foreach ($this->flatten(is_array($query) ? $query : []) as $name => $value) {
-            if (!$this->isExcluded($name, $except)) {
-                $inputs[$name] = $value;
+            if ($this->isExcluded($name, $except)) {
+                continue;
             }
+
+            $inputs[$name] = $value;
         }
 
         return $inputs;

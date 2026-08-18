@@ -127,7 +127,7 @@ readonly class FooterResolver
 
         // A closure formatter parameter resolves against a row, and a footer value has none, so the
         // value is rendered unformatted rather than refused.
-        if (array_any($column->getFormatterParameters(), fn (mixed $parameter) => $parameter instanceof \Closure)) {
+        if (array_any($column->getFormatterParameters(), static fn (mixed $parameter) => $parameter instanceof \Closure)) {
             return $this->toString($value);
         }
 

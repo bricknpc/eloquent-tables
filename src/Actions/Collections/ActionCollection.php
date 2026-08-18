@@ -69,7 +69,7 @@ class ActionCollection extends Collection
 
     public function countRenderable(ActionContext $context): int
     {
-        return $this->sum(function (Action|ActionCollection $item) use ($context) {
+        return $this->sum(static function (Action|ActionCollection $item) use ($context) {
             if ($item instanceof ActionCollection) {
                 return $item->countRenderable($context);
             }

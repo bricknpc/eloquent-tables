@@ -39,7 +39,7 @@ class InvalidValueExceptionTest extends TestCase
         ];
 
         yield [
-            function () {},
+            static function () {},
             'of type Closure',
         ];
 

@@ -199,7 +199,7 @@ class ColumnValueRendererTest extends TestCase
         // Covers AE4.
         $column = new Column('name')->style(
             CellStyle::AlignRight,
-            fn (CellContext $context) => $context->model?->name === 'negative'
+            static fn (CellContext $context) => $context->model?->name === 'negative'
                 ? CellStyle::TextDanger
                 : null,
         );
@@ -254,7 +254,7 @@ class ColumnValueRendererTest extends TestCase
         $received = [];
 
         $column = new Column('amount')->currency(
-            function (Model $model) use (&$received): string {
+            static function (Model $model) use (&$received): string {
                 $received[] = $model;
 
                 return $model->currency;
@@ -276,7 +276,7 @@ class ColumnValueRendererTest extends TestCase
 
     public function test_a_closure_can_supply_the_number_of_decimals(): void
     {
-        $column = new Column('amount')->number(fn (Model $model) => $model->decimals, 'en_US');
+        $column = new Column('amount')->number(static fn (Model $model) => $model->decimals, 'en_US');
 
         $this->assertStringContainsString('1.500', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 3])));
         $this->assertStringContainsString('2', $this->render($column, $this->modelWith(['amount' => 1.5, 'decimals' => 0])));
@@ -284,7 +284,7 @@ class ColumnValueRendererTest extends TestCase
 
     public function test_a_closure_can_supply_the_timezone_as_a_string(): void
     {
-        $column = new Column('moment')->dateTime('en_US', fn (Model $model) => $model->timezone);
+        $column = new Column('moment')->dateTime('en_US', static fn (Model $model) => $model->timezone);
 
         $moment = new \DateTimeImmutable('2026-01-01 11:00:00', new \DateTimeZone('UTC'));
 

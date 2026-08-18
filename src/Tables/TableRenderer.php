@@ -241,11 +241,13 @@ readonly class TableRenderer
 
         foreach ($rowActions as $action) {
             foreach ($rows as $row) {
-                if ($this->actionRenderer->canRender($action, new ActionContext($request, $this->config, $row))) {
-                    ++$count;
-
-                    break;
+                if (!$this->actionRenderer->canRender($action, new ActionContext($request, $this->config, $row))) {
+                    continue;
                 }
+
+                ++$count;
+
+                break;
             }
         }
 
@@ -289,7 +291,7 @@ readonly class TableRenderer
     private function hasSearchableColumns(array $columns): bool
     {
         return collect($columns)
-            ->filter(fn (Column $column) => $column->searchable)
+            ->filter(static fn (Column $column) => $column->searchable)
             ->isNotEmpty()
         ;
     }

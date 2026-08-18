@@ -56,7 +56,7 @@ class FooterRowTest extends TestCase
     {
         $this->assertSame(
             'Deferred',
-            new FooterRow(new Sum(), AggregateScope::Page, fn () => 'Deferred')->resolveLabel(),
+            new FooterRow(new Sum(), AggregateScope::Page, static fn () => 'Deferred')->resolveLabel(),
         );
     }
 

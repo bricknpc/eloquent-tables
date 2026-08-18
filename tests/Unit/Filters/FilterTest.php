@@ -47,7 +47,7 @@ class FilterTest extends TestCase
     {
         $filter = new Filter('name', [])
             ->filter(
-                fn (Request $request, Builder $query, string $value) => $query->where('custom_column', '!=', $value),
+                static fn (Request $request, Builder $query, string $value) => $query->where('custom_column', '!=', $value),
             )
         ;
 

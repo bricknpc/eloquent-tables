@@ -121,8 +121,8 @@ class RowsBuilder
 
         collect($filters)
             // @mago-expect analysis:possibly-invalid-argument
-            ->filter(fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
-            ->each(fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
+            ->filter(static fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
+            ->each(static fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
         ;
     }
 
@@ -134,8 +134,8 @@ class RowsBuilder
         $sortRequest = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
         $sortable = $this->columns
-            ->filter(fn (Column $column) => $column->sortable)
-            ->keyBy(fn (Column $column) => $column->name)
+            ->filter(static fn (Column $column) => $column->sortable)
+            ->keyBy(static fn (Column $column) => $column->name)
         ;
 
         $sorted = false;
@@ -167,8 +167,8 @@ class RowsBuilder
 
         // Nothing usable came from the visitor, so fall back to whatever the columns declare.
         $this->columns
-            ->filter(fn (Column $column) => $column->sortable && $column->defaultSort !== null)
-            ->each(function (Column $column) use ($query, $request) {
+            ->filter(static fn (Column $column) => $column->sortable && $column->defaultSort !== null)
+            ->each(static function (Column $column) use ($query, $request) {
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
                 // @mago-expect analysis:possibly-null-argument
@@ -192,9 +192,9 @@ class RowsBuilder
 
         $query->where(function (Builder $query) use ($search, $request) {
             $this->columns
-                ->filter(fn (Column $column) => $column->searchable)
-                ->each(function (Column $column) use ($search, $request, $query) {
-                    $query->orWhere(fn (Builder $query) => $column->search($request, $query, $search));
+                ->filter(static fn (Column $column) => $column->searchable)
+                ->each(static function (Column $column) use ($search, $request, $query) {
+                    $query->orWhere(static fn (Builder $query) => $column->search($request, $query, $search));
                 })
             ;
         });

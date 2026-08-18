@@ -18,7 +18,7 @@ trait AggregatesValues
      */
     protected function present(Collection $values): Collection
     {
-        return $values->filter(fn (mixed $value) => $value !== null)->values();
+        return $values->filter(static fn (mixed $value) => $value !== null)->values();
     }
 
     /**

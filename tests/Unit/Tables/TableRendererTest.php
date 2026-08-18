@@ -581,7 +581,7 @@ class TableRendererTest extends TestCase
     {
         $view = $this->buildActionTable(
             allow: true,
-            rowCondition: fn (ActionContext $context) => $context->model->name === 'A',
+            rowCondition: static fn (ActionContext $context) => $context->model->name === 'A',
         );
 
         $html = $view->render();
@@ -606,7 +606,7 @@ class TableRendererTest extends TestCase
     {
         // Covers AE7.
         $html = $this->renderStyledRows(new StyleSet(
-            fn (RowContext $context) => $context->model->name === 'A' ? RowStyle::Danger : null,
+            static fn (RowContext $context) => $context->model->name === 'A' ? RowStyle::Danger : null,
         ));
 
         $this->assertSame(1, substr_count($html, '<tr class="table-danger">'));
@@ -645,7 +645,7 @@ class TableRendererTest extends TestCase
     {
         $seen = [];
 
-        $this->renderStyledRows(new StyleSet(function (RowContext $context) use (&$seen) {
+        $this->renderStyledRows(new StyleSet(static function (RowContext $context) use (&$seen) {
             $seen[] = $context->model->name;
 
             return null;
@@ -761,7 +761,7 @@ class TableRendererTest extends TestCase
     public function test_a_closure_label_is_resolved_in_the_markup(): void
     {
         $html = $this->renderFooterTable(footer: [
-            new FooterRow(new Sum(), AggregateScope::Page, fn () => 'Deferred label'),
+            new FooterRow(new Sum(), AggregateScope::Page, static fn () => 'Deferred label'),
         ]);
 
         $this->assertStringContainsString('Deferred label', $html);
@@ -877,7 +877,7 @@ class TableRendererTest extends TestCase
     {
         DB::table('test_models')->insert(
             collect(range(1, 20))
-                ->map(fn (int $i) => [
+                ->map(static fn (int $i) => [
                     'name'       => 'Row ' . $i,
                     'email'      => 'row' . $i . '@test.com',
                     'created_at' => now(),

@@ -106,7 +106,7 @@ class HttpModalTest extends TestCase
 
         $intent = new HttpModal(
             'Edit user',
-            fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
+            static fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
         );
 
         $this->assertSame('https://example.com/users/7/edit', $intent->url()->resolve($context));
@@ -115,7 +115,7 @@ class HttpModalTest extends TestCase
     public function test_the_title_can_be_a_closure(): void
     {
         $intent = new HttpModal(
-            fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
+            static fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
             'https://example.com/users/1/edit',
         );
 
@@ -155,7 +155,7 @@ class HttpModalTest extends TestCase
     public function test_title_resolves_a_closure_title_with_the_context(): void
     {
         $intent = new HttpModal(
-            fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
+            static fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
             'https://example.com/users/1/edit',
         );
 
@@ -205,7 +205,7 @@ class HttpModalTest extends TestCase
 
         $intent = new HttpModal(
             'Edit user',
-            fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
+            static fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
         );
 
         $rendered = $this->render($intent, context: $context);

@@ -165,7 +165,7 @@ class FooterRendererTest extends TestCase
      */
     private function page(int ...$amounts): Collection
     {
-        return new Collection(array_map(function (int $amount) {
+        return new Collection(array_map(static function (int $amount) {
             $model         = new TestModel();
             $model->amount = $amount;
 

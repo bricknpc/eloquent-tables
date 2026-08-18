@@ -162,7 +162,7 @@ class NumberFormatterTest extends TestCase
         yield [
             'en',
             2,
-            function () {},
+            static function () {},
         ];
 
         yield [
@@ -174,7 +174,7 @@ class NumberFormatterTest extends TestCase
         yield [
             'en',
             2,
-            fn () => true,
+            static fn () => true,
         ];
 
         yield [

@@ -116,7 +116,7 @@ class FooterResolverTest extends TestCase
         $this->seedRows(10, 20, 30);
 
         $columns = [
-            new Column('line_total', valueUsing: fn (TestModel $model) => ((int) $model->amount) * 2)
+            new Column('line_total', valueUsing: static fn (TestModel $model) => ((int) $model->amount) * 2)
                 ->aggregate(new Sum()),
         ];
 
@@ -215,7 +215,7 @@ class FooterResolverTest extends TestCase
         // Covers KTD4.
         $columns = [
             new Column('amount')
-                ->currency(locale: 'en_US', currency: fn (TestModel $model) => 'USD')
+                ->currency(locale: 'en_US', currency: static fn (TestModel $model) => 'USD')
                 ->aggregate(new Sum()),
         ];
 
@@ -323,7 +323,7 @@ class FooterResolverTest extends TestCase
     {
         $columns = [new Column('amount')->aggregate(new Sum())];
 
-        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, fn () => 'Deferred'));
+        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, static fn () => 'Deferred'));
 
         $this->assertSame('Deferred', $footer->rows[0]->label);
     }
@@ -355,7 +355,7 @@ class FooterResolverTest extends TestCase
      */
     private function page(int ...$amounts): Collection
     {
-        return new Collection(array_map(function (int $amount) {
+        return new Collection(array_map(static function (int $amount) {
             $model         = new TestModel();
             $model->amount = $amount;
 

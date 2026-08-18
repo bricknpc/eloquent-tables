@@ -42,6 +42,10 @@ trailing-comma = true
 excludes = ["tests", "config"]
 
 [linter]
+# The linter is advisory: it has no minimum-fail-level of its own, and severity is carried by each
+# rule's own `level`. No enabled rule sits at Error, so `mago lint` reports but never fails. That
+# is deliberate. The hard formatting gate PHP-CS-Fixer used to provide is replaced by
+# `mago format --dry-run`, not by this. To make a style rule blocking, set its level to "Error".
 
 # PHPUnit methods here are snake_case. Ports 'php_unit_method_casing' => ['case' => 'snake_case'],
 # which was an active rule, so the Mago rule is enabled rather than left at its default off.
@@ -68,4 +72,19 @@ enabled = false
 enabled = false
 
 [linter.rules.too-many-enum-cases]
+enabled = false
+
+# Off because its auto-fix is unsafe in this codebase, not because the advice is wrong. The fix
+# collapses `$x = expr(); return $x;` into `return expr();` but leaves the `/** @var T $x */`
+# docblock above it in place. That orphans the annotation and drops the narrowing the return
+# relied on: applying it across src produced 28 PHPStan errors and 12 Mago errors, all of the
+# form "Variable $x in PHPDoc tag @var does not exist". This codebase leans on @var narrowing,
+# so the rule is a poor fit until the fixer also rewrites the docblock.
+[linter.rules.inline-variable-return]
+enabled = false
+
+# Off as a poor fit rather than a broken fix. It wants every literal named, which reads worse for
+# well-known signatures: json_decode($cookie, associative: true) and str_repeat('x', times: 100).
+# 46 findings, none of which would improve a line.
+[linter.rules.literal-named-argument]
 enabled = false

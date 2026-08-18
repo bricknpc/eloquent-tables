@@ -79,7 +79,7 @@ class ActionCollectionTest extends TestCase
     {
         $received = null;
 
-        $collection = new ActionCollection()->style(function ($given) use (&$received) {
+        $collection = new ActionCollection()->style(static function ($given) use (&$received) {
             $received = $given;
 
             return ButtonStyle::Danger;
@@ -111,7 +111,7 @@ class ActionCollectionTest extends TestCase
         // Covers R-4. A transform builds a plain collection, so style it after transforming, not before.
         $collection = new ActionCollection([new Action()])->dropdown()->style(ButtonStyle::Danger);
 
-        $filtered = $collection->filter(fn () => true);
+        $filtered = $collection->filter(static fn () => true);
 
         $this->assertSame(ActionCollectionType::Normal, $filtered->type);
         $this->assertNull($filtered->style);
@@ -206,7 +206,7 @@ class ActionCollectionTest extends TestCase
 
     public function test_label_accepts_a_closure(): void
     {
-        $label = fn (ActionContext $context) => 'User actions';
+        $label = static fn (ActionContext $context) => 'User actions';
 
         $collection = new ActionCollection()->label($label);
 
@@ -262,7 +262,7 @@ class ActionCollectionTest extends TestCase
     public function test_count_renderable_is_evaluated_per_context(): void
     {
         $collection = new ActionCollection([
-            new Action()->with($this->createCapability(fn (ActionContext $context) => $context->isBulk)),
+            new Action()->with($this->createCapability(static fn (ActionContext $context) => $context->isBulk)),
         ]);
 
         $this->assertSame(0, $collection->countRenderable($this->context));

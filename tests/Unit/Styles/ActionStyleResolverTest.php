@@ -122,7 +122,7 @@ class ActionStyleResolverTest extends TestCase
 
     public function test_a_closure_decides_the_style_from_the_context(): void
     {
-        $styles = new StyleSet(fn (ActionContext $context) => $context->isBulk
+        $styles = new StyleSet(static fn (ActionContext $context) => $context->isBulk
             ? ButtonStyle::Danger
             : ButtonStyle::Link);
 

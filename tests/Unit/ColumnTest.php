@@ -57,14 +57,14 @@ class ColumnTest extends TestCase
     {
         $column = new Column(
             name: 'name',
-            valueUsing: fn (Model $model) => $model->getKey(),
+            valueUsing: static fn (Model $model) => $model->getKey(),
         );
 
         $this->assertInstanceOf(\Closure::class, $column->valueUsing);
 
         $column2 = new Column(
             name: 'name',
-        )->valueUsing(fn (Model $model) => $model->getKey());
+        )->valueUsing(static fn (Model $model) => $model->getKey());
 
         $this->assertInstanceOf(\Closure::class, $column2->valueUsing);
     }
@@ -105,14 +105,14 @@ class ColumnTest extends TestCase
     {
         $column = new Column(
             name: 'name',
-            sortUsing: fn () => true,
+            sortUsing: static fn () => true,
         );
 
         $this->assertInstanceOf(\Closure::class, $column->sortUsing);
 
         $column2 = new Column(
             name: 'name',
-        )->sortable(sortUsing: fn () => true);
+        )->sortable(sortUsing: static fn () => true);
 
         $this->assertInstanceOf(\Closure::class, $column2->sortUsing);
     }
@@ -153,14 +153,14 @@ class ColumnTest extends TestCase
     {
         $column = new Column(
             name: 'name',
-            searchUsing: fn () => true,
+            searchUsing: static fn () => true,
         );
 
         $this->assertInstanceOf(\Closure::class, $column->searchUsing);
 
         $column2 = new Column(
             name: 'name',
-        )->searchable(searchUsing: fn () => true);
+        )->searchable(searchUsing: static fn () => true);
 
         $this->assertInstanceOf(\Closure::class, $column2->searchUsing);
     }
@@ -386,8 +386,8 @@ class ColumnTest extends TestCase
         yield 'currency from closures' => [
             'currency',
             [
-                'currency' => $currency = fn (Model $model) => 'USD',
-                'locale'   => $locale   = fn (Model $model) => 'en_US',
+                'currency' => $currency = static fn (Model $model) => 'USD',
+                'locale'   => $locale   = static fn (Model $model) => 'en_US',
             ],
             [
                 'currency' => $currency,
@@ -398,7 +398,7 @@ class ColumnTest extends TestCase
         yield 'number with closure decimals' => [
             'number',
             [
-                'decimals' => $decimals = fn (Model $model) => 3,
+                'decimals' => $decimals = static fn (Model $model) => 3,
             ],
             [
                 'decimals' => $decimals,
@@ -408,7 +408,7 @@ class ColumnTest extends TestCase
         yield 'float with closure decimals' => [
             'float',
             [
-                'decimals' => $floatDecimals = fn (Model $model) => 4,
+                'decimals' => $floatDecimals = static fn (Model $model) => 4,
             ],
             [
                 'decimals' => $floatDecimals,
@@ -418,8 +418,8 @@ class ColumnTest extends TestCase
         yield 'dateTime with closure locale and timezone' => [
             'dateTime',
             [
-                'locale'   => $dtLocale   = fn (Model $model) => 'ja_JP',
-                'timezone' => $dtTimezone = fn (Model $model) => 'Asia/Tokyo',
+                'locale'   => $dtLocale   = static fn (Model $model) => 'ja_JP',
+                'timezone' => $dtTimezone = static fn (Model $model) => 'Asia/Tokyo',
             ],
             [
                 'locale'   => $dtLocale,
@@ -524,7 +524,7 @@ class ColumnTest extends TestCase
     {
         $column = new Column(name: 'name')->style(
             CellStyle::AlignRight,
-            fn () => CellStyle::BackgroundDanger,
+            static fn () => CellStyle::BackgroundDanger,
         );
 
         $this->assertSame(
@@ -567,7 +567,7 @@ class ColumnTest extends TestCase
 
     public function test_custom_search_algorithm_searches_in_column(): void
     {
-        $searchUsing = fn (Request $request, Builder $query, string $searchQuery) => $query->where('other', '=', '%' . $searchQuery . '%');
+        $searchUsing = static fn (Request $request, Builder $query, string $searchQuery) => $query->where('other', '=', '%' . $searchQuery . '%');
 
         $column = new Column('name')->searchable(searchUsing: $searchUsing);
 
