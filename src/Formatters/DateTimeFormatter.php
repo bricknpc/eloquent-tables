@@ -30,7 +30,7 @@ readonly class DateTimeFormatter implements Formatter
             timeType: \IntlDateFormatter::SHORT,
             timezone: $this->timezone(),
         );
-        // @mago-expect analysis:mixed-argument
+        // @mago-expect analysis:mixed-argument -- the Formatter contract takes mixed; the guard above narrows it at runtime
 
         $formatted = $formatter->format($value);
 

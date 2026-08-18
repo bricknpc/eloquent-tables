@@ -107,7 +107,7 @@ class Column
             return;
         }
 
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- searchUsing is user-supplied, so its signature is unprovable here
         if (is_callable($this->searchUsing)) {
             call_user_func($this->searchUsing, $request, $query, $searchQuery);
         } else {

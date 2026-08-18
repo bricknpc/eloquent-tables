@@ -44,7 +44,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      * @var TableRenderer<TModel>
      */
     public TableRenderer $renderer {
-        // @mago-expect analysis:invalid-property-assignment-value
+        // @mago-expect analysis:invalid-property-assignment-value -- the property hook cannot carry TModel across the assignment
         set(TableRenderer $value) {
             $this->renderer = $value;
         }
@@ -163,7 +163,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
 
     protected function unauthorizedMessage(): string
     {
-        // @mago-expect analysis:mixed-return-statement
+        // @mago-expect analysis:mixed-return-statement -- Laravel's translator returns mixed, per the todo below
         // @todo Create own wrapper around the Laravel translator so we can ensure type-safety
         return $this->trans->get('You are not authorized to view this table.');
     }

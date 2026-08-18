@@ -54,7 +54,7 @@ readonly class RouteModelBinder
 
             $callParameters[$parameter->getName()] = $model;
         }
-        // @mago-expect analysis:less-specific-nested-argument-type
+        // @mago-expect analysis:less-specific-nested-argument-type -- the container accepts a looser parameter array than its signature declares
 
         return $this->container->call([$object, $method], $callParameters);
     }

@@ -43,7 +43,7 @@ class RowsBuilder
         private readonly TableParameters $parameters,
     ) {}
 
-    // @mago-expect analysis:docblock-type-mismatch
+    // @mago-expect analysis:docblock-type-mismatch -- WithPagination is a trait, so it cannot be half of a union type
     /**
      * @param Table|WithPagination $table
      *
@@ -66,11 +66,11 @@ class RowsBuilder
         /** @var Builder $query */
         $query = $this->routeModelBinder->call($table, 'query');
 
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applySearch($query, $table, $request);
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applyFilters($query, $table, $request);
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
         $this->applySort($query, $table, $request);
 
         // Retained before pagination, so a footer aggregate can run against the same narrowed
@@ -79,15 +79,15 @@ class RowsBuilder
 
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
-            // @mago-expect analysis:mixed-argument,non-existent-method,possibly-invalid-argument
+            // @mago-expect analysis:mixed-argument,non-existent-method,possibly-invalid-argument -- WithPagination is optional, so a trait method is unprovable on Table
             ? $query
                 ->paginate(
-                    // @mago-expect analysis:possibly-invalid-argument
+                    // @mago-expect analysis:possibly-invalid-argument -- WithPagination is optional, so a trait method is unprovable on Table
                     perPage: $this->parameters->perPage($table, $request, $table->perPage($request)),
                     pageName: $this->parameters->key($table, TableParameter::Page),
                     // Laravel resolves the current page with $request->input($pageName), which reads dot
                     // notation and cannot see a bracketed key, so the page is resolved here instead.
-                    // @mago-expect analysis:possibly-invalid-argument
+                    // @mago-expect analysis:possibly-invalid-argument -- the query comes back from a container call, so its type is unprovable here
                     page: $this->parameters->integerValue($table, TableParameter::Page, $request),
                 )
                 ->withQueryString()
@@ -122,7 +122,7 @@ class RowsBuilder
         $filters = $this->routeModelBinder->call($table, 'filters');
 
         collect($filters)
-            // @mago-expect analysis:possibly-invalid-argument
+            // @mago-expect analysis:possibly-invalid-argument -- the filter callback is user-supplied, so its signature is unprovable here
             ->filter(static fn(Filter $filter) => array_key_exists($filter->name, $filterRequest))
             ->each(static fn(Filter $filter) => call_user_func(
                 $filter,
@@ -158,7 +158,7 @@ class RowsBuilder
 
             $sorted = true;
 
-            // @mago-expect analysis:possibly-invalid-argument
+            // @mago-expect analysis:possibly-invalid-argument -- sortUsing is user-supplied, so its signature is unprovable here
             if ($column->sortUsing !== null) {
                 call_user_func($column->sortUsing, $request, $query, $sort);
             } else {
@@ -177,7 +177,7 @@ class RowsBuilder
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
 
-                    // @mago-expect analysis:possibly-null-argument
+                    // @mago-expect analysis:possibly-null-argument -- defaultSort is non-null on this branch, which the analyzer does not carry from the filter above
                 } else {
                     $query->orderBy($column->name, $column->defaultSort?->value);
                 }

@@ -20,13 +20,13 @@ final class HttpModal extends ActionIntent
     }
 
     public function url(): LazyValue
-    // @mago-expect analysis:less-specific-nested-argument-type
+    // @mago-expect analysis:less-specific-nested-argument-type -- LazyValue's template is invariant, so the narrower value type is rejected
     {
         return new LazyValue($this->url);
     }
 
     public function title(): LazyValue
-    // @mago-expect analysis:less-specific-nested-argument-type
+    // @mago-expect analysis:less-specific-nested-argument-type -- LazyValue's template is invariant, so the narrower value type is rejected
     {
         return new LazyValue($this->title);
     }

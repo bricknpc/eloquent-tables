@@ -100,8 +100,8 @@ readonly class FooterResolver
         if ($scope === AggregateScope::Page) {
             return $aggregate->forPage($rows->map(
                 // Column's TModel is invariant, so a Column<TModel> cannot be handed to a method
-                // @mago-expect analysis:possibly-invalid-argument
                 // that binds its template from the model argument.
+                // @mago-expect analysis:possibly-invalid-argument -- invariant TModel, see above
                 fn(Model $model) => $this->columnValue->resolve($column, $model),
             ));
         }

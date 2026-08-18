@@ -102,7 +102,7 @@ class MakeTableCommand extends GeneratorCommand
         return $this;
     }
 
-    // @mago-expect analysis:incompatible-return-type
+    // @mago-expect analysis:incompatible-return-type -- Symfony declares a looser return shape than this command returns
     /**
      * @return array<int, array{string, string, int, string}>
      */

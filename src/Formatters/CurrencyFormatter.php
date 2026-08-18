@@ -22,7 +22,7 @@ readonly class CurrencyFormatter implements Formatter
     public function format(mixed $value, ?Model $model = null): \Stringable
     {
         $formatter = new \NumberFormatter($this->locale, \NumberFormatter::CURRENCY);
-        // @mago-expect analysis:mixed-argument
+        // @mago-expect analysis:mixed-argument -- the Formatter contract takes mixed; the guard above narrows it at runtime
 
         return str((string) $formatter->formatCurrency($value, $this->currency));
     }

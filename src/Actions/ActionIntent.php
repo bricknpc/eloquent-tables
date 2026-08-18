@@ -32,7 +32,7 @@ abstract class ActionIntent
 
     public function beforeRender(ActionDescriptor $descriptor, ActionContext $context): void
     {
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the before callback is user-supplied, so its signature is unprovable here
         if ($this->before !== null) {
             call_user_func($this->before, $descriptor, $context);
         }
@@ -50,7 +50,7 @@ abstract class ActionIntent
 
     public function afterRender(ActionDescriptor $descriptor, ActionContext $context): void
     {
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the after callback is user-supplied, so its signature is unprovable here
         if ($this->after !== null) {
             call_user_func($this->after, $descriptor, $context);
         }

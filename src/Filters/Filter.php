@@ -26,7 +26,7 @@ class Filter implements FilterContract
 
     public function __invoke(Request $request, Builder $query, string $value): void
     {
-        // @mago-expect analysis:possibly-invalid-argument
+        // @mago-expect analysis:possibly-invalid-argument -- the filter callback is user-supplied, so its signature is unprovable here
         $this->filter !== null
             ? call_user_func($this->filter, $request, $query, $value)
             : $query->where($this->name, '=', $value);
@@ -62,12 +62,12 @@ class Filter implements FilterContract
     }
 
     public function options(): array
-    // @mago-expect analysis:less-specific-nested-argument-type,template-constraint-violation
+    // @mago-expect analysis:less-specific-nested-argument-type,template-constraint-violation -- collect() cannot preserve the option key and value templates
     {
         $options = $this->options instanceof Collection ? $this->options : collect($this->options);
 
         /** @var array<string, string> $result */
-        // @mago-expect analysis:mixed-argument
+        // @mago-expect analysis:mixed-argument -- option values are mixed by contract and are validated in getOption
         $result = $options
             ->mapWithKeys(fn(mixed $option, int|string $key) => $this->getOption($option, $key))
             ->toArray();

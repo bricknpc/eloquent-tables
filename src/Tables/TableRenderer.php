@@ -192,10 +192,10 @@ readonly class TableRenderer
         $viewData['activeStyle']    = $accent->toCssActiveClass($theme);
 
         if ($table->withPagination()) {
-            // @mago-expect analysis:mixed-argument,non-existent-method
+            // @mago-expect analysis:mixed-argument,non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
             /* @var WithPagination|Table $table */
             $viewData['perPage'] = $this->parameters->perPage($table, $request, $table->perPage($request));
-            // @mago-expect analysis:non-existent-method
+            // @mago-expect analysis:non-existent-method -- WithPagination is optional, so a trait method is unprovable on Table
             $viewData['perPageName']         = $this->parameters->key($table, TableParameter::PerPage);
             $viewData['perPageOptions']      = $table->perPageOptions();
             $viewData['perPageHiddenInputs'] = $this->parameters->hiddenInputs($request, [
@@ -273,7 +273,7 @@ readonly class TableRenderer
         }
 
         $theme = $this->config->theme();
-        // @mago-expect analysis:mixed-return-statement
+        // @mago-expect analysis:mixed-return-statement -- the paginator's links() returns mixed
 
         return $this->rowsBuilder->build($table, $request)->links($theme->getLinksView(), [
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
