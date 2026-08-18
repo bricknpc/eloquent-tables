@@ -78,9 +78,10 @@ complete run here, not an unfinished one.
 ```bash
 docker compose run --rm -T php composer test              # PHPUnit + HTML coverage into tests/coverage/html
 docker compose run --rm -T php composer mago:analyze      # static analysis
-docker compose run --rm -T php composer mago:lint         # style and correctness rules
 docker compose run --rm -T php composer mago:format       # WRITES to your files
 docker compose run --rm -T php composer mago:format:check # the read-only form CI runs
+docker compose run --rm -T php composer mago:lint         # WRITES to your files — applies safe fixes
+docker compose run --rm -T php composer mago:lint:check   # the read-only form CI runs
 ```
 
 Those are the canonical names and the ones to use in writing. Three aliases also exist, carried over from the
@@ -203,9 +204,22 @@ Two more traps it creates:
 
 - Breaking a long signature across lines **moves any trailing comment on it**. A suppression pragma that was on
   the declaration line ends up on the closing brace, where it no longer applies.
-- `mago lint --fix` is not safe here. The `inline-variable-return` fix collapses `$x = expr(); return $x;` but
-  leaves the `/** @var T $x */` above it, orphaning the annotation and dropping the narrowing. That rule is
-  disabled in `mago.toml` for exactly this reason. The test suite does **not** catch it; the analyzer does.
+- **`composer mago:lint` writes too**, and unlike the formatter it can change behaviour — it rewrites closures to
+  `static fn`, drops redundant `else` branches, and so on. Re-run the tests and the analyser after it. It applies
+  only Mago's **safe** fix tier and reformats afterwards.
+
+### Mago's fix tiers, and why only the safe one is used
+
+`mago lint --fix` has three tiers: safe (the default), `--potentially-unsafe`, and `--unsafe`. Only the first is
+wired into `composer mago:lint`. Do not reach for the other two casually — on this codebase the potentially-unsafe
+tier **deletes comments inside closures, drops declared return types** (`static function (X $c): bool` becomes
+`static fn (X $c) =>`, losing the `: bool`), and rewrites an explicit two-parameter closure into a first-class
+callable, changing its arity contract.
+
+Safe does not mean harmless either. The `inline-variable-return` fix is in the safe tier, and it collapses
+`$x = expr(); return $x;` while leaving the `/** @var T $x */` above it — orphaning the annotation and dropping
+the narrowing. Applying it across `src` produced 28 PHPStan errors. That rule is disabled in `mago.toml` for
+exactly this reason. The test suite does **not** catch this class of breakage; the analyser does.
 
 ## Writing tests
 

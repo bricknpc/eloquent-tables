@@ -42,7 +42,8 @@
   "scripts": {
     "mago:format": "php vendor/bin/mago format",
     "mago:format:check": "php vendor/bin/mago format --dry-run",
-    "mago:lint": "php vendor/bin/mago lint",
+    "mago:lint": "php vendor/bin/mago lint --fix --format-after-fix",
+    "mago:lint:check": "php vendor/bin/mago lint",
     "mago:analyze": "php vendor/bin/mago analyze",
     "cs": "@mago:format",
     "ps": "@mago:analyze",
