@@ -70,7 +70,9 @@ class ActionCollectionTest extends TestCase
 
     public function test_a_second_style_call_merges_rather_than_replaces(): void
     {
-        $collection = new ActionCollection()->style(ButtonStyle::Danger)->style(ButtonStyle::Link);
+        $collection = new ActionCollection()
+            ->style(ButtonStyle::Danger)
+            ->style(ButtonStyle::Link);
 
         $this->assertSame([ButtonStyle::Danger, ButtonStyle::Link], $collection->style?->resolve($this->context));
     }
@@ -91,7 +93,9 @@ class ActionCollectionTest extends TestCase
 
     public function test_style_survives_becoming_a_dropdown(): void
     {
-        $collection = new ActionCollection()->style(ButtonStyle::Danger)->dropdown();
+        $collection = new ActionCollection()
+            ->style(ButtonStyle::Danger)
+            ->dropdown();
 
         $this->assertSame([ButtonStyle::Danger], $collection->style?->resolve($this->context));
     }
@@ -109,9 +113,11 @@ class ActionCollectionTest extends TestCase
     public function test_a_filtered_collection_keeps_neither_its_type_nor_its_style(): void
     {
         // Covers R-4. A transform builds a plain collection, so style it after transforming, not before.
-        $collection = new ActionCollection([new Action()])->dropdown()->style(ButtonStyle::Danger);
+        $collection = new ActionCollection([new Action()])
+            ->dropdown()
+            ->style(ButtonStyle::Danger);
 
-        $filtered = $collection->filter(static fn () => true);
+        $filtered = $collection->filter(static fn() => true);
 
         $this->assertSame(ActionCollectionType::Normal, $filtered->type);
         $this->assertNull($filtered->style);
@@ -206,7 +212,7 @@ class ActionCollectionTest extends TestCase
 
     public function test_label_accepts_a_closure(): void
     {
-        $label = static fn (ActionContext $context) => 'User actions';
+        $label = static fn(ActionContext $context) => 'User actions';
 
         $collection = new ActionCollection()->label($label);
 
@@ -262,7 +268,7 @@ class ActionCollectionTest extends TestCase
     public function test_count_renderable_is_evaluated_per_context(): void
     {
         $collection = new ActionCollection([
-            new Action()->with($this->createCapability(static fn (ActionContext $context) => $context->isBulk)),
+            new Action()->with($this->createCapability(static fn(ActionContext $context) => $context->isBulk)),
         ]);
 
         $this->assertSame(0, $collection->countRenderable($this->context));
@@ -328,8 +334,10 @@ class ActionCollectionTest extends TestCase
      * @param non-empty-string $method
      */
     #[DataProvider('typeMethodProvider')]
-    public function test_it_keeps_the_existing_actions_when_no_arguments_are_given(string $method, ActionCollectionType $expected): void
-    {
+    public function test_it_keeps_the_existing_actions_when_no_arguments_are_given(
+        string $method,
+        ActionCollectionType $expected,
+    ): void {
         $first  = new Action();
         $second = new Action();
 
@@ -344,8 +352,10 @@ class ActionCollectionTest extends TestCase
      * @param non-empty-string $method
      */
     #[DataProvider('typeMethodProvider')]
-    public function test_it_appends_the_given_actions_to_the_existing_ones(string $method, ActionCollectionType $expected): void
-    {
+    public function test_it_appends_the_given_actions_to_the_existing_ones(
+        string $method,
+        ActionCollectionType $expected,
+    ): void {
         $existing = new Action();
         $added    = new Action();
 
@@ -359,8 +369,10 @@ class ActionCollectionTest extends TestCase
      * @param non-empty-string $method
      */
     #[DataProvider('typeMethodProvider')]
-    public function test_it_leaves_the_original_collection_untouched(string $method, ActionCollectionType $expected): void
-    {
+    public function test_it_leaves_the_original_collection_untouched(
+        string $method,
+        ActionCollectionType $expected,
+    ): void {
         $original = new ActionCollection([new Action()]);
 
         $result = $original->{$method}(new Action());
@@ -377,7 +389,9 @@ class ActionCollectionTest extends TestCase
     #[DataProvider('typeMethodProvider')]
     public function test_it_keeps_the_label(string $method, ActionCollectionType $expected): void
     {
-        $collection = new ActionCollection([new Action()])->label('Open')->{$method}();
+        $collection = new ActionCollection([new Action()])
+            ->label('Open')
+            ->{$method}();
 
         $this->assertSame('Open', $collection->label);
     }
@@ -397,7 +411,9 @@ class ActionCollectionTest extends TestCase
     private function createCapability(bool|\Closure $check): ActionCapability
     {
         return new class($check) extends ActionCapability {
-            public function __construct(private readonly bool|\Closure $checkValue) {}
+            public function __construct(
+                private readonly bool|\Closure $checkValue,
+            ) {}
 
             public function check(ActionDescriptor $descriptor, ActionContext $context): bool
             {

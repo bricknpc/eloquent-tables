@@ -43,7 +43,7 @@ class AuthorizeTest extends TestCase
 
     public function test_authorize_is_instance_of_action_capability(): void
     {
-        $authorize = new Authorize(static fn (ActionContext $context): bool => true);
+        $authorize = new Authorize(static fn(ActionContext $context): bool => true);
 
         $this->assertInstanceOf(ActionCapability::class, $authorize);
     }
@@ -57,7 +57,7 @@ class AuthorizeTest extends TestCase
 
     public function test_check_returns_true_when_closure_returns_true(): void
     {
-        $authorize = new Authorize(static fn (ActionContext $context): bool => true);
+        $authorize = new Authorize(static fn(ActionContext $context): bool => true);
 
         $result = $authorize->check($this->descriptor, $this->context);
 
@@ -66,7 +66,7 @@ class AuthorizeTest extends TestCase
 
     public function test_check_returns_false_when_closure_returns_false(): void
     {
-        $authorize = new Authorize(static fn (ActionContext $context): bool => false);
+        $authorize = new Authorize(static fn(ActionContext $context): bool => false);
 
         $result = $authorize->check($this->descriptor, $this->context);
 
@@ -142,7 +142,7 @@ class AuthorizeTest extends TestCase
     {
         $isAuthorized = true;
 
-        $authorize = new Authorize(static fn (ActionContext $context): bool => $isAuthorized);
+        $authorize = new Authorize(static fn(ActionContext $context): bool => $isAuthorized);
 
         $result = $authorize->check($this->descriptor, $this->context);
 
@@ -235,7 +235,7 @@ class AuthorizeTest extends TestCase
 
     public function test_check_returns_boolean_type(): void
     {
-        $authorize = new Authorize(static fn (ActionContext $context): bool => true);
+        $authorize = new Authorize(static fn(ActionContext $context): bool => true);
 
         $result = $authorize->check($this->descriptor, $this->context);
 
@@ -244,8 +244,8 @@ class AuthorizeTest extends TestCase
 
     public function test_multiple_authorize_instances_are_independent(): void
     {
-        $authorize1 = new Authorize(static fn (ActionContext $context): bool => true);
-        $authorize2 = new Authorize(static fn (ActionContext $context): bool => false);
+        $authorize1 = new Authorize(static fn(ActionContext $context): bool => true);
+        $authorize2 = new Authorize(static fn(ActionContext $context): bool => false);
 
         $result1 = $authorize1->check($this->descriptor, $this->context);
         $result2 = $authorize2->check($this->descriptor, $this->context);
@@ -256,7 +256,7 @@ class AuthorizeTest extends TestCase
 
     public function test_authorize_closure_can_be_stored_and_reused(): void
     {
-        $closure = static fn (ActionContext $context): bool => true;
+        $closure = static fn(ActionContext $context): bool => true;
 
         $authorize1 = new Authorize($closure);
         $authorize2 = new Authorize($closure);

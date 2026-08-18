@@ -10,13 +10,13 @@ use Illuminate\Support\Collection;
 use BrickNPC\EloquentTables\Column;
 use BrickNPC\EloquentTables\Enums\Sort;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\AbstractPaginator as Paginator;
 use BrickNPC\EloquentTables\Contracts\Filter;
 use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Enums\TableParameter;
 use BrickNPC\EloquentTables\Concerns\WithPagination;
 use BrickNPC\EloquentTables\Services\TableParameters;
 use BrickNPC\EloquentTables\Services\RouteModelBinder;
-use Illuminate\Pagination\AbstractPaginator as Paginator;
 
 /**
  * @template TModel of Model
@@ -80,15 +80,17 @@ class RowsBuilder
         /** @var Collection<int, Model>|Paginator<int, Model> $result */
         $result = $table->withPagination()
             // @mago-expect analysis:mixed-argument,non-existent-method,possibly-invalid-argument
-            ? $query->paginate(
-                // @mago-expect analysis:possibly-invalid-argument
-                perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
-                pageName: $this->parameters->key($table, TableParameter::Page),
-                // Laravel resolves the current page with $request->input($pageName), which reads dot
-                // notation and cannot see a bracketed key, so the page is resolved here instead.
-                // @mago-expect analysis:possibly-invalid-argument
-                page: $this->parameters->integerValue($table, TableParameter::Page, $request),
-            )->withQueryString()
+            ? $query
+                ->paginate(
+                    // @mago-expect analysis:possibly-invalid-argument
+                    perPage: $this->parameters->perPage($table, $request, $table->perPage($request)), // @phpstan-ignore-line
+                    pageName: $this->parameters->key($table, TableParameter::Page),
+                    // Laravel resolves the current page with $request->input($pageName), which reads dot
+                    // notation and cannot see a bracketed key, so the page is resolved here instead.
+                    // @mago-expect analysis:possibly-invalid-argument
+                    page: $this->parameters->integerValue($table, TableParameter::Page, $request),
+                )
+                ->withQueryString()
             : $query->get();
 
         return $this->result = $result;
@@ -121,9 +123,13 @@ class RowsBuilder
 
         collect($filters)
             // @mago-expect analysis:possibly-invalid-argument
-            ->filter(static fn (Filter $filter) => array_key_exists($filter->name, $filterRequest))
-            ->each(static fn (Filter $filter) => call_user_func($filter, $request, $query, $filterRequest[$filter->name]))
-        ;
+            ->filter(static fn(Filter $filter) => array_key_exists($filter->name, $filterRequest))
+            ->each(static fn(Filter $filter) => call_user_func(
+                $filter,
+                $request,
+                $query,
+                $filterRequest[$filter->name],
+            ));
     }
 
     /**
@@ -134,9 +140,8 @@ class RowsBuilder
         $sortRequest = $this->parameters->arrayValue($table, TableParameter::Sort, $request);
 
         $sortable = $this->columns
-            ->filter(static fn (Column $column) => $column->sortable)
-            ->keyBy(static fn (Column $column) => $column->name)
-        ;
+            ->filter(static fn(Column $column) => $column->sortable)
+            ->keyBy(static fn(Column $column) => $column->name);
 
         $sorted = false;
 
@@ -167,16 +172,16 @@ class RowsBuilder
 
         // Nothing usable came from the visitor, so fall back to whatever the columns declare.
         $this->columns
-            ->filter(static fn (Column $column) => $column->sortable && $column->defaultSort !== null)
+            ->filter(static fn(Column $column) => $column->sortable && $column->defaultSort !== null)
             ->each(static function (Column $column) use ($query, $request) {
                 if ($column->defaultSort instanceof \Closure) {
                     call_user_func($column->defaultSort, $request, $query);
-                // @mago-expect analysis:possibly-null-argument
+
+                    // @mago-expect analysis:possibly-null-argument
                 } else {
                     $query->orderBy($column->name, $column->defaultSort?->value); // @phpstan-ignore-line
                 }
-            })
-        ;
+            });
     }
 
     /**
@@ -192,11 +197,10 @@ class RowsBuilder
 
         $query->where(function (Builder $query) use ($search, $request) {
             $this->columns
-                ->filter(static fn (Column $column) => $column->searchable)
+                ->filter(static fn(Column $column) => $column->searchable)
                 ->each(static function (Column $column) use ($search, $request, $query) {
-                    $query->orWhere(static fn (Builder $query) => $column->search($request, $query, $search));
-                })
-            ;
+                    $query->orWhere(static fn(Builder $query) => $column->search($request, $query, $search));
+                });
         });
     }
 }

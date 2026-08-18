@@ -232,7 +232,9 @@ class RowsBuilderTest extends TestCase
             public function columns(): array
             {
                 return [
-                    new Column('name')->sortable(default: static fn (Request $request, Builder $query) => $query->orderBy('id', 'asc')),
+                    new Column('name')->sortable(
+                        default: static fn(Request $request, Builder $query) => $query->orderBy('id', 'asc'),
+                    ),
                 ];
             }
 
@@ -322,7 +324,11 @@ class RowsBuilderTest extends TestCase
             public function columns(): array
             {
                 return [
-                    new Column('name')->sortable(sortUsing: static fn (Request $request, Builder $query, Sort $direction) => $query->orderBy('id', $direction->value)),
+                    new Column('name')->sortable(sortUsing: static fn(
+                        Request $request,
+                        Builder $query,
+                        Sort $direction,
+                    ) => $query->orderBy('id', $direction->value)),
                 ];
             }
 
@@ -422,8 +428,10 @@ class RowsBuilderTest extends TestCase
 
     public function test_two_tables_on_one_request_sort_independently(): void
     {
-        $makeTable = static fn (string $name) => new class($name) extends Table {
-            public function __construct(private readonly string $tableName) {}
+        $makeTable = static fn(string $name) => new class($name) extends Table {
+            public function __construct(
+                private readonly string $tableName,
+            ) {}
 
             public function name(): string
             {
@@ -892,7 +900,9 @@ class RowsBuilderTest extends TestCase
         return new class($name) extends Table {
             use WithPagination;
 
-            public function __construct(private readonly string $tableName) {}
+            public function __construct(
+                private readonly string $tableName,
+            ) {}
 
             public function name(): string
             {
@@ -930,7 +940,9 @@ class RowsBuilderTest extends TestCase
 
         return new class($record) extends Table {
             /** @param \Closure(string): \Closure $record */
-            public function __construct(private readonly \Closure $record) {}
+            public function __construct(
+                private readonly \Closure $record,
+            ) {}
 
             public function columns(): array
             {

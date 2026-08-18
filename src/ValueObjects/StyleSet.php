@@ -72,6 +72,6 @@ final readonly class StyleSet
             return [];
         }
 
-        return array_values(array_filter($result, static fn (mixed $style) => $style instanceof Style));
+        return array_values(array_filter($result, static fn(mixed $style) => $style instanceof Style));
     }
 }

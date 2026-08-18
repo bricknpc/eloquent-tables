@@ -34,31 +34,28 @@ class StyleSetTest extends TestCase
 
     public function test_a_closure_returning_one_style_merges_it(): void
     {
-        $set = new StyleSet(TestStyle::First, static fn () => TestStyle::Second);
+        $set = new StyleSet(TestStyle::First, static fn() => TestStyle::Second);
 
         $this->assertSame([TestStyle::First, TestStyle::Second], $set->resolve($this->context()));
     }
 
     public function test_a_closure_returning_a_list_merges_all_of_them(): void
     {
-        $set = new StyleSet(TestStyle::First, static fn () => [TestStyle::Second, TestStyle::Third]);
+        $set = new StyleSet(TestStyle::First, static fn() => [TestStyle::Second, TestStyle::Third]);
 
-        $this->assertSame(
-            [TestStyle::First, TestStyle::Second, TestStyle::Third],
-            $set->resolve($this->context()),
-        );
+        $this->assertSame([TestStyle::First, TestStyle::Second, TestStyle::Third], $set->resolve($this->context()));
     }
 
     public function test_a_closure_returning_null_leaves_the_static_styles_alone(): void
     {
-        $set = new StyleSet(TestStyle::First, static fn () => null);
+        $set = new StyleSet(TestStyle::First, static fn() => null);
 
         $this->assertSame([TestStyle::First], $set->resolve($this->context()));
     }
 
     public function test_a_closure_may_be_declared_before_the_static_styles(): void
     {
-        $set = new StyleSet(static fn () => TestStyle::Second, TestStyle::First);
+        $set = new StyleSet(static fn() => TestStyle::Second, TestStyle::First);
 
         $this->assertSame([TestStyle::First, TestStyle::Second], $set->resolve($this->context()));
     }
@@ -66,14 +63,14 @@ class StyleSetTest extends TestCase
     public function test_a_colliding_style_is_kept_rather_than_resolved(): void
     {
         // Covers AE6.
-        $set = new StyleSet(TestStyle::First, static fn () => TestStyle::First);
+        $set = new StyleSet(TestStyle::First, static fn() => TestStyle::First);
 
         $this->assertSame([TestStyle::First, TestStyle::First], $set->resolve($this->context()));
     }
 
     public function test_every_closure_contributes(): void
     {
-        $set = new StyleSet(static fn () => TestStyle::First, static fn () => TestStyle::Second);
+        $set = new StyleSet(static fn() => TestStyle::First, static fn() => TestStyle::Second);
 
         $this->assertSame([TestStyle::First, TestStyle::Second], $set->resolve($this->context()));
     }
@@ -94,19 +91,16 @@ class StyleSetTest extends TestCase
 
     public function test_a_closure_returning_something_that_is_not_a_style_is_ignored(): void
     {
-        $set = new StyleSet(TestStyle::First, static fn () => ['not a style', TestStyle::Second]);
+        $set = new StyleSet(TestStyle::First, static fn() => ['not a style', TestStyle::Second]);
 
         $this->assertSame([TestStyle::First, TestStyle::Second], $set->resolve($this->context()));
     }
 
     public function test_with_appends_to_an_existing_set(): void
     {
-        $set = new StyleSet(TestStyle::First)->with(TestStyle::Second, static fn () => TestStyle::Third);
+        $set = new StyleSet(TestStyle::First)->with(TestStyle::Second, static fn() => TestStyle::Third);
 
-        $this->assertSame(
-            [TestStyle::First, TestStyle::Second, TestStyle::Third],
-            $set->resolve($this->context()),
-        );
+        $this->assertSame([TestStyle::First, TestStyle::Second, TestStyle::Third], $set->resolve($this->context()));
     }
 
     private function context(): RowContext

@@ -46,10 +46,7 @@ class ActionCollectionTypeTest extends TestCase
 
     public function test_every_type_has_its_own_view(): void
     {
-        $views = array_map(
-            static fn (ActionCollectionType $type) => $type->view(),
-            ActionCollectionType::cases(),
-        );
+        $views = array_map(static fn(ActionCollectionType $type) => $type->view(), ActionCollectionType::cases());
 
         $this->assertSame($views, array_unique($views));
     }

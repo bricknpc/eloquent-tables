@@ -27,7 +27,7 @@ class InvalidValueException extends \Exception
         };
         // @mago-expect analysis:possibly-invalid-argument
 
-        $exception            = new self(__('The value :value is not a valid value for formatting.', ['value' => $text ?? 'null'])); // @phpstan-ignore-line
+        $exception = new self(__('The value :value is not a valid value for formatting.', ['value' => $text ?? 'null'])); // @phpstan-ignore-line
         $exception->value     = $value;
         $exception->formatter = $formatter;
 

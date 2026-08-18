@@ -116,12 +116,13 @@ class ActionIntentTest extends TestCase
         $descriptorPassed = null;
         $contextPassed    = null;
 
-        $intent = $this->createIntent()->before(
-            static function (ActionDescriptor $descriptor, ActionContext $context) use (&$descriptorPassed, &$contextPassed): void {
-                $descriptorPassed = $descriptor;
-                $contextPassed    = $context;
-            },
-        );
+        $intent = $this->createIntent()->before(static function (
+            ActionDescriptor $descriptor,
+            ActionContext $context,
+        ) use (&$descriptorPassed, &$contextPassed): void {
+            $descriptorPassed = $descriptor;
+            $contextPassed    = $context;
+        });
 
         $intent->beforeRender($this->descriptor, $this->context);
 
@@ -134,12 +135,13 @@ class ActionIntentTest extends TestCase
         $descriptorPassed = null;
         $contextPassed    = null;
 
-        $intent = $this->createIntent()->after(
-            static function (ActionDescriptor $descriptor, ActionContext $context) use (&$descriptorPassed, &$contextPassed): void {
-                $descriptorPassed = $descriptor;
-                $contextPassed    = $context;
-            },
-        );
+        $intent = $this->createIntent()->after(static function (
+            ActionDescriptor $descriptor,
+            ActionContext $context,
+        ) use (&$descriptorPassed, &$contextPassed): void {
+            $descriptorPassed = $descriptor;
+            $contextPassed    = $context;
+        });
 
         $intent->afterRender($this->descriptor, $this->context);
 
@@ -162,14 +164,14 @@ class ActionIntentTest extends TestCase
     {
         $calls = [];
 
-        $intent = $this->createIntent()
+        $intent = $this
+            ->createIntent()
             ->before(static function () use (&$calls): void {
                 $calls[] = 'before';
             })
             ->after(static function () use (&$calls): void {
                 $calls[] = 'after';
-            })
-        ;
+            });
 
         $intent->beforeRender($this->descriptor, $this->context);
         $intent->afterRender($this->descriptor, $this->context);
@@ -181,14 +183,14 @@ class ActionIntentTest extends TestCase
     {
         $calls = [];
 
-        $intent = $this->createIntent()
+        $intent = $this
+            ->createIntent()
             ->before(static function () use (&$calls): void {
                 $calls[] = 'first';
             })
             ->before(static function () use (&$calls): void {
                 $calls[] = 'second';
-            })
-        ;
+            });
 
         $intent->beforeRender($this->descriptor, $this->context);
 

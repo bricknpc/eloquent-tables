@@ -18,7 +18,7 @@ trait AggregatesValues
      */
     protected function present(Collection $values): Collection
     {
-        return $values->filter(static fn (mixed $value) => $value !== null)->values();
+        return $values->filter(static fn(mixed $value) => $value !== null)->values();
     }
 
     /**
@@ -27,8 +27,6 @@ trait AggregatesValues
      */
     protected function presentable(mixed $value): float|int|string|\Stringable|null
     {
-        return is_int($value) || is_float($value) || is_string($value) || $value instanceof \Stringable
-            ? $value
-            : null;
+        return is_int($value) || is_float($value) || is_string($value) || $value instanceof \Stringable ? $value : null;
     }
 }

@@ -16,11 +16,8 @@ final readonly class ActionStyleResolver
         $theme = $context->config->theme();
 
         $variants = array_filter(array_map(
-            static fn (ButtonStyle $style) => $style->toCssClass($theme, $region),
-            array_filter(
-                $styles?->resolve($context) ?? [],
-                static fn (mixed $style) => $style instanceof ButtonStyle,
-            ),
+            static fn(ButtonStyle $style) => $style->toCssClass($theme, $region),
+            array_filter($styles?->resolve($context) ?? [], static fn(mixed $style) => $style instanceof ButtonStyle),
         ));
 
         if ($variants === []) {

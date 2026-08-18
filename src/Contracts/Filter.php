@@ -12,7 +12,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 
 interface Filter
 {
-    public string $name {get; }
+    public string $name { get; }
 
     /**
      * @param Collection<int, Htmlable|Model|\Stringable>|iterable<mixed, mixed> $options

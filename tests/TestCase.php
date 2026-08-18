@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace BrickNPC\EloquentTables\Tests;
 
+use Orchestra\Testbench\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
-use Orchestra\Testbench\TestCase as BaseTestCase;
 use BrickNPC\EloquentTables\Providers\EloquentTablesServiceProvider;
 
 abstract class TestCase extends BaseTestCase

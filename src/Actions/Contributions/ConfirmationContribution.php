@@ -23,8 +23,10 @@ final class ConfirmationContribution extends CapabilityContribution
         $this->id = md5(uniqid(more_entropy: true));
     }
 
-    public function renderAttributes(ActionDescriptor $descriptor, ActionContext $context): Htmlable|string|\Stringable|View  // @phpstan-ignore-line
-    {
+    public function renderAttributes( // @phpstan-ignore-line
+        ActionDescriptor $descriptor,
+        ActionContext $context,
+    ): Htmlable|string|\Stringable|View {
         return \view('eloquent-tables::actions.contribution.confirmation-attributes', [
             'theme'           => $context->config->theme(),
             'id'              => $this->id,

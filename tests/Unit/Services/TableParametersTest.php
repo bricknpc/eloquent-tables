@@ -106,20 +106,14 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users=ada');
 
-        $this->assertSame(
-            [],
-            $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request),
-        );
+        $this->assertSame([], $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request));
     }
 
     public function test_it_returns_an_empty_array_when_the_parameter_is_not_an_array(): void
     {
         $request = Request::create('/?users[sort]=name');
 
-        $this->assertSame(
-            [],
-            $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request),
-        );
+        $this->assertSame([], $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request));
     }
 
     public function test_it_drops_array_entries_that_are_not_usable_values(): void
@@ -136,10 +130,11 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users[search]=ada');
 
-        $this->assertSame(
-            'ada',
-            $this->parameters()->stringValue($this->table('users'), TableParameter::Search, $request),
-        );
+        $this->assertSame('ada', $this->parameters()->stringValue(
+            $this->table('users'),
+            TableParameter::Search,
+            $request,
+        ));
     }
 
     #[DataProvider('unusableStringValues')]
@@ -147,9 +142,7 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?' . $query);
 
-        $this->assertNull(
-            $this->parameters()->stringValue($this->table('users'), TableParameter::Search, $request),
-        );
+        $this->assertNull($this->parameters()->stringValue($this->table('users'), TableParameter::Search, $request));
     }
 
     public static function unusableStringValues(): \Generator
@@ -165,10 +158,11 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users[per_page]=50');
 
-        $this->assertSame(
-            50,
-            $this->parameters()->integerValue($this->table('users'), TableParameter::PerPage, $request),
-        );
+        $this->assertSame(50, $this->parameters()->integerValue(
+            $this->table('users'),
+            TableParameter::PerPage,
+            $request,
+        ));
     }
 
     public function test_it_reads_an_integer_parameter_that_is_already_an_integer(): void
@@ -177,10 +171,11 @@ class TableParametersTest extends TestCase
         $request = Request::create('/');
         $request->query->set('users', ['per_page' => 50]);
 
-        $this->assertSame(
-            50,
-            $this->parameters()->integerValue($this->table('users'), TableParameter::PerPage, $request),
-        );
+        $this->assertSame(50, $this->parameters()->integerValue(
+            $this->table('users'),
+            TableParameter::PerPage,
+            $request,
+        ));
     }
 
     #[DataProvider('unusableIntegerValues')]
@@ -188,9 +183,7 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?' . $query);
 
-        $this->assertNull(
-            $this->parameters()->integerValue($this->table('users'), TableParameter::PerPage, $request),
-        );
+        $this->assertNull($this->parameters()->integerValue($this->table('users'), TableParameter::PerPage, $request));
     }
 
     public static function unusableIntegerValues(): \Generator
@@ -208,10 +201,7 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users[per_page]=50');
 
-        $this->assertSame(
-            50,
-            $this->parameters()->perPage($this->table('users'), $request, 15),
-        );
+        $this->assertSame(50, $this->parameters()->perPage($this->table('users'), $request, 15));
     }
 
     #[DataProvider('perPageFallbacks')]
@@ -219,10 +209,7 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?' . $query);
 
-        $this->assertSame(
-            15,
-            $this->parameters()->perPage($this->table('users'), $request, 15),
-        );
+        $this->assertSame(15, $this->parameters()->perPage($this->table('users'), $request, 15));
     }
 
     public static function perPageFallbacks(): \Generator
@@ -254,20 +241,14 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users[search]=ada&users[per_page]=50');
 
-        $this->assertSame(
-            ['users[per_page]' => '50'],
-            $this->parameters()->hiddenInputs($request, ['users[search]']),
-        );
+        $this->assertSame(['users[per_page]' => '50'], $this->parameters()->hiddenInputs($request, ['users[search]']));
     }
 
     public function test_hidden_inputs_omit_everything_below_an_excluded_name(): void
     {
         $request = Request::create('/?users[sort][name]=asc&users[sort][email]=desc&users[search]=ada');
 
-        $this->assertSame(
-            ['users[search]' => 'ada'],
-            $this->parameters()->hiddenInputs($request, ['users[sort]']),
-        );
+        $this->assertSame(['users[search]' => 'ada'], $this->parameters()->hiddenInputs($request, ['users[sort]']));
     }
 
     public function test_hidden_inputs_keep_sibling_filters(): void
@@ -287,10 +268,7 @@ class TableParametersTest extends TestCase
     {
         $request = Request::create('/?users[search]=ada&orders[sort][total]=desc');
 
-        $this->assertSame(
-            ['orders[sort][total]' => 'desc'],
-            $this->parameters()->hiddenInputs($request, ['users']),
-        );
+        $this->assertSame(['orders[sort][total]' => 'desc'], $this->parameters()->hiddenInputs($request, ['users']));
     }
 
     public function test_hidden_inputs_are_empty_for_a_bare_request(): void
@@ -343,10 +321,7 @@ class TableParametersTest extends TestCase
 
     public function test_the_declared_default_applies_when_nothing_is_stored_or_requested(): void
     {
-        $this->assertSame(
-            15,
-            $this->parameters()->perPage($this->table('users'), Request::create('/'), 15),
-        );
+        $this->assertSame(15, $this->parameters()->perPage($this->table('users'), Request::create('/'), 15));
     }
 
     public function test_a_stored_preference_is_ignored_when_preferences_are_disabled(): void
@@ -372,10 +347,7 @@ class TableParametersTest extends TestCase
             'users' => ['filter' => ['active' => '1']],
         ]);
 
-        $this->assertSame(
-            [],
-            $this->parameters()->arrayValue($this->table('users'), TableParameter::Filter, $request),
-        );
+        $this->assertSame([], $this->parameters()->arrayValue($this->table('users'), TableParameter::Filter, $request));
     }
 
     public function test_an_explicitly_cleared_sort_does_not_fall_back_to_the_stored_one(): void
@@ -387,10 +359,7 @@ class TableParametersTest extends TestCase
         ]);
         $request->query->set('users', ['sort' => '']);
 
-        $this->assertSame(
-            [],
-            $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request),
-        );
+        $this->assertSame([], $this->parameters()->arrayValue($this->table('users'), TableParameter::Sort, $request));
     }
 
     /**
@@ -415,7 +384,9 @@ class TableParametersTest extends TestCase
     private function table(string $name): Table
     {
         return new class($name) extends Table {
-            public function __construct(private readonly string $tableName) {}
+            public function __construct(
+                private readonly string $tableName,
+            ) {}
 
             public function name(): string
             {

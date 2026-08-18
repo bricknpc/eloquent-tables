@@ -45,9 +45,7 @@ readonly class TableParameters
             // choice in its own right and must not be undone by the stored value.
             $absent = $value === null;
 
-            return $absent && $parameter === TableParameter::Sort
-                ? $this->preferences->sort($table, $request)
-                : [];
+            return $absent && $parameter === TableParameter::Sort ? $this->preferences->sort($table, $request) : [];
         }
 
         $values = [];
@@ -93,8 +91,10 @@ readonly class TableParameters
      */
     public function perPage(Table $table, Request $request, int $default): int
     {
-        $perPage = $this->integerValue($table, TableParameter::PerPage, $request)
-            ?? $this->preferences->perPage($table, $request);
+        $perPage = $this->integerValue($table, TableParameter::PerPage, $request) ?? $this->preferences->perPage(
+            $table,
+            $request,
+        );
 
         return $perPage !== null && $perPage > 0 ? $perPage : $default;
     }

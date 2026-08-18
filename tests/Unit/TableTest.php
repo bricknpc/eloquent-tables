@@ -186,10 +186,7 @@ class TableTest extends TestCase
 
     public function test_table_name_keeps_the_whole_class_name_when_it_does_not_end_in_table(): void
     {
-        $this->assertSame(
-            'test_table_authorisation_fails',
-            new TestTableAuthorisationFails()->name(),
-        );
+        $this->assertSame('test_table_authorisation_fails', new TestTableAuthorisationFails()->name());
     }
 
     public function test_table_name_falls_back_when_stripping_the_suffix_leaves_nothing(): void

@@ -31,7 +31,7 @@ class ColumnValueTest extends TestCase
         $model       = new TestModel();
         $model->name = 'Ada';
 
-        $column = new Column('name')->valueUsing(static fn (TestModel $model) => strtoupper((string) $model->name));
+        $column = new Column('name')->valueUsing(static fn(TestModel $model) => strtoupper((string) $model->name));
 
         $this->assertSame('ADA', new ColumnValue()->resolve($column, $model));
     }

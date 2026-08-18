@@ -55,13 +55,13 @@ readonly class ColumnValueRenderer
         $styles = $this->styleResolver->withDefaults($styles, $column->type?->defaultStyles() ?? []);
 
         return $this->viewFactory->make('eloquent-tables::table.td', [
-            'theme'          => $theme,
-            'value'          => $value,
-            'styles'         => $this->styleResolver->classes($styles, StyleTarget::Cell),
-            'cellStyles'     => $this->styleResolver->classes($styles, StyleTarget::Content),
-            'type'           => $column->type,
-            'checkIcon'      => $this->config->checkIcon(),
-            'crossIcon'      => $this->config->crossIcon(),
+            'theme'      => $theme,
+            'value'      => $value,
+            'styles'     => $this->styleResolver->classes($styles, StyleTarget::Cell),
+            'cellStyles' => $this->styleResolver->classes($styles, StyleTarget::Content),
+            'type'       => $column->type,
+            'checkIcon'  => $this->config->checkIcon(),
+            'crossIcon'  => $this->config->crossIcon(),
         ]);
     }
 
@@ -75,11 +75,8 @@ readonly class ColumnValueRenderer
      */
     private function resolveFormatterParameters(array $parameters, Model $model): array
     {
-        return array_map(
-            static fn (mixed $parameter): mixed => $parameter instanceof \Closure
-                ? call_user_func($parameter, $model)
-                : $parameter,
-            $parameters,
-        );
+        return array_map(static fn(mixed $parameter): mixed => $parameter instanceof \Closure
+            ? call_user_func($parameter, $model)
+            : $parameter, $parameters);
     }
 }

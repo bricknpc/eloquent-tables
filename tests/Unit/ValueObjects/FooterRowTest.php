@@ -46,17 +46,14 @@ class FooterRowTest extends TestCase
 
     public function test_a_string_label_resolves_to_itself(): void
     {
-        $this->assertSame(
-            'This page',
-            new FooterRow(new Sum(), AggregateScope::Page, 'This page')->resolveLabel(),
-        );
+        $this->assertSame('This page', new FooterRow(new Sum(), AggregateScope::Page, 'This page')->resolveLabel());
     }
 
     public function test_a_closure_label_is_resolved(): void
     {
         $this->assertSame(
             'Deferred',
-            new FooterRow(new Sum(), AggregateScope::Page, static fn () => 'Deferred')->resolveLabel(),
+            new FooterRow(new Sum(), AggregateScope::Page, static fn() => 'Deferred')->resolveLabel(),
         );
     }
 
@@ -64,10 +61,7 @@ class FooterRowTest extends TestCase
     {
         // 'Log' and 'Key' are callable strings, so resolving on is_callable would call them.
         foreach (['Log', 'Key', 'Sort'] as $label) {
-            $this->assertSame(
-                $label,
-                new FooterRow(new Sum(), AggregateScope::Page, $label)->resolveLabel(),
-            );
+            $this->assertSame($label, new FooterRow(new Sum(), AggregateScope::Page, $label)->resolveLabel());
         }
     }
 

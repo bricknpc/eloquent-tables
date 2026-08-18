@@ -84,7 +84,10 @@ class ColumnLabelRendererTest extends TestCase
             // quietly reappear on the next visit.
             $this->assertSame('http://localhost/?test%5Bsort%5D=', $view->getData()['href']);
         } else {
-            $this->assertSame('http://localhost/?test%5Bsort%5D%5Bname%5D=' . $nextOrder->value, $view->getData()['href']);
+            $this->assertSame(
+                'http://localhost/?test%5Bsort%5D%5Bname%5D=' . $nextOrder->value,
+                $view->getData()['href'],
+            );
         }
     }
 
@@ -134,13 +137,13 @@ class ColumnLabelRendererTest extends TestCase
 
     public static function unrecognisedSortDirectionProvider(): \Generator
     {
-        yield 'nonsense'      => ['sideways'];
+        yield 'nonsense' => ['sideways'];
 
-        yield 'wrong case'    => ['ASC'];
+        yield 'wrong case' => ['ASC'];
 
         yield 'sql injection' => ['asc; drop table users'];
 
-        yield 'numeric'       => ['1'];
+        yield 'numeric' => ['1'];
     }
 
     public function test_a_non_sortable_header_aligns_like_a_sortable_one(): void
@@ -152,17 +155,19 @@ class ColumnLabelRendererTest extends TestCase
         /** @var Request $request */
         $request = $this->app->make('request');
 
-        $sortable = $builder->build(
-            $request,
-            new TestTable(),
-            new Column('total_items')->sortable()->style(CellStyle::AlignRight),
-        )->render();
+        $sortable = $builder
+            ->build(
+                $request,
+                new TestTable(),
+                new Column('total_items')
+                    ->sortable()
+                    ->style(CellStyle::AlignRight),
+            )
+            ->render();
 
-        $plain = $builder->build(
-            $request,
-            new TestTable(),
-            new Column('total_items')->style(CellStyle::AlignRight),
-        )->render();
+        $plain = $builder
+            ->build($request, new TestTable(), new Column('total_items')->style(CellStyle::AlignRight))
+            ->render();
 
         $this->assertStringContainsString('justify-content-end', $sortable);
         $this->assertStringContainsString('justify-content-end', $plain);

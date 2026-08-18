@@ -38,7 +38,7 @@ readonly class FilterRenderer
         $theme = $this->config->theme();
 
         return $this->viewFactory->make($filter->view(), [
-            'theme'     => $theme,
+            'theme' => $theme,
             // The view is rendered on its own rather than included, so it inherits nothing from the
             // table's scope and needs the style passed explicitly.
             'mainTableStyle' => $table->accentStyle()->toCssClass($theme),
@@ -48,8 +48,8 @@ readonly class FilterRenderer
             'action'         => $request->fullUrl(),
             // The view composes "{queryName}[{name}]", so handing it the table's nested filter key
             // yields users[filter][active] rather than a page-wide filter[active].
-            'queryName'     => $this->parameters->key($table, TableParameter::Filter),
-            'hiddenInputs'  => $this->parameters->hiddenInputs($request, [
+            'queryName'    => $this->parameters->key($table, TableParameter::Filter),
+            'hiddenInputs' => $this->parameters->hiddenInputs($request, [
                 // Only this filter's own key: the table's other filters must survive the submit.
                 $this->parameters->key($table, TableParameter::Filter) . '[' . $filter->name . ']',
                 $this->parameters->key($table, TableParameter::Page),

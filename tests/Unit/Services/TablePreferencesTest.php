@@ -132,10 +132,7 @@ class TablePreferencesTest extends TestCase
             'users' => ['sort' => ['name' => 'desc', 'email' => ['nested'], 'team' => '']],
         ]);
 
-        $this->assertSame(
-            ['name' => 'desc'],
-            $this->preferences()->sort($this->table('users'), $request),
-        );
+        $this->assertSame(['name' => 'desc'], $this->preferences()->sort($this->table('users'), $request));
     }
 
     public function test_a_stored_entry_that_is_not_an_array_is_ignored(): void
@@ -178,7 +175,9 @@ class TablePreferencesTest extends TestCase
     private function table(string $name): Table
     {
         return new class($name) extends Table {
-            public function __construct(private readonly string $tableName) {}
+            public function __construct(
+                private readonly string $tableName,
+            ) {}
 
             public function name(): string
             {

@@ -42,7 +42,7 @@ enum ButtonStyle: string implements Style
                 $this === self::Default => '',
                 // An outlined button has no meaning inside a dropdown menu, so only the colour of it is used.
                 $region === ActionRegion::DropdownItem => sprintf('text-%s', str_replace('outline-', '', $this->value)),
-                default                                => sprintf('btn-%s', $this->value),
+                default => sprintf('btn-%s', $this->value),
             },
         };
     }

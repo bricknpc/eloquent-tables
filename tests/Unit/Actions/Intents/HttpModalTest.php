@@ -106,7 +106,7 @@ class HttpModalTest extends TestCase
 
         $intent = new HttpModal(
             'Edit user',
-            static fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
+            static fn(ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
         );
 
         $this->assertSame('https://example.com/users/7/edit', $intent->url()->resolve($context));
@@ -114,10 +114,9 @@ class HttpModalTest extends TestCase
 
     public function test_the_title_can_be_a_closure(): void
     {
-        $intent = new HttpModal(
-            static fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
-            'https://example.com/users/1/edit',
-        );
+        $intent = new HttpModal(static fn(ActionContext $context) => $context->isBulk
+            ? 'Edit users'
+            : 'Edit user', 'https://example.com/users/1/edit');
 
         $this->assertSame('Edit user', new LazyValue($intent->title)->resolve($this->context));
         $this->assertSame('Edit users', new LazyValue($intent->title)->resolve($this->context->isBulk()));
@@ -154,10 +153,9 @@ class HttpModalTest extends TestCase
 
     public function test_title_resolves_a_closure_title_with_the_context(): void
     {
-        $intent = new HttpModal(
-            static fn (ActionContext $context) => $context->isBulk ? 'Edit users' : 'Edit user',
-            'https://example.com/users/1/edit',
-        );
+        $intent = new HttpModal(static fn(ActionContext $context) => $context->isBulk
+            ? 'Edit users'
+            : 'Edit user', 'https://example.com/users/1/edit');
 
         $this->assertSame('Edit user', $intent->title()->resolve($this->context));
         $this->assertSame('Edit users', $intent->title()->resolve($this->context->isBulk()));
@@ -205,7 +203,7 @@ class HttpModalTest extends TestCase
 
         $intent = new HttpModal(
             'Edit user',
-            static fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
+            static fn(ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey() . '/edit',
         );
 
         $rendered = $this->render($intent, context: $context);
@@ -219,10 +217,7 @@ class HttpModalTest extends TestCase
 
         $renderer = new ActionRenderer($this->app->make(Config::class));
 
-        $action = new Action()
-            ->label('Edit')
-            ->as(new HttpModal('Edit user', 'https://example.com/users/1/edit'))
-        ;
+        $action = new Action()->label('Edit')->as(new HttpModal('Edit user', 'https://example.com/users/1/edit'));
 
         $rendered = (string) $renderer->render($action, $this->context)?->render();
 

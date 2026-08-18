@@ -216,9 +216,6 @@ class ActionIntentAlreadySetTest extends TestCase
     {
         $exception = new ActionIntentAlreadySet('Something went wrong');
 
-        $this->assertSame(
-            ['intent' => null, 'newIntent' => null, 'action' => null],
-            $exception->context(),
-        );
+        $this->assertSame(['intent' => null, 'newIntent' => null, 'action' => null], $exception->context());
     }
 }

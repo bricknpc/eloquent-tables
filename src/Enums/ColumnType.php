@@ -16,7 +16,7 @@ enum ColumnType
     public function defaultStyles(): array
     {
         return match ($this) {
-            self::Text                    => [],
+            self::Text => [],
             self::Checkbox, self::Boolean => [CellStyle::AlignCenter],
         };
     }
@@ -24,18 +24,18 @@ enum ColumnType
     public function getTdView(): string
     {
         return match ($this) {
-            self::Text     => 'td-text',
+            self::Text => 'td-text',
             self::Checkbox => 'td-checkbox',
-            self::Boolean  => 'td-boolean',
+            self::Boolean => 'td-boolean',
         };
     }
 
     public function getThView(): string
     {
         return match ($this) {
-            self::Text     => 'th-text',
+            self::Text => 'th-text',
             self::Checkbox => 'th-checkbox',
-            self::Boolean  => 'th-boolean',
+            self::Boolean => 'th-boolean',
         };
     }
 }

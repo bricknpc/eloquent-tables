@@ -42,10 +42,7 @@ class StyleResolverTest extends TestCase
 
     public function test_a_style_outside_the_cell_vocabulary_ignores_the_target(): void
     {
-        $this->assertSame(
-            'table-danger',
-            $this->resolver()->classes([RowStyle::Danger], StyleTarget::Cell),
-        );
+        $this->assertSame('table-danger', $this->resolver()->classes([RowStyle::Danger], StyleTarget::Cell));
     }
 
     public function test_no_styles_yields_an_empty_string(): void

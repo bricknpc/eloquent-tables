@@ -33,7 +33,7 @@ enum TableStyle: string implements Style
         return match ($theme) {
             Theme::Bootstrap5 => match ($this) {
                 self::Default => '',
-                default       => sprintf('table-%s', $this->value),
+                default => sprintf('table-%s', $this->value),
             },
         };
     }

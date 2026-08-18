@@ -99,7 +99,9 @@ class HttpTest extends TestCase
 
     public function test_url_resolves_a_closure_url_with_the_context(): void
     {
-        $intent = new Http(static fn (ActionContext $context) => 'https://example.com/users/' . ($context->model?->getKey() ?? 'all'));
+        $intent = new Http(
+            static fn(ActionContext $context) => 'https://example.com/users/' . ($context->model?->getKey() ?? 'all'),
+        );
 
         $this->assertSame('https://example.com/users/all', $intent->url()->resolve($this->context));
     }
@@ -111,7 +113,9 @@ class HttpTest extends TestCase
 
         $context = new ActionContext($this->context->request, $this->context->config, $model);
 
-        $intent = new Http(static fn (ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey());
+        $intent = new Http(
+            static fn(ActionContext $context) => 'https://example.com/users/' . $context->model?->getKey(),
+        );
 
         $this->assertSame('https://example.com/users/42', $intent->url()->resolve($context));
     }

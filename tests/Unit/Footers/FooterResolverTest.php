@@ -116,8 +116,9 @@ class FooterResolverTest extends TestCase
         $this->seedRows(10, 20, 30);
 
         $columns = [
-            new Column('line_total', valueUsing: static fn (TestModel $model) => ((int) $model->amount) * 2)
-                ->aggregate(new Sum()),
+            new Column('line_total', valueUsing: static fn(TestModel $model) => (int) $model->amount * 2)->aggregate(
+                new Sum(),
+            ),
         ];
 
         $page = $this->resolver()->resolve(
@@ -215,7 +216,7 @@ class FooterResolverTest extends TestCase
         // Covers KTD4.
         $columns = [
             new Column('amount')
-                ->currency(locale: 'en_US', currency: static fn (TestModel $model) => 'USD')
+                ->currency(locale: 'en_US', currency: static fn(TestModel $model) => 'USD')
                 ->aggregate(new Sum()),
         ];
 
@@ -260,10 +261,7 @@ class FooterResolverTest extends TestCase
     {
         $columns = [new Column('name'), new Column('amount')->aggregate(new Sum())];
 
-        $footer = $this->resolve(
-            $columns,
-            new FooterRow(new Sum(), AggregateScope::Page, 'Sum', labelColumn: 'name'),
-        );
+        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, 'Sum', labelColumn: 'name'));
 
         $this->assertSame(0, $footer->rows[0]->labelIndex);
     }
@@ -272,10 +270,7 @@ class FooterResolverTest extends TestCase
     {
         $columns = [new Column('amount')->aggregate(new Sum())];
 
-        $footer = $this->resolve(
-            $columns,
-            new FooterRow(new Sum(), AggregateScope::Page, 'Sum', labelColumn: 'nope'),
-        );
+        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, 'Sum', labelColumn: 'nope'));
 
         $this->assertNull($footer->rows[0]->labelIndex);
     }
@@ -323,7 +318,7 @@ class FooterResolverTest extends TestCase
     {
         $columns = [new Column('amount')->aggregate(new Sum())];
 
-        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, static fn () => 'Deferred'));
+        $footer = $this->resolve($columns, new FooterRow(new Sum(), AggregateScope::Page, static fn() => 'Deferred'));
 
         $this->assertSame('Deferred', $footer->rows[0]->label);
     }

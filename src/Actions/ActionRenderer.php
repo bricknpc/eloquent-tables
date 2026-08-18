@@ -42,23 +42,23 @@ final readonly class ActionRenderer
      */
     public function countRenderable(array $actions, ActionContext $context): int
     {
-        return count(array_filter(
-            $actions,
-            fn (Action|ActionCollection $action) => $this->canRender($action, $context),
-        ));
+        return count(array_filter($actions, fn(Action|ActionCollection $action) => $this->canRender(
+            $action,
+            $context,
+        )));
     }
 
     private function renderActionCollection(ActionCollection $collection, ActionContext $context): ?View
     {
         return $this->canRender($collection, $context) ? view($collection->type->view(), [
-            'actions'        => $collection,
-            'context'        => $context,
-            'theme'          => $this->config->theme(),
-            'dataNamespace'  => $this->config->dataNamespace(),
-            'label'          => new LazyValue($collection->label)->resolve($context),
-            'toggleClasses'  => $this->styles->classes($collection->style, $context, ActionRegion::DropdownToggle),
-            'actionRenderer' => $this,
-        ]) : null;
+                'actions'        => $collection,
+                'context'        => $context,
+                'theme'          => $this->config->theme(),
+                'dataNamespace'  => $this->config->dataNamespace(),
+                'label'          => new LazyValue($collection->label)->resolve($context),
+                'toggleClasses'  => $this->styles->classes($collection->style, $context, ActionRegion::DropdownToggle),
+                'actionRenderer' => $this,
+            ]) : null;
     }
 
     /**

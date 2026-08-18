@@ -7,8 +7,8 @@ namespace BrickNPC\EloquentTables\Filters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Database\Query\Builder;
 use BrickNPC\EloquentTables\Contracts\Filter as FilterContract;
+use Illuminate\Contracts\Database\Query\Builder;
 
 class Filter implements FilterContract
 {
@@ -69,9 +69,8 @@ class Filter implements FilterContract
         /** @var array<string, string> $result */
         // @mago-expect analysis:mixed-argument
         $result = $options
-            ->mapWithKeys(fn (mixed $option, int|string $key) => $this->getOption($option, $key)) // @phpstan-ignore-line
-            ->toArray()
-        ;
+            ->mapWithKeys(fn(mixed $option, int|string $key) => $this->getOption($option, $key)) // @phpstan-ignore-line
+            ->toArray();
 
         return $result;
     }
@@ -84,8 +83,8 @@ class Filter implements FilterContract
     private function getOption(mixed $option, int|string $key): array
     {
         if ($option instanceof Model) {
-            $key   = $this->optionKey     ?? $option->getKeyName();
-            $label = $this->optionLabel   ?? $option->getKeyName();
+            $key   = $this->optionKey ?? $option->getKeyName();
+            $label = $this->optionLabel ?? $option->getKeyName();
 
             return [(string) $option->{$key} => (string) $option->{$label}]; // @phpstan-ignore-line
         }

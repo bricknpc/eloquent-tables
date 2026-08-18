@@ -26,8 +26,6 @@ final readonly class FooterRow
     public function resolveLabel(): ?string
     {
         // Tested against is_callable, which would call a label that happens to name a PHP function.
-        return $this->label instanceof \Closure
-            ? (string) call_user_func($this->label)
-            : $this->label;
+        return $this->label instanceof \Closure ? (string) call_user_func($this->label) : $this->label;
     }
 }

@@ -112,9 +112,7 @@ abstract class Table implements LoggerAwareInterface, \Stringable
         // to the parent before taking the basename.
         $basename = class_basename(Str::before(static::class, '@anonymous'));
 
-        $stripped = str_ends_with($basename, 'Table')
-            ? substr($basename, 0, -strlen('Table'))
-            : $basename;
+        $stripped = str_ends_with($basename, 'Table') ? substr($basename, 0, -strlen('Table')) : $basename;
 
         return Str::snake($stripped === '' ? $basename : $stripped);
     }
@@ -185,9 +183,6 @@ abstract class Table implements LoggerAwareInterface, \Stringable
      */
     protected function unauthorized(): void
     {
-        throw new HttpException(
-            statusCode: $this->unauthorizedResponseCode(),
-            message: $this->unauthorizedMessage(),
-        );
+        throw new HttpException(statusCode: $this->unauthorizedResponseCode(), message: $this->unauthorizedMessage());
     }
 }

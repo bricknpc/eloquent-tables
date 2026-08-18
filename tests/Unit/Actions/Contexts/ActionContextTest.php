@@ -33,10 +33,7 @@ class ActionContextTest extends TestCase
 
     public function test_action_context_is_a_style_context(): void
     {
-        $this->assertInstanceOf(
-            StyleContext::class,
-            new ActionContext($this->request, $this->config),
-        );
+        $this->assertInstanceOf(StyleContext::class, new ActionContext($this->request, $this->config));
     }
 
     public function test_a_narrowed_action_context_is_still_a_style_context(): void
