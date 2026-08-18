@@ -7,6 +7,12 @@ version: 2
 # target-branch points every update at the next release branch, because the default branch
 # tracks the released state and takes hotfixes only. It is a literal branch name, so it has
 # to be bumped when a new next release branch is cut. See "Releases" in AGENTS.md.
+#
+# cooldown holds a new version back until it has been public for a week, so a compromised
+# release has time to be spotted and yanked before it reaches a PR here. It applies to
+# version updates only: Dependabot ignores cooldown for security updates, so a fix for a
+# published advisory still arrives immediately. Repeated per ecosystem because there is no
+# file-level form of it.
 
 updates:
   # Actions are pinned to a commit SHA, so this is what keeps them current.
@@ -16,6 +22,10 @@ updates:
     target-branch: "2.1"
     schedule:
       interval: "weekly"
+    # github-actions is one of the ecosystems that supports default-days and nothing else,
+    # so the per-bump semver-*-days keys cannot be set here even if we wanted them.
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns:
@@ -26,6 +36,8 @@ updates:
     target-branch: "2.1"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       dev-dependencies:
         dependency-type: "development"
@@ -35,6 +47,8 @@ updates:
     target-branch: "2.1"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       # Every @docusaurus/* package has to move together, @docusaurus/faster included:
       # it is coupled to core's bundler internals and a version skew breaks the build.
