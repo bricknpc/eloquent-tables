@@ -35,8 +35,9 @@ selling point is that no front-end work is required: everything is expressed in 
   and the deployment branch policy on the `github-pages` environment, which is a repo setting no agent can reach
   (it is on the pattern `*.x`, so it only needs attention if a major is ever named differently). Dependabot in
   particular reads its config from the **default branch only**, so that edit has to land on `2.x` and is a
-  legitimate untagged commit there, the same as a CI or `AGENTS.md` change. Merging it does not cut a release;
-  only a hotfix does.
+  legitimate untagged commit there, the same as a CI or `AGENTS.md` change. Work like that goes on a `task/*`
+  branch, and merging it **does not cut a release on its own** the way a hotfix does. Tag it as a patch only if
+  you actively want one released; nothing about the merge forces it.
 - **At most three majors exist at once**, each with one role: the **active** major, one **older** major that may
   still take hotfixes, and one **next** major that may be in progress. Once an older major's support ends it
   accepts no more PRs.
@@ -419,8 +420,8 @@ update painful. The commit and push override lives in this file precisely so the
 ## Working practice
 
 - Work targets the **next release branch**, not the major branch, on a `feature/*` or `bugfix/*` branch that
-  merges back into it via a PR. Only a `hotfix/*` targets the major branch. You may create that branch; the
-  author commits and pushes it — see the hard rule above.
+  merges back into it via a PR. Only a `hotfix/*` or a `task/*` targets the major branch. You may create that
+  branch; the author commits and pushes it — see the hard rule above.
 - After finishing a change, report the five gate results and hand over a commit message.
 - Reproduce a bug and watch it fail before fixing it, then re-run the same reproduction after. A passing new
   test proves nothing until you have seen it fail.
