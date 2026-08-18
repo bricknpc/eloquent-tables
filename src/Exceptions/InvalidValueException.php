@@ -25,7 +25,9 @@ class InvalidValueException extends \Exception
             is_callable($value) => 'of type callable',
             default             => $value,
         };
-        // @mago-expect analysis:possibly-invalid-argument -- Laravel's __() helper returns mixed
+        // @mago-ignore analysis:possibly-invalid-argument,possibly-null-argument -- __() is typed differently across
+        // Laravel 12 and 13, so which of these two fires depends on the installed version. @mago-ignore rather than
+        // @mago-expect because exactly one of them is unused on any given version.
 
         $exception = new self(__('The value :value is not a valid value for formatting.', [
             'value' => $text ?? 'null',

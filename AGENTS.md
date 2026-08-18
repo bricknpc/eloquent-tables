@@ -88,6 +88,11 @@ Those are the canonical names and the ones to use in writing. Three aliases also
 PHP-CS-Fixer and PHPStan era so the maintainer's muscle memory still works: `cs` for `mago:format`, `ps` for
 `mago:analyze`, and `c` for both in that order, failing if either does.
 
+**Agents: prefer `mago:format:check` and `mago:lint:check` when reporting gate results.** The two writing forms
+modify the tree, and a check that silently rewrites code is not a check — it hides the very thing it was asked to
+report. Run the writing forms only when the task is to fix formatting or apply lint fixes, and say so when you do.
+`mago:format` is safe to run blindly; `mago:lint` is not, because it can change behaviour.
+
 For a coverage summary you need the text report, since `composer test` only emits HTML:
 
 ```bash
